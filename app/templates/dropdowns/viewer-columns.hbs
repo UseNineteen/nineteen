@@ -1,0 +1,14 @@
+<header>
+  <span>Show in Viewer:</span>
+  <div class="controls">
+    <a class="select-all" href="#">Select All</a> / <a class="deselect-all" href="#">Deselect All</a>
+  </div>
+</header>
+<section>
+  {{#each columns}}
+    <label>
+      <input type="checkbox" name="search-in" value="{{ name }}"/>
+      <span>{{ name }}</span>
+    </label>
+  {{/each}}
+</section>

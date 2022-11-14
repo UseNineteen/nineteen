@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="26px" height="16px"
+	 viewBox="0 0 26 16" enable-background="new 0 0 26 16" xml:space="preserve">
+<g id="Ascending-by-value-_x2B_-Ascending-by-value" transform="translate(1.000000, 0.000000)">
+	<g id="Ascending-by-value">
+		<path id="Arrow" sketch:type="MSShapeGroup" fill="#A1A7AD" d="M7.246,9.701l0-9.007H4.278l0,9.007h-4.811l6.295,6.295
+			l6.294-6.295H7.246z"/>
+		<g id="A-to-Z" transform="translate(13.684211, 0.000000)" sketch:type="MSTextLayer">
+			<g enable-background="new    ">
+				<path fill="#A1A7AD" d="M4.718,9.698h4.574v1.287l-2.908,3.728h2.98V16H4.593v-1.287l2.898-3.728H4.718V9.698z"/>
+			</g>
+			<g enable-background="new    ">
+				<path fill="#A1A7AD" d="M3.673,5.83H1.396L1.044,7h-1.549l2.251-6.302h1.585L5.581,7H4.033L3.673,5.83z M1.773,4.587h1.521
+					L2.538,2.094L1.773,4.587z"/>
+			</g>
+		</g>
+	</g>
+	<g id="Ascending-by-value_1_">
+		<path id="Arrow_1_" sketch:type="MSShapeGroup" fill="#47535E" d="M7.246,9.701l0-9.007H4.278l0,9.007h-4.811l6.295,6.295
+			l6.294-6.295H7.246z"/>
+		<g id="A-to-Z_1_" transform="translate(13.684211, 0.000000)" sketch:type="MSTextLayer">
+			<g enable-background="new    ">
+				<path fill="#47525E" d="M4.718,9.698h4.574v1.287l-2.908,3.728h2.98V16H4.593v-1.287l2.898-3.728H4.718V9.698z"/>
+			</g>
+			<g enable-background="new    ">
+				<path fill="#47535E" d="M3.673,5.83H1.396L1.044,7h-1.549l2.251-6.302h1.585L5.581,7H4.033L3.673,5.83z M1.773,4.587h1.521
+					L2.538,2.094L1.773,4.587z"/>
+			</g>
+		</g>
+	</g>
+</g>
+</svg>

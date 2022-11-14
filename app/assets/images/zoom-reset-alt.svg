@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.4.4 (17249) - http://www.bohemiancoding.com/sketch -->
+    <title>Fit icon Copy 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Welcome" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Desktop-HD" sketch:type="MSArtboardGroup" transform="translate(-1374.000000, -870.000000)" fill="#47535E">
+            <g id="Zoom-controls" sketch:type="MSLayerGroup" transform="translate(1368.000000, 864.000000)">
+                <g id="Actual-Size" sketch:type="MSShapeGroup">
+                    <g id="Fit-icon-Copy" transform="translate(8.111111, 8.111111)">
+                        <path d="M5.13303691,3.86076962 L1.27186758,0 L0,1.27186758 L3.86076962,5.13303691 L1.79868136,7.19492531 L7.19492531,7.19492531 L7.19492531,1.79868136 L5.13303691,3.86076962 Z" id="Arrow" transform="translate(3.597463, 3.597463) rotate(-180.000000) translate(-3.597463, -3.597463) "></path>
+                        <path d="M7.19492531,8.79268774 L1.79868136,8.79268774 L3.86076962,10.8545761 L0,14.7157455 L1.27186758,15.9876131 L5.13283705,12.1268434 L7.19492531,14.1889317 L7.19492531,8.79268774 Z" id="Arrow" transform="translate(3.597463, 12.390150) rotate(-180.000000) translate(-3.597463, -12.390150) "></path>
+                        <path d="M15.9876131,14.7157455 L12.1268434,10.854776 L14.1889317,8.79268774 L8.79268774,8.79268774 L8.79268774,14.1889317 L10.854776,12.1268434 L14.7157455,15.9876131 L15.9876131,14.7157455 Z" id="Arrow" transform="translate(12.390150, 12.390150) rotate(-180.000000) translate(-12.390150, -12.390150) "></path>
+                        <path d="M15.9876131,1.27186758 L14.7157455,0 L10.8545761,3.86076962 L8.79268774,1.79868136 L8.79268774,7.19492531 L14.1889317,7.19492531 L12.1268434,5.13303691 L15.9876131,1.27186758 Z" id="Arrow" transform="translate(12.390150, 3.597463) rotate(-180.000000) translate(-12.390150, -3.597463) "></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

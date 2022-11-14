@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="26px" height="16px"
+	 viewBox="0 0 26 16" enable-background="new 0 0 26 16" xml:space="preserve">
+<g id="Sort-order" transform="translate(168.315789, 16.000000)">
+	<g id="Descending-by-value-_x2B_-Descending-by-value" transform="translate(1.000000, 0.000000)">
+		<g id="Descending-by-value">
+			<path id="Arrow" sketch:type="MSShapeGroup" fill="#A1A7AD" d="M-161.07-6.299l0-9.007h-2.967l0,9.007h-4.811l6.295,6.295
+				l6.294-6.295H-161.07z"/>
+			<g id="Z-to-A" transform="translate(13.684211, 0.000000)" sketch:type="MSTextLayer">
+				<g enable-background="new    ">
+					<path fill="#A1A7AD" d="M-159.906-1.17h-2.277L-162.535,0h-1.548l2.251-6.302h1.584l2.25,6.302h-1.548L-159.906-1.17z
+						 M-161.806-2.413h1.521l-0.756-2.493L-161.806-2.413z"/>
+				</g>
+				<g enable-background="new    ">
+					<path fill="#A1A7AD" d="M-168.334-15.302h4.574v1.287l-2.908,3.728h2.979V-9h-4.771v-1.287l2.899-3.728h-2.773V-15.302z"/>
+				</g>
+			</g>
+		</g>
+		<g id="Descending-by-value_1_">
+			<path id="Arrow_1_" sketch:type="MSShapeGroup" fill="#47535E" d="M-161.07-6.299l0-9.007h-2.967l0,9.007h-4.811l6.295,6.295
+				l6.294-6.295H-161.07z"/>
+			<g id="Z-to-A_1_" transform="translate(13.684211, 0.000000)" sketch:type="MSTextLayer">
+				<g enable-background="new    ">
+					<path fill="#47525E" d="M-159.906-1.17h-2.277L-162.535,0h-1.548l2.251-6.302h1.584l2.25,6.302h-1.548L-159.906-1.17z
+						 M-161.806-2.413h1.521l-0.756-2.493L-161.806-2.413z"/>
+				</g>
+				<g enable-background="new    ">
+					<path fill="#47535E" d="M-168.334-15.302h4.574v1.287l-2.908,3.728h2.979V-9h-4.771v-1.287l2.899-3.728h-2.773V-15.302z"/>
+				</g>
+			</g>
+		</g>
+	</g>
+</g>
+</svg>

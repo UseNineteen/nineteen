@@ -1,0 +1,13 @@
+<header>High-frequency Words</header>
+<section>
+  {{#if hasTerms}}
+    {{#each terms}}
+      <label class="term">
+        <span class="name">{{ this.term }}</span>
+        <span class="count text-muted">{{ this.frequency }}</span>
+      </label>
+    {{/each}}
+  {{else}}
+    <em class="message text-muted">No terms found. May need to select some columns to search within?</em>
+  {{/if}}
+</section>

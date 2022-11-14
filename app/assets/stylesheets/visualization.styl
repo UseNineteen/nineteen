@@ -1,0 +1,28 @@
+html, body, main, #visualize {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#visualize {
+  background-color: $white;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 250ms;
+
+  header[role="banner"], form {
+    flex: 0 0 auto;
+  }
+
+  figure {
+    flex: 1 1 auto;
+  }
+}
+
+#visualization {
+  align-items: stretch;
+  display: flex;
+  margin: 0;
+  overflow: hidden;
+}

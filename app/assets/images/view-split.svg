@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="21px" height="15px" viewBox="0 0 21 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.4.4 (17249) - http://www.bohemiancoding.com/sketch -->
+    <title>Split icon</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Welcome" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Desktop-HD" sketch:type="MSArtboardGroup" transform="translate(-1057.000000, -83.000000)" stroke="#A1A7AD">
+            <g id="Toolbar" sketch:type="MSLayerGroup" transform="translate(0.000000, 72.000000)">
+                <g id="Split" transform="translate(1058.000000, 11.000000)" sketch:type="MSShapeGroup">
+                    <g id="Split-icon" transform="translate(0.000000, 1.000000)">
+                        <rect id="Rectangle-path" transform="translate(1.500000, 1.500000) rotate(-270.000000) translate(-1.500000, -1.500000) " x="3.5002146e-13" y="-3.33588139e-14" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(4.500000, 1.500000) rotate(-270.000000) translate(-4.500000, -1.500000) " x="3" y="-9.73219244e-15" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(14.500000, 1.500000) rotate(-270.000000) translate(-14.500000, -1.500000) " x="13" y="3.33631648e-14" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(1.500000, 6.500000) rotate(-270.000000) translate(-1.500000, -6.500000) " x="-1.95717169e-13" y="5" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(4.500000, 6.500000) rotate(-270.000000) translate(-4.500000, -6.500000) " x="3" y="5" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(7.500000, 6.500000) rotate(-270.000000) translate(-7.500000, -6.500000) " x="6" y="5" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(14.500000, 6.500000) rotate(-270.000000) translate(-14.500000, -6.500000) " x="13" y="5" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(1.500000, 11.500000) rotate(-270.000000) translate(-1.500000, -11.500000) " x="-3.91434337e-13" y="10" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(4.500000, 11.500000) rotate(-270.000000) translate(-4.500000, -11.500000) " x="3" y="10" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(14.500000, 11.500000) rotate(-270.000000) translate(-14.500000, -11.500000) " x="13" y="10" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(17.500000, 11.500000) rotate(-270.000000) translate(-17.500000, -11.500000) " x="16" y="10" width="3" height="3"></rect>
+                        <rect id="Rectangle-path" transform="translate(17.500000, 6.500000) rotate(-270.000000) translate(-17.500000, -6.500000) " x="16" y="5" width="3" height="3"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

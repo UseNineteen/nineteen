@@ -1,0 +1,16 @@
+<header>Color by:</header>
+<section>
+  <label>
+    <input type="radio" name="color-by" value=""/>
+    <span>Automatic</span>
+  </label>
+
+  <hr>
+
+  {{#each columns}}
+    <label>
+      <input type="radio" name="color-by" value="{{ this }}"/>
+      <span>{{ this }}</span>
+    </label>
+  {{/each}}
+</section>

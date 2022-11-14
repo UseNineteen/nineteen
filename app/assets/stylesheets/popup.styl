@@ -1,0 +1,157 @@
+#popups {
+  position: relative;
+  height: 0;
+  width: 0;
+  overflow: visible;
+  z-index: 3;
+}
+
+.popup {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 450px;
+  margin-top: 5px;
+  margin-left: -21px;
+  overflow: visible;
+  // pointer-events: none;
+  // max-height: 75%;
+  // max-height: 450px;
+  min-height: 85px;
+  min-width: 340px;
+  width: 340px;
+  z-index: 2;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  border-radius: 3px;
+
+  &:before {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: inherit;
+    top: -10px;
+    left: 20px;
+    transform: rotate(45deg);
+    pointer-events: none;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 1;
+  }
+
+  &:after {
+    content: none;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    bottom: -10px;
+    left: 20px;
+    transform: rotate(45deg);
+    pointer-events: none;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
+
+  .html2canvas & {
+    overflow: hidden;
+  }
+
+  header, section {
+    * {
+      position: relative;
+      z-index: 3;
+    }
+  }
+
+  header {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: white;
+    flex: 0 0 auto;
+    font-size: 16px;
+    padding: 10px 20px;
+
+    .close {
+      background: none;
+      border: none;
+      display: none;
+      padding: 0;
+      float: right;
+      outline: none;
+
+      &:hover {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  &.popup-right {
+    margin-left: 41px;
+    transform: translateX(-100%);
+
+    &:before, &:after {
+      left: auto;
+      right: 21px;
+    }
+  }
+
+  &.popup-bottom {
+    margin-top: -23px;
+    transform: translateY(-100%);
+
+    &:before {
+      content: none;
+    }
+
+    &:after {
+      content: "";
+    }
+  }
+
+  &.popup-right.popup-bottom {
+    transform: translate(-100%, -100%);
+  }
+
+  &.floating {
+    pointer-events: auto;
+
+    .close {
+      display: block;
+    }
+
+    &:before, &:after {
+      content: none;
+    }
+  }
+
+  section {
+    flex: 1 1 auto;
+    background-color: white;
+    border-color: rgba(0, 0, 0, 0.2);
+    border-style: solid;
+    border-width: 0px 1px 1px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    box-sizing: border-box;
+    color: initial;
+    overflow: auto;
+    min-height: 45px;
+    padding: 1px 20px;
+    position: relative;
+    width: 100%;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  p.empty {
+    color: #aaa;
+    font-style: italic;
+  }
+}

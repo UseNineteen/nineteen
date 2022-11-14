@@ -1,0 +1,55 @@
+font-url($filename) {
+  src: url($filename + '.eot');
+  src: url($filename + '.eot?#iefix') format('embedded-opentype'),
+       url($filename + '.woff2') format('woff2'),
+       url($filename + '.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Colfax';
+  font-style: normal;
+  font-weight: 300;
+  font-url: 'ColfaxWebLight';
+}
+
+@font-face {
+  font-family: 'Colfax';
+  font-style: normal;
+  font-weight: 400;
+  font-url: 'ColfaxWebRegular';
+}
+
+@font-face {
+  font-family: 'Colfax';
+  font-style: normal;
+  font-weight: 500;
+  font-url: 'ColfaxWebMedium';
+}
+
+@font-face {
+  font-family: 'Colfax';
+  font-style: normal;
+  font-weight: 700;
+  font-url: 'ColfaxWebBold';
+}
+
+html {
+  color: #222;
+  font-family: 'Colfax', sans-serif;
+  font-size: 13px;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+small {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.text-muted {
+  color: $gray;
+}

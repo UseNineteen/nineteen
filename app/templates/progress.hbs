@@ -1,0 +1,19 @@
+<div class="progress-window">
+  <header class="title-bar">
+    <strong class="title">Loading data</strong>
+    {{#if dismissable}}
+      <button class="close">&times;</button>
+    {{/if}}
+  </header>
+
+  <section class="content">
+    <div class="status">
+      <span class="message">{{message}}</span>
+      <span class="pct">{{progress}}</span>
+    </div>
+    
+    <div class="progress-bar">
+      <div class="progress-bar-fill"></div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,32 @@
+<header role="banner">
+	<h1>nineteen</h1>
+	<h2>Visually explore your data</h2>
+</header>
+
+<div class="forms">
+	<div class="container">
+		<form action="/upload" id="upload" method="post" enctype="multipart/form-data">
+		  <h4>Use a local file</h4>
+		  <p>Most secure option. Files never leave your computer.</p>
+			<button class="btn btn-primary choose-file">Choose a file</button>
+		  <input class="sr-only" type="file" name="file" id="file" accept=".csv,.xls,.xlsx"/>
+		</form>
+
+		<form action="/download" id="download" method="post">
+		  <h4>Use a hosted file</h4>
+		  <p>Use any publicly accessible file on Google Drive, Dropbox, or elsewhere.</p>
+			<div class="input-group">
+			  <input type="url" name="url" id="url" placeholder="Paste a link to a .csv or .xlsx file"/>
+				<span class="input-group-btn"><input type="submit" value="Go"/></span>
+			</div>
+		</form>
+	</div>
+</div>
+
+<footer class="container">
+	<ul>
+		<li><a>Need help?</a></li>
+		<li><a id="sample" href="{{ sample }}">Try an example</a></li>
+		<li><a id="github" href="{{ github }}">GitHub</a></li>
+	</ul>
+</footer>

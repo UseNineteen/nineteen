@@ -1,0 +1,201 @@
+.dropdown {
+  background-color: $white;
+  border: 1px solid #DDDDDD;
+  border-radius: 3px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  margin-top: 5px;
+  // overflow: hidden;
+  position: absolute;
+  z-index: 5;
+
+  header {
+    background-color: $lightgray;
+    border-bottom: 1px solid #D8DADF;
+    color: $trout;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 15px;
+    position: relative;
+
+    &:before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: inherit;
+      top: -10px;
+      left: 45px;
+      transform: rotate(45deg);
+      border-left: 1px solid rgba(0, 0, 0, 0.1);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      z-index: 1;
+    }
+
+    + section {
+      border-top: 1px solid #E8E9EB;
+    }
+
+    .controls {
+      float: right;
+      font-size: 13px;
+      font-size: 1rem;
+      font-weight: normal;
+
+      a {
+        color: $trout;
+
+        &:hover {
+          opacity: 0.8;
+        }
+      }
+    }
+  }
+
+  section {
+    padding: 10px 0;
+
+    .controls, .message {
+      padding: 0 15px;
+    }
+  }
+
+  hr {
+    border: none;
+    background-color: $lightgray;
+    display: block;
+    height: 1px;
+    margin: 7px 0;
+  }
+
+  label {
+    clear: both;
+    cursor: pointer;
+    display: block;
+    line-height: 28px;
+    padding: 0 15px;
+    white-space: nowrap;
+
+    &:hover {
+      background-color: $lightgray;
+    }
+
+    &:after {
+      clear: both;
+      content: "";
+      display: table;
+    }
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    display: none;
+  }
+
+  input[type="checkbox"] + span:before,
+  input[type="radio"] + span:before {
+    background-position: center center;
+    background-repeat: no-repeat;
+    content: "";
+    float: left;
+    margin-right: 6px;
+    outline: none;
+  }
+
+  input[type="checkbox"] {
+    + span:before {
+      background-image: url('check-empty.svg');
+      height: 28px;
+      width: 15px;
+    }
+
+    &:checked + span:before {
+      background-image: url('check-active.svg');
+    }
+  }
+
+  input[type="radio"] {
+    + span:before {
+      height: 28px;
+      width: 12px;
+    }
+
+    &:checked + span:before {
+      background-image: url('check-mark.svg');
+    }
+  }
+
+  &.dropdown-right {
+    transform: translateX(-100%);
+
+    header:before {
+      left: auto;
+      right: 45px;
+    }
+  }
+
+  &.dropdown-save {
+    margin-top: 15px;
+    margin-left: 15px;
+
+    &:before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: inherit;
+      top: -10px;
+      right: 30px;
+      transform: rotate(45deg);
+      border-left: 1px solid rgba(0, 0, 0, 0.1);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      z-index: 1;
+    }
+
+    a {
+      box-sizing: border-box;
+      color: $gray;
+      cursor: default;
+      display: block;
+      outline: none;
+      opacity: 0.5;
+      padding: 10px 15px;
+      position: relative;
+      text-align: left;
+      text-decoration: none;
+      white-space: nowrap;
+      width: 100%;
+      z-index: 1;
+
+      &[href] {
+        cursor: pointer;
+        opacity: 1;
+
+        &:hover {
+          background-color: $lightgray;
+        }
+      }
+
+      strong {
+        color: $black;
+      }
+
+      + button {
+        border-top: 1px solid $lightgray;
+      }
+
+      &.save-html, &.save-png {
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        padding-left: 35px;
+      }
+
+      &.save-html {
+        background-image: url('save-zip.svg');
+      }
+
+      &.save-png {
+        background-image: url('save-image.svg');
+      }
+    }
+  }
+}

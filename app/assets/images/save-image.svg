@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="16px" height="20px" viewBox="0 0 16 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.4.4 (17249) - http://www.bohemiancoding.com/sketch -->
+    <title>noun_159808_cc</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <filter x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox" id="filter-1">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.14 0" in="shadowBlurOuter1" type="matrix" result="shadowMatrixOuter1"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+    </defs>
+    <g id="Welcome" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Desktop-HD" sketch:type="MSArtboardGroup" transform="translate(-1158.000000, -148.000000)">
+            <rect id="White-background" fill="#FFFFFF" sketch:type="MSShapeGroup" x="0" y="0" width="1440" height="1024"></rect>
+            <g id="Visualization-left" sketch:type="MSLayerGroup" transform="translate(40.000000, 157.000000)">
+                <g id="Row-backgrounds" transform="translate(124.000000, 0.000000)" fill="#F5F5F5" sketch:type="MSShapeGroup">
+                    <rect id="Rectangle-347-Copy" x="0" y="0" width="1323" height="22"></rect>
+                </g>
+                <g id="Data" transform="translate(127.000000, 1.000000)" fill="#093D89" sketch:type="MSShapeGroup">
+                    <rect id="Rectangle-350-Copy-112" x="990" y="0" width="20" height="20" rx="2.5"></rect>
+                </g>
+                <g id="Counts" transform="translate(258.167439, 5.000000)"></g>
+            </g>
+            <g id="Visualization" sketch:type="MSLayerGroup" transform="translate(245.000000, 156.000000)">
+                <g id="Row-backgrounds" transform="translate(124.000000, 0.000000)" fill="#F5F5F5" sketch:type="MSShapeGroup">
+                    <rect id="Rectangle-347-Copy" x="0" y="0" width="1323" height="22"></rect>
+                </g>
+                <g id="Data" transform="translate(127.000000, 1.000000)" fill="#093D89" sketch:type="MSShapeGroup">
+                    <rect id="Rectangle-350-Copy-212" x="770" y="0" width="20" height="20" rx="2.5"></rect>
+                    <rect id="Rectangle-350-Copy-214" x="792" y="0" width="20" height="20" rx="2.5"></rect>
+                </g>
+                <g id="Counts" transform="translate(258.167439, 5.000000)"></g>
+            </g>
+            <g id="Control-bar" sketch:type="MSLayerGroup" transform="translate(40.000000, 108.000000)" fill="#FFFFFF" opacity="0.9">
+                <rect id="Control-bar-background" sketch:type="MSShapeGroup" x="0" y="0" width="1417" height="48"></rect>
+            </g>
+            <g id="Save-dropdown" sketch:type="MSLayerGroup" transform="translate(1147.000000, 60.000000)">
+                <rect id="Rectangle-60" stroke-opacity="0.2" stroke="#000000" fill="#FFFFFF" filter="url(#filter-1)" sketch:type="MSShapeGroup" x="0" y="17" width="281" height="121" rx="3"></rect>
+                <g id="noun_159808_cc" transform="translate(11.000000, 88.000000)" fill="#47525E" opacity="0.5" sketch:type="MSShapeGroup">
+                    <path d="M11.1111111,0 L11.1111111,4.44444444 L15.5555556,4.44444444 L11.1111111,0 Z" id="Shape"></path>
+                    <path d="M15.5555556,5.55555556 L11.1111111,5.55555556 L10,5.55555556 L10,4.44444444 L10,0 L0,0 L0,20 L15.5555556,20 L15.5555556,5.55555556 L15.5555556,5.55555556 Z M3.88888889,5.55555556 C4.80933333,5.55555556 5.55555556,6.30177778 5.55555556,7.22222222 C5.55555556,8.14266667 4.80933333,8.88888889 3.88888889,8.88888889 C2.96844444,8.88888889 2.22222222,8.14266667 2.22222222,7.22222222 C2.22222222,6.30177778 2.96844444,5.55555556 3.88888889,5.55555556 L3.88888889,5.55555556 Z M12.2222222,15.5555556 L6.66666667,15.5555556 L1.11111111,15.5555556 L6.66666667,10 L8.88888889,12.2222222 L10,11.1111111 L14.4444444,15.5555556 L12.2222222,15.5555556 L12.2222222,15.5555556 Z" id="Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,36 @@
+<form id="tool-bar">
+  <button class="block-sort sort-active" value="value"></button>
+  <button class="block-sort sort-reverse" value="count"></button>
+  <button id="search-icon"></button>
+  <div id="search">
+    <input type="search" id="search-field" placeholder="Find" data-html2canvas-ignore/>
+    <span id="search-export"></span>
+  </div>
+  <button id="search-in">within <strong>all fields</strong></button>
+  {{#if split}}
+    <button id="toggle-view" class="view-stack">Stack</button>
+  {{else}}
+    <button id="toggle-view" class="view-split">Split</button>
+  {{/if}}
+  <button id="toggle-counts"><span class="count-icon">#</span> <span class="count-label">{{#if counts}}Hide{{else}}Show{{/if}} counts</span></button>
+
+  <button id="viewer-columns">Show in viewer</button>
+</form>
+
+<div class="visualizer">
+  <div class="labels"></div>
+
+  <div class="blocks">
+    <div class="block-items"></div>
+    <div class="rows">
+      <div class="row-items"></div>
+    </div>
+  </div>
+</div>
+
+<div id="zoom-controls" data-html2canvas-ignore>
+  <button class="zoom-reset" title="Actual Size"></button>
+  <button class="zoom-fit" title="Best Fit"></button>
+  <button class="zoom-in" title="Zoom In"></button>
+  <button class="zoom-out" title="Zoom Out"></button>
+</div>

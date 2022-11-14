@@ -1,0 +1,57 @@
+#zoom-controls {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  z-index: 3;
+
+  button {
+    display: block;
+    background-color: white;
+    border: 1px solid #A1A7AD;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(black, 0.1);
+    box-sizing: border-box;
+    height: 32px;
+    margin-bottom: 6px;
+    overflow: hidden;
+    outline: none;
+    padding: 0 0 0 32px;
+    position: relative;
+    width: 32px;
+
+    &:hover, &:focus {
+      background-color: $lightgray;
+    }
+
+    &:before {
+      background-position: center;
+      background-repeat: no-repeat;
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+    }
+
+    &.zoom-in:before {
+      background-image: url('zoom-plus.svg');
+    }
+
+    &.zoom-out:before {
+      background-image: url('zoom-minus.svg');
+    }
+
+    &.zoom-fit:before {
+      background-image: url('zoom-fit.svg');
+    }
+
+    &.zoom-reset:before {
+      background-image: url('zoom-reset.svg');
+    }
+  }
+}

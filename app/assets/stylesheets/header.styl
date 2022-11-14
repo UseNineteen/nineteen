@@ -1,0 +1,215 @@
+dropdown-arrow() {
+  &:after {
+    content: "\25BE";
+    padding-left: 0.4em;
+  }
+}
+
+#title-bar {
+  align-items: flex-end;
+  background-color: $trout;
+  color: rgba($white, 0.5);
+  display: flex;
+  font-size: 24px;
+  padding: 10px 40px;
+
+  .keys li {
+    display: inline-block;
+
+    + li {
+      margin-left: 0.2em;
+    }
+  }
+
+  a {
+    border-bottom: 2px solid;
+    color: $white;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  #brand {
+    border-bottom: none;
+    font-size: 19px;
+    text-decoration: none;
+  }
+
+  #save {
+    appearance: none;
+    background-color: transparent;
+    background-image: url('download.svg');
+    background-repeat: no-repeat;
+    background-position: top left;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+    padding: 0 0 0 15px;
+    margin-left: 10px;
+  }
+
+  .title-left {
+    flex: 1 1 auto;
+  }
+
+  .title-right {
+    flex: 0 0 auto;
+  }
+}
+
+#tool-bar {
+  align-items: stretch;
+  display: flex;
+  flex: 0 0 auto;
+  color: $trout;
+  padding: 0 10px;
+  height: 40px;
+  width: 100%;
+
+  input, button {
+    appearance: none;
+    background: none;
+    border: none;
+    flex: 0 0 auto;
+    outline: none;
+  }
+
+  button {
+    font-weight: 500;
+  }
+
+  button:disabled {
+    opacity: 0.3;
+  }
+
+  .block-sort {
+    $margin = (40px - 16px) / 2;
+    background-repeat: no-repeat;
+    background-origin: center;
+    cursor: pointer;
+    flex: 0 0 auto;
+    position: relative;
+    margin: $margin 10px $margin 0;
+    height: 16px;
+    margin-right: 10px;
+    opacity: 0.5;
+
+    &.sort-active {
+      opacity: 1;
+    }
+
+    &[value="value"] {
+      background-image: url('sort-value-asc.svg');
+      width: 25px;
+
+      &.sort-reverse {
+        background-image: url('sort-value-desc.svg');
+      }
+    }
+
+    &[value="count"] {
+      background-image: url('sort-count-asc.svg');
+      width: 35px;
+
+      &.sort-reverse {
+        background-image: url('sort-count-desc.svg');
+      }
+    }
+  }
+
+  #search-icon {
+    dropdown-arrow();
+    background-image: url('search.svg');
+    background-position: 10px center;
+    background-repeat: no-repeat;
+    border-left: 1px solid $gray;
+    flex: 0 0 auto;
+    margin: 5px;
+    padding: 0px 15px 0px 20px;
+    width: 35px;
+  }
+
+  #search {
+    font-size: 16px;
+    flex: 1 1 auto;
+    line-height: 20px;
+    position: relative;
+
+    #search-field {
+      background-color: white;
+      z-index: 1;
+    }
+
+    #search-field,
+    #search-export {
+      box-sizing: border-box;
+      padding: 12px 0px 8px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+    }
+  }
+
+  #search-in {
+    dropdown-arrow();
+    border-right: 1px solid $gray;
+    font-size: 16px;
+    font-weight: normal;
+    margin: 5px 20px 5px 0;
+    padding-right: 20px;
+  }
+
+  #toggle-counts {
+    background: none;
+    margin-right: 20px;
+    padding: 0;
+    text-align: left;
+    white-space: nowrap;
+    width: 105px;
+
+    .count-icon {
+      color: $gray;
+      display: inline-block;
+      font-size: 18px;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+  }
+
+  #toggle-view {
+    background-repeat: no-repeat;
+    background-position: left center;
+    margin-right: 20px
+    text-align: left;
+    overflow: visible;
+    padding-right: 0;
+    width: 65px;
+
+    &.view-split {
+      background-image: url('view-split.svg');
+      padding-left: 28px;
+    }
+
+    &.view-stack {
+      background-image: url('view-stack.svg');
+      background-position: left center;
+      padding-left: 28px;
+    }
+  }
+
+  #viewer-columns {
+    dropdown-arrow();
+    background-image: url('popup.svg');
+    background-position: left center;
+    background-repeat: no-repeat;
+    padding-left: 24px;
+    margin-right: 20px
+  }
+}

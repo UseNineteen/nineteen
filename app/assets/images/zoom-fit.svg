@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="22px" height="22px" viewBox="0 0 22 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.4.4 (17249) - http://www.bohemiancoding.com/sketch -->
+    <title>Fit icon Copy 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Welcome" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Desktop-HD" sketch:type="MSArtboardGroup" transform="translate(-1373.000000, -869.000000)">
+            <g id="Zoom-controls" sketch:type="MSLayerGroup" transform="translate(1368.000000, 864.000000)">
+                <g id="Actual-Size" sketch:type="MSShapeGroup">
+                    <rect id="Rectangle-6088" stroke="#47535E" stroke-width="2" x="11" y="12" width="10" height="8"></rect>
+                    <path d="M13.5355339,22.863961 L13.5355339,27.863961 L18.5355339,27.863961 L13.5355339,22.863961 Z" id="Arrow" fill="#47535E" transform="translate(16.035534, 25.363961) rotate(-225.000000) translate(-16.035534, -25.363961) "></path>
+                    <path d="M3.20710678,13.5355339 L3.20710678,18.5355339 L8.20710678,18.5355339 L3.20710678,13.5355339 Z" id="Arrow-Copy" fill="#47535E" transform="translate(5.707107, 16.035534) rotate(-135.000000) translate(-5.707107, -16.035534) "></path>
+                    <path d="M23.863961,13.5355339 L23.863961,18.5355339 L28.863961,18.5355339 L23.863961,13.5355339 Z" id="Arrow-Copy-2" fill="#47535E" transform="translate(26.363961, 16.035534) rotate(-315.000000) translate(-26.363961, -16.035534) "></path>
+                    <path d="M13.5355339,4.20710678 L13.5355339,9.20710678 L18.5355339,9.20710678 L13.5355339,4.20710678 Z" id="Arrow-Copy-3" fill="#47535E" transform="translate(16.035534, 6.707107) rotate(-45.000000) translate(-16.035534, -6.707107) "></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

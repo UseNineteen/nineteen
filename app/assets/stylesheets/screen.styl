@@ -1,0 +1,90 @@
+@charset 'utf-8';
+
+@import 'colors';
+@import 'typography';
+
+@import 'dropdowns';
+@import 'header';
+@import 'zooming';
+@import 'progress';
+@import 'buttons';
+@import 'import';
+
+@import 'legend';
+@import 'popup';
+@import 'viewer';
+@import 'visualization';
+
+.sr-only {
+	display: none;
+}
+
+html.js {
+	#main {
+		opacity: 0;
+		transition: opacity 1s ease-in-out;
+	}
+
+	#js-msg {
+		display: none;
+	}
+}
+
+.container {
+	clearfix();
+	margin: 20px auto;
+	max-width: 1000px;
+	width: 85%;
+}
+
+footer {
+	clear: both;
+	text-align: center;
+
+	ul {
+		font-size: 0;
+		list-style: disc;
+		margin: 80px 0 20px;
+		padding: 0;
+	}
+
+	li {
+		display: inline-block;
+		font-size: initial;
+
+		&:before {
+			content: "•"
+			display: inline-block;
+			margin: 0 20px;
+		}
+
+		&:first-child:before {
+			content: none;
+		}
+	}
+}
+
+#graph {
+	margin: 20px;
+
+	svg {
+		margin-right: 20px;
+		// max-height: 100%;
+		// max-width: 100%;
+	}
+
+	h4.chart {
+		text-align: right;
+	}
+
+	.chart .label {
+		text-anchor: end;
+	}
+}
+
+pre {
+	max-width: 500px;
+	margin: 20px 0;
+	white-space: normal;
+	width: 100%;
+}

@@ -49,13 +49,6 @@ describe('ImportView', function() {
       this.view.progressBar();
       assert(this.view.$el.next().is(this.view.progress.el), 'Progress view not found');
     });
-
-    it('navigates to `/visualize` when progress is completed', function() {
-      sinon.stub(Backbone.history, 'navigate');
-      this.view.progressBar();
-      this.view.progress.trigger('complete');
-      assert(Backbone.history.navigate.called, 'Did not navigate to `/visualize`');
-    });
   });
 
   describe('#onDownloadFile', function() {

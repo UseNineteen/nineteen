@@ -217,11 +217,13 @@ small {
 }
 #title-bar {
   -webkit-box-align: end;
+  -webkit-align-items: flex-end;
       -ms-flex-align: end;
           align-items: flex-end;
   background-color: #47535e;
   color: rgba(255,255,255,0.5);
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   font-size: 24px;
@@ -264,22 +266,27 @@ small {
 }
 #title-bar .title-left {
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
 }
 #title-bar .title-right {
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
 }
 #tool-bar {
   -webkit-box-align: stretch;
+  -webkit-align-items: stretch;
       -ms-flex-align: stretch;
           align-items: stretch;
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   color: #47535e;
@@ -295,6 +302,7 @@ small {
   background: none;
   border: none;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   outline: none;
@@ -310,6 +318,7 @@ small {
   background-origin: center;
   cursor: pointer;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   position: relative;
@@ -341,6 +350,7 @@ small {
   background-repeat: no-repeat;
   border-left: 1px solid #a3a8ae;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   margin: 5px;
@@ -354,6 +364,7 @@ small {
 #tool-bar #search {
   font-size: 16px;
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
   line-height: 20px;
@@ -516,6 +527,7 @@ small {
   background-color: #47535e;
   color: #fff;
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   font-size: 16px;
@@ -525,6 +537,7 @@ small {
 }
 #progress .title {
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
 }
@@ -535,6 +548,7 @@ small {
   background: none;
   border: none;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   font-size: 16px;
@@ -548,17 +562,20 @@ small {
 #progress .status {
   color: #a3a8ae;
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   margin-bottom: 4px;
 }
 #progress .message {
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
 }
 #progress .pct {
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
 }
@@ -583,10 +600,12 @@ small {
 }
 #import {
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
       -ms-flex-direction: column;
           flex-direction: column;
   font-size: 16px;
@@ -598,6 +617,7 @@ small {
   color: initial;
   overflow: hidden;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   padding: 70px 40px;
@@ -625,6 +645,7 @@ small {
 }
 #import .forms {
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
 }
@@ -697,6 +718,7 @@ small {
 #import footer {
   color: #a3a8ae;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   margin-bottom: 80px;
@@ -716,6 +738,7 @@ small {
 #legend {
   color: #222;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   overflow-x: hidden;
@@ -737,6 +760,7 @@ body.alternate #legend {
 }
 #legend header {
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   padding: 10px 0;
@@ -760,6 +784,7 @@ body.alternate #legend {
 }
 #legend select {
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
   overflow: hidden;
@@ -775,6 +800,7 @@ body.alternate #legend {
 }
 #legend .legend-item {
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   line-height: 14px;
@@ -788,6 +814,7 @@ body.alternate #legend {
   box-sizing: border-box;
   border-radius: 2px;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   margin: 0 10px 0 0;
@@ -802,6 +829,7 @@ body.alternate #legend {
 }
 #legend .label {
   -webkit-box-flex: 0;
+  -webkit-flex: 0 1 auto;
       -ms-flex: 0 1 auto;
           flex: 0 1 auto;
   overflow: hidden;
@@ -811,6 +839,7 @@ body.alternate #legend {
 #legend .count {
   color: #a1a7ad;
   -webkit-box-flex: 0;
+  -webkit-flex: 0;
       -ms-flex: 0;
           flex: 0;
   margin: 0 0 0 5px;
@@ -846,10 +875,12 @@ body.alternate #legend {
 .popup {
   box-sizing: border-box;
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
       -ms-flex-direction: column;
           flex-direction: column;
   height: 450px;
@@ -907,6 +938,7 @@ body.alternate #legend {
   border: 1px solid rgba(0,0,0,0.1);
   color: #fff;
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
   font-size: 16px;
@@ -960,6 +992,7 @@ body.alternate #legend {
 }
 .popup section {
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
   background-color: #fff;
@@ -985,6 +1018,7 @@ body.alternate #legend {
 }
 #viewer {
   -webkit-box-flex: 1;
+  -webkit-flex: 1;
       -ms-flex: 1;
           flex: 1;
   margin: 0;
@@ -1014,10 +1048,12 @@ body.alternate #legend {
   bottom: 0;
   right: 0;
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
       -ms-flex-direction: column;
           flex-direction: column;
 }
@@ -1069,6 +1105,7 @@ body.alternate #legend {
 }
 #viewer .visualizer {
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
   overflow: auto;
@@ -1204,10 +1241,12 @@ main,
 #visualize {
   background-color: #fff;
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
       -ms-flex-direction: column;
           flex-direction: column;
   opacity: 0;
@@ -1217,19 +1256,23 @@ main,
 #visualize header[role="banner"],
 #visualize form {
   -webkit-box-flex: 0;
+  -webkit-flex: 0 0 auto;
       -ms-flex: 0 0 auto;
           flex: 0 0 auto;
 }
 #visualize figure {
   -webkit-box-flex: 1;
+  -webkit-flex: 1 1 auto;
       -ms-flex: 1 1 auto;
           flex: 1 1 auto;
 }
 #visualization {
   -webkit-box-align: stretch;
+  -webkit-align-items: stretch;
       -ms-flex-align: stretch;
           align-items: stretch;
   display: -webkit-box;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
   margin: 0;

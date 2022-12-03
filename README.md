@@ -5,14 +5,22 @@ It takes excel spreadsheets / .csv files and turns them into interactive visuali
 
 ### Basic Usage
 Nineteen translates excel worksheets and .csv files into interactive data visualizations. 
-The simplest use is to pick a file from your local computer with the "Choose a file button". 
+New users may find it helpful to try the example link at the bottom of Nineteen's main page first, before reading more here.
+
+The simplest use is to pick a file from your local files with the "Choose a file" button. 
+Each row of your data file becomes box in Nineteen's visualization. You can control how data is displayed using two settings: grouping and color-coding. 
+
+Use “group” to display your data so that it is organized by a single column heading, such as participant. Apply “color code” to show how 
+data in another column heading are distributed in your groups. For example: you can “group” your data by participant name (say, column 1), 
+then color code by any other column, such as age (column 2). 
+
 
 ### File Formatting
 A few quick guidelines:
 - For Excel workbooks (.xlsx files), Nineteen only references the *first* worksheet
 - For both .xlsx and .csv files: 
-  - Columns are your variables. The first row is assumed to be your variable names
-  - Rows/lines are treated as separate responses/observations -- they turn in to a unique "box" or unit of data in Nineteen's visualization
+  - Columns have names in the first row (e.g.: "Participant Name","Segment", "Date","Description","Response Text", etc)
+  - After the first row, each line is treated is transformed into a unique "box" or unit of data in Nineteen's visualization
   
 ### Example File:
 - Try out a demo from the main page of Nineteen: click "Try an example" on Nineteen's main page

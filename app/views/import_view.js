@@ -14,7 +14,8 @@ module.exports = Marionette.LayoutView.extend({
 
   templateHelpers: {
     github: require('../../package.json').repository.url,
-    sample: '/shopping_decision_diary.xlsx'
+    sample: '/shopping_decision_diary.xlsx',
+    helpURL: require('../../package.json').helpURL
   },
 
   ui: {

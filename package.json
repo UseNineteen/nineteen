@@ -9,14 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/incongruity/nineteen2022.git"
+    "url": "https://github.com/UseNineteen/nineteen.git"
   },
   "author": "Theodore Pollari",
+  "helpURL": "https://github.com/UseNineteen/nineteen/blob/main/README.md",
   "license": "AGPL",
   "bugs": {
-    "url": "https://github.com/incongruity/nineteen2022/issues"
+    "url": "https://github.com/UseNineteen/nineteen/issues"
   },
-  "homepage": "https://github.com/incongruity/nineteen2022",
+  "homepage": "https://github.com/UseNineteen/nineteen",
   "engines": {
     "node": "16"
   },

@@ -82,3 +82,13 @@ Your data is your data.
 Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen%20Help) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen%20Help), 
 the creators of Nineteen -- We'd also love to hear how you're using Nineteen, if it's useful for you!
 
+
+## A Note of Thanks 
+Nineteen started out as a graduate project of Ted Pollari's while he was at the [Illinois Tech Institute of Design](http://id.iit.edu), 
+under the guidance of Kim Erwin with additional support fom Matt Mayfield. 
+
+In 2015, The Knight Foundation generously provided a grant from the Knight Prototype Fund which paid for a complete rewrite of the app. 
+We are deeply indebted to them for their generous support.
+
+Lastly, Nineteen wouldn't be what it is without significant efforts from the following Institute of Design Students: 
+Courtney Garland, David LaPorte, Brewer Palmer, and Mark Supert.

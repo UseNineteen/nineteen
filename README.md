@@ -15,6 +15,13 @@ before reading more here.
   style="display: inline-block; margin: 60 ; border-style: dotted; border-color: lightgrey; ">
   
 
+**Data files - a few quick guidelines:**
+- For Excel workbooks (.xlsx files), Nineteen only references the *first* worksheet/tab
+- For both .xlsx and .csv files: 
+  - Columns have headers/names in the first row (e.g.: "Participant", "Segment", "Date", "Description", etc.)
+  - After the first row, each line is transformed into an individual data item, shown as a square in Nineteen's visualization
+  - See the "Usable Example section, below, to see an actual data file and the visualization it produces
+
 **You can control how data is displayed using two settings: grouping and color-coding:**
 - Use the “group by” option (1) to display your data so that it is organized by a single column heading, such as participant
 - Apply the “color by” option (2) to show how data in another column heading are distributed in your groups through color coding 
@@ -26,15 +33,11 @@ See the "Usable Example section, below, to see this example in an actual file & 
   title="Nineteen's visualization view"
   style="display: inline-block; margin: 60 ; border-style: dotted; border-color: lightgrey; ">
   
-### File Formatting - a few quick guidelines
-- For Excel workbooks (.xlsx files), Nineteen only references the *first* worksheet/tab
-- For both .xlsx and .csv files: 
-  - Columns have headers/names in the first row (e.g.: "Participant", "Segment", "Date", "Description", etc.)
-  - After the first row, each line is transformed into an individual data item, shown as a square in Nineteen's visualization
+
   
 ### A Usable Example 
-- **Try out a demo from the main page of Nineteen** Click "Try an example" link (A) on [Nineteen's main page](https://usenineteen.com) 
-- **See the example file** You can download a copy of the 
+- **Try out a demo from the main page of Nineteen:** Click "Try an example" link (A) on [Nineteen's main page](https://usenineteen.com) 
+- **See the example file:** You can download a copy of the 
 [data file](https://github.com/UseNineteen/nineteen/blob/main/app/downloads/shopping_decision_diary.xlsx?raw=true) used for the example
 
 ### Additional Features to Discover

@@ -43,11 +43,11 @@ Nineteen does not make any changes to your data, so feel free to explore the UI.
 - **Counting:** Nineteen can show counts by group with the "show counts" button (5)
 - **Splitting:** If you have color coded your visualization, you can split your groups visually using the "split" button (6)
 - **Detailed viewer:** mouse over any item in the visualization to see all the data from that row of your file (7):
-	- Clicking the data unit connected to the pop-up viewer will keep the viewer window visible until you close it
+	- Clicking the data item connected to the pop-up viewer will keep the viewer window visible until you close it
 	- You can have multiple viewers open at once and you can click & drag them to move & organize them
-	- The "Show in viewer" menu (12) allows you to configure what data is included in the detailed view
+	- The "Show in viewer" menu (12) allows you to configure what is included in the detailed view
 - **Text search:** The search bar (8) can be found directly above the visualization frame:
-	- Only items that match your search will remain in color. Non-matching items will be grayed out. Matching text will be highlighted in any pop-up viewer boxes
+	- Only items that match your search will remain in color. Non-matching items will be grayed out. Matching text will be highlighted in any pop-up viewers
 	- Search in one or more columns (aka 'fields') (9) - by default, search looks at all of them, but you can choose to limit it as well
 	- Mult-word search provides nuanced power:
 		- Searching for *dog food* will match any items that have the word 'dog' *or* the word 'food' - only one needs to be there to match
@@ -77,5 +77,5 @@ Your data is your data.
 
 ## Need More Help?
 Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen%20Help) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen%20Help), 
-the creators of Nineteen -- We'd also love to hear how you're using Nineteen, if it's useful!
+the creators of Nineteen -- We'd also love to hear how you're using Nineteen, if it's useful for you!
 

@@ -20,13 +20,12 @@ before reading more here.
 - For both .xlsx and .csv files: 
   - Columns have headers/names in the first row (e.g.: "Participant", "Segment", "Date", "Description", etc.)
   - After the first row, each line is transformed into an individual data item, shown as a square in Nineteen's visualization
-  - See the "Usable Example section, below, to see an actual data file and the visualization it produces
+  - See the section "A Usable Example", to see an actual data file and the visualization it produces
 
-**You can control how data is displayed using two settings: grouping and color-coding:**
+**You can control how data is displayed using two primary controls - grouping and color-coding:**
 - Use the “group by” option (1) to display your data so that it is organized by a single column heading, such as participant
 - Apply the “color by” option (2) to show how data in another column heading are distributed in your groups through color coding 
-- For example: you can “group” your data by participant (say, column 1), then color code by any other column, such as segment (column 2). 
-See the "Usable Example section, below, to see this example in an actual file & visualization.
+- For example: you can “group” your data by participant (say, column 1), then color code by any other column, such as segment (column 2).
 
 <img src="app/assets/images/NineteenUI-01.png"
   alt="Visualization view"
@@ -52,8 +51,9 @@ Nineteen does not make any changes to your data, so feel free to explore the UI.
 - **Text search:** The search bar (8) can be found directly above the visualization frame:
 	- Only items that match your search will remain in color. Non-matching items will be grayed out. Matching text will be highlighted in any pop-up viewers
 	- Search in one or more columns (aka 'fields') (9) - by default, search looks at all of them, but you can choose to limit it as well
-	- Mult-word search provides nuanced power:
-		- Searching for *dog food* will match any items that have the word 'dog' *or* the word 'food' - only one needs to be there to match
+	- Multi-word search provides nuanced power:
+		- Searching for *dog food* will match any items that have the text 'dog' *or* the text 'food' - only one needs to be there to match
+		- *Hint:* to find *only* the word 'food' and not match longer words, like 'foodie', search for " food "(with qoutes and spaces)
 		- Searching for *"dog food"* (with quotes) will match only items with the phrase "dog food"
 		- Searching for *dog AND food* ('AND' must be capitalized) will match only items that have both "food" and "dog" somewhere in them, though they may not be found together
 	- High frequency words are viewable within the search interace through a drop-down (10) in the search bar
@@ -78,13 +78,13 @@ In both cases, data is not stored on the server longer than it takes to process 
 Your data is your data.
 
 
-## Need More Help?
-Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen%20Help) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen%20Help), 
+## Have More Questions?
+Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen), 
 the creators of Nineteen -- We'd also love to hear how you're using Nineteen, if it's useful for you!
 
 
 ## A Note of Thanks 
-Nineteen started out as a graduate project of Ted Pollari's while he was at the [Illinois Tech Institute of Design](http://id.iit.edu), 
+Nineteen started out as a graduate project of Ted Pollari's while he was at the [Institute of Design at Illinois Tech](http://id.iit.edu), 
 under the guidance of Kim Erwin with additional support fom Matt Mayfield. 
 
 In 2015, The Knight Foundation generously provided a grant from the Knight Prototype Fund which paid for a complete rewrite of the app. 

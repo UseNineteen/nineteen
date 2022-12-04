@@ -2,18 +2,30 @@
 ### Nineteen is a qualitative data visualization app that turns .xlsx & .csv files into interactive visual tools 
 
 ### Basic Usage
-New users may find it helpful use the "Try an example" link at the bottom of [Nineteen's main page](https://usenineteen.com) first, 
+New users may find it helpful use the "Try an example" link (A) at the bottom of [Nineteen's main page](https://usenineteen.com) first, 
 before reading more here.
 
-**Loading data:** The simplest use is to pick a file from your local files with the "Choose a file" button on 
+**Loading data:** The simplest use is to pick a file from your local files with the "Choose a file" (B) button on 
 [Nineteen's main page](https://usenineteen.com). Each row of your data file becomes a data item, shown as a square in Nineteen's visualization.
 
+
+<img src="app/assets/images/NineteenUI-02.png"
+  alt="Main page"
+  title="Nineteen's main page"
+  style="display: inline-block; margin: 60 ; border-style: dotted; border-color: lightgrey; ">
+  
+
 **You can control how data is displayed using two settings: grouping and color-coding:**
-- Use the “group by” option to display your data so that it is organized by a single column heading, such as participant
-- Apply the “color by” option to show how data in another column heading are distributed in your groups through color coding 
+- Use the “group by” option (1) to display your data so that it is organized by a single column heading, such as participant
+- Apply the “color by” option (2) to show how data in another column heading are distributed in your groups through color coding 
 - For example: you can “group” your data by participant (say, column 1), then color code by any other column, such as segment (column 2). 
 See the "Usable Example section, below, to see this example in an actual file & visualization.
 
+<img src="app/assets/images/NineteenUI-01.png"
+  alt="Visualization view"
+  title="Nineteen's visualization view"
+  style="display: inline-block; margin: 60 ; border-style: dotted; border-color: lightgrey; ">
+  
 ### File Formatting - a few quick guidelines
 - For Excel workbooks (.xlsx files), Nineteen only references the *first* worksheet/tab
 - For both .xlsx and .csv files: 
@@ -21,26 +33,29 @@ See the "Usable Example section, below, to see this example in an actual file & 
   - After the first row, each line is transformed into an individual data item, shown as a square in Nineteen's visualization
   
 ### A Usable Example 
-- **Try out a demo from the main page of Nineteen** Click "Try an example" on [Nineteen's main page](https://usenineteen.com) 
+- **Try out a demo from the main page of Nineteen** Click "Try an example" link (A) on [Nineteen's main page](https://usenineteen.com) 
 - **See the example file** You can download a copy of the 
 [data file](https://github.com/UseNineteen/nineteen/blob/main/app/downloads/shopping_decision_diary.xlsx?raw=true) used for the example
 
 ### Additional Features to Discover
 Nineteen does not make any changes to your data, so feel free to explore the UI. Additional features include:
-- **Sorting** You can sort the visualization by alphanumeric order or by the number of items in each group
-- **Counting** Nineteen can show counts by group with the "show counts" button
-- **Splitting** If you have color coded your visualization, you can split your groups visually using the "split" button
-- **Detailed viewer** mouse over any item in the visualization to see all the data from that row of your file:
+- **Sorting:** You can sort the visualization by alphanumeric order (3) or by the number of items in each group (4)
+- **Counting:** Nineteen can show counts by group with the "show counts" button (5)
+- **Splitting:** If you have color coded your visualization, you can split your groups visually using the "split" button (6)
+- **Detailed viewer:** mouse over any item in the visualization to see all the data from that row of your file (7):
 	- Clicking the data unit connected to the pop-up viewer will keep the viewer window visible until you close it
 	- You can have multiple viewers open at once and you can click & drag them to move & organize them
-- **Text search** The search bar can be found directly above the visualization frame:
+	- The "Show in viewer" menu (12) allows you to configure what data is included in the detailed view
+- **Text search:** The search bar (8) can be found directly above the visualization frame:
 	- Only items that match your search will remain in color. Non-matching items will be grayed out. Matching text will be highlighted in any pop-up viewer boxes
-	- Search in one or more columns (aka 'fields') - by default, search looks at all of them, but you can choose to limit it as well
+	- Search in one or more columns (aka 'fields') (9) - by default, search looks at all of them, but you can choose to limit it as well
 	- Mult-word search provides nuanced power:
 		- Searching for *dog food* will match any items that have the word 'dog' *or* the word 'food' - only one needs to be there to match
 		- Searching for *"dog food"* (with quotes) will match only items with the phrase "dog food"
 		- Searching for *dog AND food* ('AND' must be capitalized) will match only items that have both "food" and "dog" somewhere in them, though they may not be found together
-- **Save** You can save an image or a stand-alone version of the visualization tool. At present, the image saving is broken - it's a known issue which we are working to resolve
+	- High frequency words are viewable within the search interace through a drop-down (10) in the search bar
+- **Save:** You can save an image or a stand-alone version of the visualization tool (11). 
+At present, the image saving is broken - it's a known issue which we are working to resolve.
 
 
 ### A Note About Data Privacy

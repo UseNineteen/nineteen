@@ -85,7 +85,7 @@ the creators of Nineteen -- We'd also love to hear how you're using Nineteen, if
 
 ## A Note of Thanks 
 Nineteen started out as a graduate project of Ted Pollari's while he was at the [Institute of Design at Illinois Tech](http://id.iit.edu), 
-under the guidance of Kim Erwin with additional support fom Matt Mayfield. 
+with the guidance & collaboration of Kim Erwin and additional support fom Matt Mayfield. 
 
 In 2015, The Knight Foundation generously provided a grant from the Knight Prototype Fund which paid for a complete rewrite of the app. 
 We are deeply indebted to them for their generous support.

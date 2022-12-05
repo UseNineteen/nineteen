@@ -1157,7 +1157,7 @@ body.alternate #legend {
   margin: 0.461538461538462em 0;
   padding: 0 0.769230769230769em;
   overflow: hidden;
-  max-width: 10em;
+  max-width: 25em;
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;

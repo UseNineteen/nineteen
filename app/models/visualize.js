@@ -123,7 +123,7 @@ module.exports = Backbone.Model.extend({
 
   calculateScaleY: function(collection, options) {
     let vals = collection.pluck('value');
-    let scale = d3.scale.ordinal().domain(vals).rangeRoundPoints([0, vals.length]);
+    let scale = d3.scale.ordinal().domain(vals).rangeRoundPoints([1, vals.length]);
     this.set('scaleY', scale);
     return scale;
   },

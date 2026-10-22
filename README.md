@@ -1,94 +1,117 @@
 # Nineteen
-### Nineteen is a qualitative data visualization app that turns .xlsx & .csv files into interactive visual tools 
+### Nineteen is a qualitative data visualization app that turns .xlsx & .csv files into interactive visual tools
+
+Nineteen runs entirely in your web browser. Your data is never uploaded anywhere.
 
 ### Basic Usage
-New users may find it helpful use the "Try an example" link (A) at the bottom of [Nineteen's main page](https://usenineteen.com) first, 
-before reading more here.
+New users may find it helpful to use the "Try an example" link (A) at the bottom of [Nineteen's main page](https://usenineteen.com) before reading more here.
 
-**Loading data:** The simplest use is to pick a file from your local files with the "Choose a file" (B) button on 
+**Loading data:** The simplest way to start is to pick a file from your computer with the "Choose a file" (B) button on
 [Nineteen's main page](https://usenineteen.com). Each row of your data file becomes a data item, shown as a square in Nineteen's visualization.
 
+<img src="docs/NineteenUI-02.png" alt="Nineteen's main page" title="Nineteen's main page">
 
-<img src="app/assets/images/NineteenUI-02.png"
-  alt="Main page"
-  title="Nineteen's main page"
-  style="display: inline-block; margin: 60 ; border-style: dotted; border-color: lightgrey; ">
-  
+**Data files: a few quick guidelines**
+- For Excel workbooks (.xlsx and .xls files), Nineteen only reads the *first* worksheet/tab
+- Comma- or tab-separated files (.csv, .tsv) work too
+- Put column headers/names in the first row (e.g. "Participant", "Segment", "Date", "Description")
+- After the first row, each line becomes an individual data item, shown as a square in Nineteen's visualization
+- See "A Usable Example" below for an actual data file and the visualization it produces
 
-**Data files - a few quick guidelines:**
-- For Excel workbooks (.xlsx files), Nineteen only references the *first* worksheet/tab
-- For both .xlsx and .csv files: 
-  - Columns have headers/names in the first row (e.g.: "Participant", "Segment", "Date", "Description", etc.)
-  - After the first row, each line is transformed into an individual data item, shown as a square in Nineteen's visualization
-  - See the section "A Usable Example", to see an actual data file and the visualization it produces
+**Two main controls decide how data is displayed: grouping and color-coding**
+- Use the "group by" option (1) to organize your data by a single column, such as participant
+- Use the "color by" option (2) to color-code each item by another column, showing how its values are spread across your groups
+- For example, you can group your data by participant (column 1), then color-code it by segment (column 2)
 
-**You can control how data is displayed using two primary controls - grouping and color-coding:**
-- Use the “group by” option (1) to display your data so that it is organized by a single column heading, such as participant
-- Apply the “color by” option (2) to show how data in another column heading are distributed in your groups through color coding 
-- For example: you can “group” your data by participant (say, column 1), then color code by any other column, such as segment (column 2).
+<img src="docs/NineteenUI-01.png" alt="Visualization view" title="Nineteen's visualization view">
 
-<img src="app/assets/images/NineteenUI-01.png"
-  alt="Visualization view"
-  title="Nineteen's visualization view"
-  style="display: inline-block; margin: 60 ; border-style: dotted; border-color: lightgrey; ">
-  
-
-  
-### A Usable Example 
-- **Try out a demo from the main page of Nineteen:** Click "Try an example" link (A) on [Nineteen's main page](https://usenineteen.com) 
-- **See the example file:** You can download a copy of the 
-[data file](https://github.com/UseNineteen/nineteen/blob/main/app/downloads/shopping_decision_diary.xlsx?raw=true) used for the example
+### A Usable Example
+- **Try a demo from the main page of Nineteen:** Click the "Try an example" link (A) on [Nineteen's main page](https://usenineteen.com)
+- **See the example file:** You can download a copy of the [data file](public/shopping_decision_diary.xlsx?raw=true) used for the example
 
 ### Additional Features to Discover
-Nineteen does not make any changes to your data, so feel free to explore the UI. Additional features include:
-- **Sorting:** You can sort the visualization by alphanumeric order (3) or by the number of items in each group (4)
-- **Counting:** Nineteen can show counts by group with the "show counts" button (5)
-- **Splitting:** If you have color coded your visualization, you can split your groups visually using the "split" button (6)
-- **Detailed viewer:** mouse over any item in the visualization to see all the data from that row of your file (7):
-	- Clicking the data item connected to the pop-up viewer will keep the viewer window visible until you close it
-	- You can have multiple viewers open at once and you can click & drag them to move & organize them
-	- The "Show in viewer" menu (12) allows you to configure what is included in the detailed view
-- **Text search:** The search bar (8) can be found directly above the visualization frame:
-	- Only items that match your search will remain in color. Non-matching items will be grayed out. Matching text will be highlighted in any pop-up viewers
-	- Search in one or more columns (aka 'fields') (9) - by default, search looks at all of them, but you can choose to limit it as well
-	- Multi-word search provides nuanced power:
-		- Searching for *dog food* will match any items that have the text 'dog' *or* the text 'food' - only one needs to be there to match
-		- *Hint:* to find *only* the word 'food' and not match longer words, like 'foodie', search for " food "(with qoutes and spaces)
-		- Searching for *"dog food"* (with quotes) will match only items with the phrase "dog food"
-		- Searching for *dog AND food* ('AND' must be capitalized) will match only items that have both "food" and "dog" somewhere in them, though they may not be found together
-	- High frequency words are viewable within the search interace through a drop-down (10) in the search bar
-- **Save:** You can save an image or a stand-alone version of the visualization tool (11). 
-At present, the image saving is broken - it's a known issue which we are working to resolve.
-
+Nineteen never changes your data, so feel free to explore the interface. Additional features include:
+- **Sorting:** Sort the rows alphabetically (3) or by the number of items in each group (4). Click a sort button again to reverse it
+- **Counting:** The "Show counts" button (5) shows how many items are in each group
+- **Splitting:** Once you've chosen a "color by" column, the "Split" button (6) separates each row into color bands
+- **Detailed viewer:** Hover over any item in the visualization to see all of the data from that row of your file (7):
+	- Click the item to pin its viewer open (click it again to un-pin it)
+	- You can have several viewers open at once. Drag them by their title bar to arrange them, and drag the corner to resize them
+	- The "Show in viewer" menu (12) controls which columns the viewer shows
+	- Links in your data become clickable, and links to images are shown as images
+- **Text search:** The search bar (8) is directly above the visualization:
+	- Items that match your search stay in color. Everything else turns gray. Matching text is highlighted in the viewers
+	- Search in one or more columns (also called "fields") (9). By default search looks in all of them, but you can limit it
+	- Multi-word searches:
+		- Searching for *dog food* finds items containing 'dog' *or* 'food' (either word is enough)
+		- *Hint:* to find *only* the word 'food' and not longer words like 'foodie', search for " food " (with quotes and spaces)
+		- Searching for *"dog food"* (with quotes) finds only items containing the phrase "dog food"
+		- Searching for *dog AND food* ('AND' must be capitalized) finds only items containing both "dog" and "food", though not necessarily together
+		- An asterisk matches any single character: *re\*d* matches both "read" and "reed"
+	- The drop-down (10) in the search bar lists the most frequent words. Click one to search for it, or shift-click to add it with AND
+- **Zoom:** Use the buttons in the lower right to zoom in and out, return to actual size, or fit the whole visualization on screen
+- **Save (11):** Save a PNG image of the full visualization, or a standalone HTML file with your data and current view built in.
+  The HTML file opens in any browser, works offline, and stays fully interactive
 
 ### A Note About Data Privacy
-All data processing happens in the browser. Users' data never makes it back to the server, with two possible exceptions - described below 
-this means your research is *your research*. You can use it for confidential data without worrying about uploading your data to some random server, as 
-long as you avoid two features:
+All data processing happens in your browser. Your data never reaches a server, so your research stays *your research*.
+You can use Nineteen with confidential data.
 
-1. If you want to save copies of the visualization as a static image or as a stand-alone HTML file that will open with a saved view of the data & 
-allow full interaction with it, you can – but this will require a brief round-trip of your data so things can be packaged up. 
-No data is ever saved or stored.
-2. Importing data hosted elsewhere on the internet -  If you choose to source a file hosted elsewhere, Nineteen will attempt to make a local XHR request, 
-but only if your browser supports both the File API and XHR Response Type Blob. Otherwise, it will use the server will to download 
-the file and convert it. It may also end up using the server process if the remotely hosted data's server does not set the 
-Access-Control-Allow-Origin header. 
+- **No cookies, no tracking.** Nineteen sets no cookies and loads no analytics or third-party scripts
+- **Session storage only.** While a file is open, a copy is kept in your browser's session storage so the view survives a reload.
+  Your browser deletes it when you close the tab
+- **Hosted files** are downloaded directly by your browser from the site you link to. Some sites (often Google Drive) don't allow this,
+  and Nineteen will tell you so. In that case, download the file and use "Choose a file" instead
+- **Saved files** are created in your browser and saved straight to your computer. A saved HTML file contains your data, so share it carefully
 
-In both cases, data is not stored on the server longer than it takes to process your request and send the data back to your browser. 
-Your data is your data.
-
+The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app.
 
 ## Have More Questions?
-Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen), 
-the creators of Nineteen -- We'd also love to hear how you're using Nineteen, if it's useful for you!
+Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen),
+the creators of Nineteen. We'd also love to hear how you're using Nineteen, if you find it useful!
 
+## Development
 
-## A Note of Thanks 
-Nineteen started out as a graduate project of Ted Pollari's while he was at the [Institute of Design at Illinois Tech](http://id.iit.edu), 
-with the guidance & collaboration of Kim Erwin and additional support fom Matt Mayfield. 
+Nineteen 2 is a static site built with [Svelte 5](https://svelte.dev), TypeScript and [Vite](https://vite.dev).
+Spreadsheets are read with [SheetJS](https://sheetjs.com) and CSV files with [Papa Parse](https://www.papaparse.com).
+It has no server component.
 
-In 2015, The Knight Foundation generously provided a grant from the Knight Prototype Fund which paid for a complete rewrite of the app. 
-We are deeply indebted to them for their generous support.
+```bash
+npm install
+npm run dev       # local development server
+npm test          # unit tests (parsing, search, layout, colors, links, persistence)
+npm run check     # type checking
+npm run build     # production build → dist/
+```
 
-Lastly, Nineteen wouldn't be what it is without significant efforts from the following Institute of Design Students: 
+`npm run build` produces `dist/index.html`, the entire app in a single self-contained file (code, styles, fonts and icons inlined),
+plus `dist/shopping_decision_diary.xlsx` for "Try an example". Any static host works (GitHub Pages, Cloudflare Pages, Netlify, S3, …).
+The single-file build also powers "Download HTML file": a saved copy is the same page with the data embedded.
+
+SheetJS is installed from the official SheetJS CDN, because the `xlsx` package on npm is no longer updated and has known vulnerabilities.
+
+### Project layout
+
+| Path | Contents |
+| --- | --- |
+| `src/lib/` | Framework-free logic: file parsing, value/date interpretation, search, layout, palette, persistence, PNG and HTML export |
+| `src/components/` | Svelte UI: import page, visualization, legend, toolbar, dropdowns, viewer popups |
+| `src/styles/app.css` | Styles ported from the original Stylus sources |
+| `test/` | Vitest suite, including the search cases from the original test suite |
+
+### What changed from Nineteen 1 (2015)
+- No Node/Express server: uploads, hosted-file downloads, the example and "Save" all happen in the browser
+- Replaced Backbone/Marionette, jQuery, d3 v3, Browserify, Babel 6, html2canvas and Modernizr with Svelte 5 + Vite
+- Up-to-date, patched spreadsheet parser; locked-down Content Security Policy; no cookies
+- PNG export works again (drawn natively instead of screen-captured)
+- Standalone HTML export is a single file instead of a zip, and it restores the full view (including search)
+
+## A Note of Thanks
+Nineteen started as Ted Pollari's graduate project at the [Institute of Design at Illinois Tech](http://id.iit.edu),
+with the guidance and collaboration of Kim Erwin and additional support from Matt Mayfield.
+
+In 2015, the Knight Foundation generously provided a grant from the Knight Prototype Fund, which paid for a complete rewrite of the app.
+We are deeply indebted to them for their support.
+
+Lastly, Nineteen wouldn't be what it is without significant work from these Institute of Design students:
 Courtney Garland, David LaPorte, Brewer Palmer, and Mark Supert.

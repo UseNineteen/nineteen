@@ -1,0 +1,16 @@
+#!/bin/sh
+# Rebuilds dist/ before every commit so the committed build always matches
+# the source. Enabled by `npm install` (the "prepare" script sets
+# core.hooksPath to .githooks).
+
+# The build reads the working tree, so unstaged source changes would end up
+# in dist/ without being committed themselves.
+if ! git diff --quiet -- . ':(exclude)dist'; then
+  echo "pre-commit: note: unstaged changes are included in the dist/ build." >&2
+fi
+
+npm run build --silent >/dev/null || {
+  echo "pre-commit: build failed, commit stopped. Run 'npm run build' to see why." >&2
+  exit 1
+}
+git add dist

@@ -4,12 +4,14 @@
 Nineteen runs entirely in your web browser. Your data is never uploaded anywhere.
 
 ### Basic Usage
-New users may find it helpful to use the "Try an example" link (A) at the bottom of [Nineteen's main page](https://usenineteen.com) before reading more here.
+New users may find it helpful to use the "Try an example" link (A) at the bottom of [Nineteen's main page](https://usenineteen.com) first,
+before reading more here.
 
 **Loading data:** The simplest way to start is to pick a file from your computer with the "Choose a file" (B) button on
-[Nineteen's main page](https://usenineteen.com). Each row of your data file becomes a data item, shown as a square in Nineteen's visualization.
+[Nineteen's main page](https://usenineteen.com). You can also paste a link to a file hosted on Google Drive, Dropbox or elsewhere (C).
+Each row of your data file becomes a data item, shown as a square in Nineteen's visualization.
 
-<img src="docs/NineteenUI-02.png" alt="Nineteen's main page" title="Nineteen's main page">
+<img src="docs/screenshots/main-page.png" alt="Nineteen's main page" title="Nineteen's main page">
 
 **Data files: a few quick guidelines**
 - For Excel workbooks (.xlsx and .xls files), Nineteen only reads the *first* worksheet/tab
@@ -18,12 +20,12 @@ New users may find it helpful to use the "Try an example" link (A) at the bottom
 - After the first row, each line becomes an individual data item, shown as a square in Nineteen's visualization
 - See "A Usable Example" below for an actual data file and the visualization it produces
 
-**Two main controls decide how data is displayed: grouping and color-coding**
+**You can control how data is displayed using two primary controls: grouping and color-coding**
 - Use the "group by" option (1) to organize your data by a single column, such as participant
-- Use the "color by" option (2) to color-code each item by another column, showing how its values are spread across your groups
+- Use the "color by" option (2) to show, through color-coding, how the values in another column are spread across your groups
 - For example, you can group your data by participant (column 1), then color-code it by segment (column 2)
 
-<img src="docs/NineteenUI-01.png" alt="Visualization view" title="Nineteen's visualization view">
+<img src="docs/screenshots/visualization.png" alt="Visualization view" title="Nineteen's visualization view">
 
 ### A Usable Example
 - **Try a demo from the main page of Nineteen:** Click the "Try an example" link (A) on [Nineteen's main page](https://usenineteen.com)
@@ -33,11 +35,8 @@ New users may find it helpful to use the "Try an example" link (A) at the bottom
 Nineteen never changes your data, so feel free to explore the interface. Additional features include:
 - **Sorting:** Sort the rows alphabetically (3) or by the number of items in each group (4). Click a sort button again to reverse it
 - **Counting:** The "Show counts" button (5) shows how many items are in each group
-- **Analyze with AI:** the toolbar button next to the counts opens the AI panel (see "Analyze with AI" below)
 - **Splitting:** Once you've chosen a "color by" column, the "Split" button (6) separates each row into color bands
-- **Reordering the legend:** drag legend entries up or down (or focus one and press Alt + ↑/↓) to put values in a meaningful
-  order, such as *Not at all satisfied → Extremely satisfied*. Colors are reassigned in the new order, split bands follow it, and
-  rows grouped by the same column follow it when sorted A–Z. "Reset order" puts it back
+  (see "Split View and the Legend" below)
 - **Detailed viewer:** Hover over any item in the visualization to see all of the data from that row of your file (7):
 	- Click the item to pin its viewer open (click it again to un-pin it)
 	- You can have several viewers open at once. Drag them by their title bar to arrange them, and drag the corner to resize them
@@ -53,46 +52,81 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 		- Searching for *dog AND food* ('AND' must be capitalized) finds only items containing both "dog" and "food", though not necessarily together
 		- An asterisk matches any single character: *re\*d* matches both "read" and "reed"
 	- The drop-down (10) in the search bar lists the most frequent words. Click one to search for it, or shift-click to add it with AND
-- **Zoom:** Use the buttons in the lower right to zoom in and out, return to actual size, or fit the whole visualization on screen.
-  *Best fit* stays on, so the view keeps fitting as you resize the window or regroup, until you zoom by hand or click it again.
-  *Stretch to fit* does the same but lets boxes become rectangles, to use the window's full width and height
-- **Tags:** pin a viewer (click an item) to tag that row. Type a tag and press Enter or a comma; pick existing tags from the
-  suggestions; click × to remove one. Tags are stored in a "Tags" column (created the first time you tag a row), sorted
-  alphabetically, so they are saved with the spreadsheet/CSV/HTML downloads
-	- Grouping or coloring by Tags groups rows by their *combination* of tags ("gift + Price"), ignoring order and capitalization.
-	  Every row still gets exactly one box
-	- *Tag options…* (in the Group by / Color by menus) lets you leave tags out of the combinations, or show only one tag.
-	  The data keeps the tags; only the grouping changes
-	- Click a tag in a viewer to find every row with that tag (in tag columns, search matches whole tags: "price" doesn't find "pricey")
-	- Any column can be treated as tags with "holds comma-separated tags" in the Group by / Color by menus
-- **Split view labels:** with Split on, a row above the bands shows each value (and its total, with counts on). When a value
-  doesn't fit, the labels wrap onto up to 3 lines. If only a few columns are too narrow even for that, just those columns get
-  a little wider; if many are, all the labels turn 90° together, trimmed after about 20 characters (hover for the full value)
-- **Legend:** the name above the legend is the column the colors stand for; click it to change it
-- **Settings:** the Settings button (top right) controls box size:
-	- *Stretch to fit* is the same switch as the Stretch to fit button (turning on one turns on the other). With *Remember settings*
-	  on, saving the dialog with it on makes newly opened files start stretched
-	- *Smallest / largest* width and height (default 4–40 px each) limit box sizes when fitting and zooming. Stretch to fit
-	  uses the width and height limits separately; square boxes stay within both
-	- Tick *Remember settings on this device* to keep them in this browser
-	- Changes preview as you make them. *Save* keeps them; *Cancel*, Esc or clicking outside the dialog discards them
-- **Save (11):** Save a PNG image of the full visualization, or a standalone HTML file with your data and current view built in.
-  The HTML file opens in any browser, works offline, and stays fully interactive. You can also download the data itself as a
-  spreadsheet (.xlsx) or CSV, including any columns you added in Nineteen (such as AI auto-coding)
+- **Zoom:** Use the buttons in the lower right (15) to return to actual size, fit the visualization to the window, stretch it to fit
+  (see "Fitting the View" below), or zoom in and out
+- **Save (11):** Save a standalone HTML file or a PNG image of the visualization, or download the data itself
+  (see "Saving and Downloading" below)
+- **Settings (13)** and **Analyze with AI (14)** are described below
+
+### Tagging Your Data
+Pin a viewer (click an item) to tag that row (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
+or click × to remove one. Tags are kept in a "Tags" column, created the first time you tag a row and sorted alphabetically, so they
+are saved with your spreadsheet, CSV and HTML downloads.
+
+<img src="docs/screenshots/tags.png" alt="Tagging rows and coloring by tags" title="Tags in a pinned viewer, with the visualization color-coded by tags">
+
+- **Grouping and coloring by tags:** Group or color by Tags (B) and rows are sorted by their *combination* of tags ("gift + price"),
+  ignoring order and capitalization. Every row still gets exactly one box
+- **Tag options…** (in the Group by and Color by menus) lets you leave some tags out of the combinations, or show only one tag.
+  Your data keeps every tag; only the grouping changes
+- **Finding tags:** Click a tag in a viewer to find every row with that tag. In tag columns, search matches whole tags, so
+  "price" doesn't find "pricey"
+- **Your own tag columns:** Any column can be treated as tags by choosing "holds comma-separated tags" in the Group by or Color by menus
+
+### Split View and the Legend
+With Split on, each value of the "color by" column gets its own band, and a label row above the bands (A) shows each value and,
+with counts on, its total. Long labels wrap onto up to 3 lines. If only a few bands are too narrow even for that, just those bands
+get a little wider. If many are, all the labels turn 90° together.
+
+<img src="docs/screenshots/split-view.png" alt="Split view with labeled bands" title="Split view, with the satisfaction scale in a meaningful order">
+
+- **Reordering the legend:** Drag legend entries up or down by their grip (B), or focus one and press Alt + ↑/↓, to put values in a
+  meaningful order, such as *Not at all satisfied → Extremely satisfied*. Colors are reassigned in the new order, split bands
+  follow it, and rows grouped by the same column follow it when sorted A–Z. "Reset order" (C) puts it back
+- **Legend title:** The name above the legend (16, in the main screenshot) is the column the colors stand for. Click it to change it
+
+### Fitting the View: Square or Stretched Boxes
+Boxes don't have to be square. **Stretch to fit** (in the zoom controls, 15) reshapes them into wider or taller rectangles so the
+whole visualization fills the window, and they resize automatically as you resize the window or regroup your data.
+
+<img src="docs/screenshots/stretch-to-fit.png" alt="Stretch to fit" title="Stretch to fit: boxes reshape to fill the window">
+
+**Best fit** does the same with square boxes. Both stay on as you resize or regroup, until you zoom in or out yourself
+or click the button again.
+
+**Settings (13)** controls box sizes:
+
+<img src="docs/screenshots/settings.png" alt="Settings dialog" title="Settings">
+
+- *Stretch to fit* is the same switch as the Stretch to fit button: turning on one turns on the other. With *Remember settings*
+  on, files you open later start stretched too
+- *Smallest* and *largest* width and height (4–40 px by default) limit box sizes when fitting and zooming. Stretch to fit uses the
+  width and height limits separately; square boxes stay within both
+- Tick *Remember settings on this device* to keep your settings in this browser
+- Changes preview as you make them. *Save* keeps them; *Cancel*, Esc or clicking outside the dialog discards them
+
+### Saving and Downloading
+The Save menu (11) offers:
+- **Download HTML file:** a single standalone file with your data and current view built in. It opens in any browser, works offline,
+  and stays fully interactive
+- **Download PNG image:** a picture of the full visualization, including the parts scrolled out of view
+- **Download spreadsheet (.xlsx)** and **Download CSV:** your data, including any columns added in Nineteen, such as tags or
+  AI auto-coding
 
 ### Analyze with AI (optional)
-The **Analyze with AI** button in the toolbar opens a panel with three tools. At the top, **Data to share** sets exactly
-what any of them can see: all rows or only your current search matches, and which columns. Untick names or other
-personal details there.
+The **Analyze with AI** button (14) opens a panel with three tools. At the top, **Data to share** sets exactly what any of them
+can see: all rows or only your current search matches, and which columns. Untick names or other personal details there.
 
-- **Copy prompt:** pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
+<img src="docs/screenshots/ai-panel.png" alt="Analyze with AI panel" title="The Analyze with AI panel">
+
+- **Copy prompt:** Pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
   an executive summary, or your own question). Then copy the prompt, with your data, to paste into Claude, ChatGPT or any
   assistant you already use, or download it as a file. **Nineteen sends nothing.**
-- **Ask:** chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite rows like
-  [Row 12]. Click a citation to highlight those items in the visualization and open their viewer.
-- **Auto-code:** have the AI assign every row to one of your categories, or let it suggest categories first. The result
+- **Ask:** Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite rows like
+  [Row 12]. Click a citation to highlight those items in the visualization and open their viewer
+- **Auto-code:** Have the AI assign every row to one of your categories, or let it suggest categories first. The result
   is added as a new column (with an optional "reason" column), so you can group, color, split and search by it like any other.
-  AI coding can be wrong, so spot-check it in the viewer.
+  AI coding can be wrong, so spot-check it in the viewer
 
 Ask and Auto-code send the shared data directly from your browser to the provider you chose, with your key. Nothing goes
 through a Nineteen server. The first time in each session, Nineteen asks you to confirm before sending anything. Your key
@@ -138,6 +172,9 @@ npm run build     # production build → dist/
 plus `dist/shopping_decision_diary.xlsx` for "Try an example". Any static host works (GitHub Pages, Cloudflare Pages, Netlify, S3, …).
 The single-file build also powers "Download HTML file": a saved copy is the same page with the data embedded.
 
+`dist/` is committed, so the repository always contains a working copy of the app. A pre-commit hook (`.githooks/pre-commit`)
+rebuilds it and stages it before every commit; `npm install` turns the hook on. The README screenshots are in `docs/screenshots/`.
+
 SheetJS is installed from the official SheetJS CDN, because the `xlsx` package on npm is no longer updated and has known vulnerabilities.
 
 ### Project layout
@@ -149,6 +186,8 @@ SheetJS is installed from the official SheetJS CDN, because the `xlsx` package o
 | `src/components/` | Svelte UI: import page, visualization, legend, toolbar, dropdowns, viewer popups |
 | `src/styles/app.css` | Styles ported from the original Stylus sources |
 | `test/` | Vitest suite, including the search cases from the original test suite |
+| `dist/` | The built app, committed (see above) |
+| `docs/` | README screenshots and a summary of what's new |
 
 ### What changed in the browser-only rewrite
 - No Node/Express server: uploads, hosted-file downloads, the example and "Save" all happen in the browser

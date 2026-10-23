@@ -11,7 +11,7 @@ export const ZOOM = { step: 0.1 } as const;
 
 /** Zoom range allowed by the box size limits in Settings. */
 export function zoomRange(): { min: number; max: number } {
-  return zoomBounds(appSettings.minBox, appSettings.maxBox);
+  return zoomBounds(appSettings);
 }
 
 const FALLBACK: Swatch = { fill: '#cccccc', stroke: '#cccccc' };
@@ -57,6 +57,8 @@ export class Viz {
   tagColumns = $state<string[]>([]);
   /** Per tag column: tags (lower-case) left out of grouping and coloring */
   tagIgnored = $state<Record<string, string[]>>({});
+  /** Per column: the value order dragged in the legend (colors, split bands, and A–Z rows follow it) */
+  valueOrders = $state<Record<string, string[]>>({});
 
   tagSet = $derived.by(() => new Set(this.tagColumns.filter((c) => this.dataset.columns.includes(c))));
   /** Tags in each tag column, most used first */
@@ -81,6 +83,8 @@ export class Viz {
       sortBy: this.sortBy,
       sortDirection: this.sortDirection,
       headerExtra: this.headerExtra,
+      legendOrder: this.valueOrders[this.colorKey],
+      groupOrder: this.valueOrders[this.groupKey],
     }),
   );
   colors = $derived.by(() => colorScale(this.layout.legend.map((g) => g.label)));
@@ -110,6 +114,27 @@ export class Viz {
     this.legendCollapsed = view?.legendCollapsed ?? false;
     this.tagColumns = view?.tagColumns?.filter(has) ?? columns.filter((c) => /^tags$/i.test(c));
     this.tagIgnored = view?.tagIgnored ?? {};
+    this.valueOrders = view?.valueOrders ?? {};
+  }
+
+  // ---------- Legend order ----------
+
+  /** Moves a legend entry to a new position; colors are reassigned in the new order. */
+  moveLegendEntry(from: number, to: number): void {
+    const labels = this.layout.legend.map((g) => g.label);
+    if (from === to || from < 0 || to < 0 || from >= labels.length || to >= labels.length) return;
+    const [moved] = labels.splice(from, 1);
+    labels.splice(to, 0, moved);
+    this.valueOrders = { ...this.valueOrders, [this.colorKey]: labels };
+  }
+
+  get hasCustomOrder(): boolean {
+    return (this.valueOrders[this.colorKey]?.length ?? 0) > 0;
+  }
+
+  resetLegendOrder(): void {
+    const { [this.colorKey]: _removed, ...rest } = this.valueOrders;
+    this.valueOrders = rest;
   }
 
   // ---------- Tags ----------
@@ -263,6 +288,7 @@ export class Viz {
       legendCollapsed: this.legendCollapsed,
       tagColumns: [...this.tagColumns],
       tagIgnored: { ...this.tagIgnored },
+      valueOrders: { ...this.valueOrders },
     };
   }
 }

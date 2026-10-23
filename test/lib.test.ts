@@ -258,7 +258,7 @@ describe('persistence', () => {
 
 describe('box scaling', () => {
   const base = {
-    fit: true, square: true, minBox: 4, maxBox: 40, zoom: 1,
+    fit: true, square: true, minWidth: 4, maxWidth: 40, minHeight: 4, maxHeight: 40, zoom: 1,
     viewWidth: 1000, viewHeight: 540, labelWidth: 100, rowWidth: 400, countWidth: 0, rows: 20,
   };
 
@@ -276,7 +276,7 @@ describe('box scaling', () => {
   it('stretches rectangles to use both directions', () => {
     // y = 1, x = (1000 - 100*1) / 400 = 2.25
     expect(boxScale({ ...base, square: false })).toEqual({ x: 2.222, y: 1 });
-    expect(boxScale({ ...base, square: false, maxBox: 60 })).toEqual({ x: 2.25, y: 1 });
+    expect(boxScale({ ...base, square: false, maxWidth: 60 })).toEqual({ x: 2.25, y: 1 });
   });
 
   it('keeps room for counts, which scale with text height, when stretching', () => {
@@ -287,15 +287,63 @@ describe('box scaling', () => {
   it('shrinks the height when stretched boxes would get too narrow', () => {
     // Height alone allows y = 1, but then x = (1000 - 900) / 400 = 0.25 (4.5px) — below the 0.5 (9px) minimum.
     // So x = 0.5 and y = (1000 - 400 * 0.5) / 900 = 0.889
-    expect(boxScale({ ...base, square: false, minBox: 9, labelWidth: 100, countWidth: 800 })).toEqual({ x: 0.5, y: 0.889 });
+    expect(boxScale({ ...base, square: false, minWidth: 9, labelWidth: 100, countWidth: 800 })).toEqual({ x: 0.5, y: 0.889 });
   });
 
   it('never goes below the smallest box size', () => {
     expect(boxScale({ ...base, rows: 2000 })).toEqual({ x: 0.222, y: 0.222 });
   });
 
-  it('turns box limits into a zoom range', () => {
-    expect(zoomBounds(9, 36)).toEqual({ min: 0.5, max: 2 });
-    expect(zoomBounds(30, 10).max).toBeGreaterThanOrEqual(zoomBounds(30, 10).min);
+  it('turns box limits into a zoom range that respects both width and height', () => {
+    expect(zoomBounds({ minWidth: 9, maxWidth: 36, minHeight: 9, maxHeight: 36 })).toEqual({ min: 0.5, max: 2 });
+    // Square boxes: the larger minimum and the smaller maximum win
+    expect(zoomBounds({ minWidth: 4, maxWidth: 36, minHeight: 9, maxHeight: 54 })).toEqual({ min: 0.5, max: 2 });
+    const odd = zoomBounds({ minWidth: 30, maxWidth: 40, minHeight: 4, maxHeight: 10 });
+    expect(odd.max).toBeGreaterThanOrEqual(odd.min);
+  });
+
+  it('applies width and height limits separately when stretching', () => {
+    // Height limited to 9px (0.5) even though rows could be taller; width capped at 27px (1.5)
+    expect(boxScale({ ...base, square: false, maxHeight: 9, maxWidth: 27 })).toEqual({ x: 1.5, y: 0.5 });
+    // A larger minimum height keeps rows readable; width still fills what is left
+    expect(boxScale({ ...base, square: false, rows: 2000, minHeight: 9 })).toEqual({ x: 2.222, y: 0.5 });
+  });
+});
+
+describe('custom value order', () => {
+  const rows = [
+    { S: 'Satisfied' },
+    { S: 'Extremely satisfied' },
+    { S: 'Not satisfied' },
+    { S: 'Not at all satisfied' },
+    { S: 'Satisfied' },
+  ];
+  const dataset = buildDataset('s.csv', rows);
+  const base = { groupKey: 'S', colorKey: 'S', split: false, counts: false, sortBy: 'value', sortDirection: 'ascending' } as const;
+  const scale = ['Not at all satisfied', 'Not satisfied', 'Satisfied', 'Extremely satisfied'];
+
+  it('orders the legend (and so its colors) by a dragged order', () => {
+    expect(computeLayout(dataset.items, base).legend.map((g) => g.label)).toEqual([
+      'Extremely satisfied',
+      'Not at all satisfied',
+      'Not satisfied',
+      'Satisfied',
+    ]);
+    expect(computeLayout(dataset.items, { ...base, legendOrder: scale }).legend.map((g) => g.label)).toEqual(scale);
+  });
+
+  it('puts values the order does not mention after it, in their natural order', () => {
+    const layout = computeLayout(dataset.items, { ...base, legendOrder: ['Satisfied'] });
+    expect(layout.legend.map((g) => g.label)).toEqual(['Satisfied', 'Extremely satisfied', 'Not at all satisfied', 'Not satisfied']);
+  });
+
+  it('sorts rows by the custom order, reversible, but leaves count sorting alone', () => {
+    expect(computeLayout(dataset.items, { ...base, groupOrder: scale }).groups.map((g) => g.label)).toEqual(scale);
+    expect(computeLayout(dataset.items, { ...base, groupOrder: scale, sortDirection: 'descending' }).groups.map((g) => g.label)).toEqual(
+      [...scale].reverse(),
+    );
+    expect(computeLayout(dataset.items, { ...base, groupOrder: scale, sortBy: 'count', sortDirection: 'descending' }).groups[0].label).toBe(
+      'Satisfied',
+    );
   });
 });

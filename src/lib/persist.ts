@@ -30,6 +30,8 @@ export interface ViewState {
   tagColumns?: string[];
   /** Per tag column, tags (lower-case) left out of grouping */
   tagIgnored?: Record<string, string[]>;
+  /** Per column, the value order dragged in the legend */
+  valueOrders?: Record<string, string[]>;
 }
 
 export interface SavedFile {

@@ -1317,20 +1317,52 @@ footer li:first-child::before {
 
 /* ---------- AI panel (new in Nineteen 2) ---------- */
 
+/* Toolbar, then the visualization with the AI panel beside it, directly under its button */
+#viewer .viewer-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+#viewer .viewer-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+/* The last toolbar control: an outlined pill, which becomes a tab joined to the open panel */
 #tool-bar #ai-toggle {
+  background-color: var(--white);
   background-image: url('../assets/images/ai-dark.svg');
-  background-position: left center;
+  background-position: 11px center;
   background-repeat: no-repeat;
-  margin-right: 20px;
-  padding: 0 0 0 19px;
+  border: 1px solid #d8dadf;
+  border-radius: 14px;
+  margin: 6px 0 6px 0;
+  padding: 0 13px 0 30px;
   white-space: nowrap;
 }
 #tool-bar #ai-toggle:hover {
-  opacity: 0.8;
+  background-color: var(--lightgray);
+  border-color: var(--lightgray);
 }
 #tool-bar #ai-toggle[aria-expanded='true'] {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  background-color: var(--lightgray);
+  border-color: var(--lightgray);
+  border-radius: 6px 6px 0 0;
+  margin-bottom: 0;
+  position: relative;
+  z-index: 1;
+}
+/* Fill the gap between the tab and the panel header, so they read as one */
+#tool-bar #ai-toggle[aria-expanded='true']::after {
+  background: var(--lightgray);
+  bottom: -2px;
+  content: '';
+  height: 3px;
+  left: -1px;
+  position: absolute;
+  right: -1px;
 }
 .ai-dock {
   flex: 0 0 auto;
@@ -1341,7 +1373,8 @@ footer li:first-child::before {
   display: none;
 }
 #ai-panel {
-  border-left: 1px solid var(--lightgray);
+  border-left: 1px solid #d8dadf;
+  border-top: 1px solid var(--lightgray);
   box-sizing: border-box;
   color: var(--black);
   display: flex;
@@ -1932,4 +1965,106 @@ footer li:first-child::before {
 #tag-options .tag-only {
   flex: 0 0 auto;
   font-size: 12px;
+}
+
+/* ---------- Legend reordering (new in Nineteen 2) ---------- */
+
+#legend .legend-items.reorderable .legend-item {
+  cursor: grab;
+  position: relative;
+  touch-action: none;
+  user-select: none;
+}
+#legend .legend-items.dragging,
+#legend .legend-items.dragging .legend-item {
+  cursor: grabbing;
+}
+#legend .legend-item:focus-visible {
+  outline: 2px solid var(--trout);
+  outline-offset: 1px;
+}
+/* A grip that appears on hover, between the (fixed) color and the label that moves */
+#legend .grip {
+  align-self: center;
+  background-image: radial-gradient(circle, #a1a7ad 1px, transparent 1.2px);
+  background-size: 3px 3px;
+  flex: 0 0 auto;
+  height: 10px;
+  margin-right: 4px;
+  opacity: 0;
+  transition: opacity 100ms;
+  width: 6px;
+}
+#legend .legend-items.reorderable .swatch {
+  /* 4px next to the grip + 4px grip margin: the label sits 4px further from the swatch than before */
+  margin-right: 4px;
+}
+/* Nothing to drag: no space reserved for the grip */
+#legend .legend-items:not(.reorderable) .grip {
+  display: none;
+}
+#legend .legend-items.reorderable .legend-item:hover .grip,
+#legend .legend-items.reorderable .legend-item:focus-visible .grip {
+  opacity: 1;
+}
+#legend .legend-item.being-dragged {
+  opacity: 0.35;
+}
+/* Where the entry will land */
+#legend .legend-item.drop-before::before,
+#legend .legend-item.drop-after::after {
+  background: var(--trout);
+  content: '';
+  height: 2px;
+  left: 8px;
+  position: absolute;
+  right: 8px;
+}
+#legend .legend-item.drop-before::before {
+  top: -5px;
+}
+#legend .legend-item.drop-after::after {
+  bottom: -5px;
+}
+#legend .legend-reset {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--trout);
+  font-size: 12.5px;
+  margin: 4px 0 10px 34px;
+  padding: 0;
+  text-decoration: underline;
+}
+#legend .legend-reset:hover {
+  opacity: 0.8;
+}
+.nineteen-dialog .settings-limits {
+  border-collapse: collapse;
+  margin: 12px 0 4px;
+}
+.nineteen-dialog .settings-limits th,
+.nineteen-dialog .settings-limits td {
+  padding: 3px 14px 3px 0;
+  text-align: left;
+}
+.nineteen-dialog .settings-limits thead th {
+  color: #7d838a;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.nineteen-dialog .settings-limits tbody th {
+  font-weight: 500;
+}
+.nineteen-dialog .settings-limits input {
+  border: 2px solid var(--lightgray);
+  border-radius: 3px;
+  box-sizing: border-box;
+  margin-right: 4px;
+  padding: 4px 6px 2px;
+  width: 64px;
+}
+.nineteen-dialog .settings-limits input:focus {
+  border-color: var(--gray);
+  outline: none;
 }

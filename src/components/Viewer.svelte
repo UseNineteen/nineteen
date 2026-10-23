@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, type Snippet } from 'svelte';
   import { displayLabel, type DataItem } from '../lib/data';
   import { boxScale, GEOMETRY } from '../lib/layout';
   import { wrapText } from '../lib/wrap';
@@ -19,9 +19,11 @@
     /** "Analyze with AI": lives in the toolbar with the other ways of working with the data */
     aiOpen: boolean;
     ontoggleai: () => void;
+    /** Shown to the right of the visualization, directly under the toolbar (the AI panel) */
+    side?: Snippet;
   }
 
-  let { viz, popups, open, ontoggle, aiOpen, ontoggleai }: Props = $props();
+  let { viz, popups, open, ontoggle, aiOpen, ontoggleai, side }: Props = $props();
 
   /** Vertical sizes use em (they follow the row font size); horizontal sizes use px (they follow scale.x). */
   const em = (px: number) => `${px / GEOMETRY.font}em`;
@@ -40,8 +42,10 @@
   const fitMode = $derived(viz.fit);
   const range = $derived(zoomRange());
   const sizing = $derived({
-    minBox: appSettings.minBox,
-    maxBox: appSettings.maxBox,
+    minWidth: appSettings.minWidth,
+    maxWidth: appSettings.maxWidth,
+    minHeight: appSettings.minHeight,
+    maxHeight: appSettings.maxHeight,
     zoom: viz.zoom,
     // Leave room for a vertical scrollbar
     viewWidth: viewWidth - 4,
@@ -100,9 +104,17 @@
   let fontsReady = $state(0);
 
   /**
-   * Decided at scale 1 from text and band widths only, so it never depends on the
-   * header height it produces (no feedback loop with fitting). All labels share one mode.
+   * How wide boxes are relative to their height on screen (1 unless stretched). Band widths
+   * follow box width but label text follows box height, so stretched-narrow boxes leave less
+   * room for labels. Measured as fitting would set it without the label row's extra height,
+   * so it never depends on the label mode it helps decide (no feedback loop with fitting).
    */
+  const boxAspect = $derived.by(() => {
+    const base = boxScale({ ...sizing, extraHeight: 0, fit: fitMode !== 'none', square: fitMode !== 'stretch' });
+    return base.y > 0 ? base.x / base.y : 1;
+  });
+
+  /** Decided in label-text units at the on-screen box aspect. All labels share one mode. */
   const headerMode = $derived.by(() => {
     void fontsReady;
     const line = { mode: 'line' as 'line' | 'wrap' | 'turn', lines: 1, extra: 0, length: 0 };
@@ -117,15 +129,17 @@
     for (const header of layout.headers) {
       const text = viz.label(header.label, viz.colorKey);
       measureCtx.font = `400 ${GEOMETRY.font}px ${LABEL_FONT}`;
-      const total = header.total ? measureCtx.measureText(header.total).width + 4 : 0;
+      // The total sits after a 5px gap plus a 4px margin (see .band-label / .band-total)
+      const total = header.total ? measureCtx.measureText(header.total).width + 9 : 0;
       longest = Math.max(longest, SWATCH + measureLabel(text) + total);
-      const room = header.width + header.cwidth - SWATCH - total - 4;
+      const room = header.width * boxAspect + header.cwidth - SWATCH - total - 4;
       const wrapped = wrapText(text, room, measureLabel, MAX_LINES);
       if (room <= 0 || wrapped.brokenWord || (!wrapped.complete && wrapped.shown < TURN_BELOW)) turn = true;
       lines = Math.max(lines, wrapped.lines.length);
     }
     if (turn) {
-      const length = Math.ceil(Math.min(longest, TURNED_MAX));
+      // +3px: canvas measurement and on-screen text can differ by a pixel or two
+      const length = Math.ceil(Math.min(longest + 3, TURNED_MAX));
       return { mode: 'turn' as const, lines: 1, extra: Math.max(0, length + 6 - 20), length };
     }
     if (lines > 1) return { mode: 'wrap' as const, lines, extra: (lines - 1) * LINE_HEIGHT, length: 0 };
@@ -242,7 +256,6 @@
     <button type="button" id="toggle-counts" aria-pressed={viz.counts} onclick={() => (viz.counts = !viz.counts)}>
       <span class="count-icon">#</span> <span class="count-label">{viz.counts ? 'Hide' : 'Show'} counts</span>
     </button>
-    <button type="button" id="ai-toggle" aria-expanded={aiOpen} aria-controls="ai-panel" onclick={ontoggleai}>Analyze with AI</button>
     <button
       type="button"
       id="viewer-columns"
@@ -250,8 +263,18 @@
       aria-expanded={open === 'viewerColumns'}
       onclick={toggle('viewerColumns')}>Show in viewer</button
     >
+    <button
+      type="button"
+      id="ai-toggle"
+      aria-expanded={aiOpen}
+      aria-controls="ai-panel"
+      title={aiOpen ? 'Close the AI panel' : 'Summarize, ask questions about, or auto-code your data with AI'}
+      onclick={ontoggleai}>Analyze with AI</button
+    >
   </form>
 
+  <div class="viewer-body">
+    <div class="viewer-main">
   {#if viz.aiHighlight}
     <div class="ai-highlight-bar" role="status">
       Highlighting {viz.aiHighlight.size} {viz.aiHighlight.size === 1 ? 'row' : 'rows'} cited by AI
@@ -373,5 +396,8 @@
     ></button>
     <button class="zoom-in" title="Zoom In" aria-label="Zoom in" disabled={scale.y >= range.max} onclick={() => zoomBy(ZOOM.step)}></button>
     <button class="zoom-out" title="Zoom Out" aria-label="Zoom out" disabled={scale.y <= range.min} onclick={() => zoomBy(-ZOOM.step)}></button>
+  </div>
+    </div>
+    {@render side?.()}
   </div>
 </div>

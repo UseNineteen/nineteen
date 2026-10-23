@@ -21,6 +21,10 @@ export interface LayoutOptions {
   sortDirection: SortDirection;
   /** Extra height for the split header row when its labels are turned (scale-1 px) */
   headerExtra?: number;
+  /** Custom order of the color column's values (dragged in the legend) */
+  legendOrder?: string[];
+  /** Custom order of the group column's values, used when sorting rows by value */
+  groupOrder?: string[];
 }
 
 /**
@@ -92,18 +96,29 @@ export function countSlot(digits: number): number {
   return 9 + Math.max(1, digits) * 8;
 }
 
-export function sortGroups(groups: Group[], sortBy: SortBy, direction: SortDirection): Group[] {
+/**
+ * Sorts groups by count, or by value: a custom order when one is given (values it
+ * doesn't mention follow, in their natural order), otherwise the values' natural order.
+ */
+export function sortGroups(groups: Group[], sortBy: SortBy, direction: SortDirection, order?: string[]): Group[] {
   const sign = direction === 'ascending' ? 1 : -1;
-  return [...groups].sort((a, b) =>
-    sign * (sortBy === 'count' ? a.count - b.count : compareValues(a.value, b.value)),
-  );
+  const rank = order?.length ? new Map(order.map((label, i) => [label, i])) : null;
+  const byValue = (a: Group, b: Group) => {
+    if (rank) {
+      const ra = rank.get(a.label) ?? Infinity;
+      const rb = rank.get(b.label) ?? Infinity;
+      if (ra !== rb) return ra === Infinity ? 1 : rb === Infinity ? -1 : ra - rb;
+    }
+    return compareValues(a.value, b.value);
+  };
+  return [...groups].sort((a, b) => sign * (sortBy === 'count' ? a.count - b.count : byValue(a, b)));
 }
 
 export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
   const { groupKey, colorKey, split, counts } = options;
   const items = [...all].sort(itemComparator(groupKey, colorKey));
-  const groups = sortGroups(rollup(items, groupKey), options.sortBy, options.sortDirection);
-  const legend = sortGroups(rollup(items, colorKey), 'value', 'ascending');
+  const groups = sortGroups(rollup(items, groupKey), options.sortBy, options.sortDirection, options.groupOrder);
+  const legend = sortGroups(rollup(items, colorKey), 'value', 'ascending', options.legendOrder);
 
   const rowOffset = split ? 1 : 0;
   const headerExtra = split ? (options.headerExtra ?? 0) : 0;
@@ -205,14 +220,19 @@ export interface Scale {
   y: number;
 }
 
-export interface ScaleInput {
+/** Box size limits in screen pixels, separately for width and height */
+export interface BoxLimits {
+  minWidth: number;
+  maxWidth: number;
+  minHeight: number;
+  maxHeight: number;
+}
+
+export interface ScaleInput extends BoxLimits {
   /** Fit everything inside the visible area */
   fit: boolean;
   /** Boxes stay square (otherwise width and height scale separately) */
   square: boolean;
-  /** Smallest and largest box side, in screen pixels */
-  minBox: number;
-  maxBox: number;
   /** Manual zoom, used when not fitting */
   zoom: number;
   viewWidth: number;
@@ -227,10 +247,26 @@ export interface ScaleInput {
   extraHeight?: number;
 }
 
-/** The zoom range allowed by the box size limits. */
-export function zoomBounds(minBox: number, maxBox: number): { min: number; max: number } {
-  const min = Math.max(1, minBox) / GEOMETRY.size;
-  return { min, max: Math.max(min, maxBox / GEOMETRY.size) };
+interface Range {
+  min: number;
+  max: number;
+}
+
+function range(min: number, max: number): Range {
+  const lo = Math.max(1, min) / GEOMETRY.size;
+  return { min: lo, max: Math.max(lo, max / GEOMETRY.size) };
+}
+
+/** Allowed scales for box width and box height. */
+export function axisBounds(limits: BoxLimits): { x: Range; y: Range } {
+  return { x: range(limits.minWidth, limits.maxWidth), y: range(limits.minHeight, limits.maxHeight) };
+}
+
+/** The zoom range for square boxes: both sides must respect both the width and height limits. */
+export function zoomBounds(limits: BoxLimits): Range {
+  const { x, y } = axisBounds(limits);
+  const min = Math.max(x.min, y.min);
+  return { min, max: Math.max(min, Math.min(x.max, y.max)) };
 }
 
 /** Height needed for all rows at scale 1, including the bottom margin. */
@@ -239,28 +275,29 @@ export function contentHeight(rows: number): number {
 }
 
 const round = (n: number) => Math.round(n * 1000) / 1000;
+const clampTo = (r: Range, n: number) => round(Math.min(r.max, Math.max(r.min, n)));
 
 export function boxScale(input: ScaleInput): Scale {
-  const bounds = zoomBounds(input.minBox, input.maxBox);
-  const clamp = (n: number) => round(Math.min(bounds.max, Math.max(bounds.min, n)));
+  const square = zoomBounds(input);
   const canFit = input.fit && input.viewWidth > 0 && input.viewHeight > 0 && input.rows > 0 && input.rowWidth > 0;
   if (!canFit) {
-    const z = clamp(input.zoom);
+    const z = clampTo(square, input.zoom);
     return { x: z, y: z };
   }
   const vertical = input.viewHeight / (contentHeight(input.rows) + (input.extraHeight ?? 0));
   if (input.square) {
-    const s = clamp(Math.min(vertical, input.viewWidth / (input.labelWidth + input.countWidth + input.rowWidth)));
+    const s = clampTo(square, Math.min(vertical, input.viewWidth / (input.labelWidth + input.countWidth + input.rowWidth)));
     return { x: s, y: s };
   }
   // Rectangles: rows use the height; boxes get whatever width the labels and counts (which follow the text size) leave
+  const { x: xRange, y: yRange } = axisBounds(input);
   const textWidth = input.labelWidth + input.countWidth;
-  let y = clamp(vertical);
+  let y = clampTo(yRange, vertical);
   let x = (input.viewWidth - textWidth * y) / input.rowWidth;
-  if (x < bounds.min && textWidth > 0) {
+  if (x < xRange.min && textWidth > 0) {
     // Boxes would get too narrow: shrink the height (and with it the label and count text) so the width still fits
-    x = bounds.min;
-    y = clamp(Math.min(y, (input.viewWidth - input.rowWidth * x) / textWidth));
+    x = xRange.min;
+    y = clampTo(yRange, Math.min(y, (input.viewWidth - input.rowWidth * x) / textWidth));
   }
-  return { x: clamp(x), y };
+  return { x: clampTo(xRange, x), y };
 }

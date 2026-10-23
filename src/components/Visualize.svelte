@@ -170,13 +170,16 @@
   <figure id="visualization">
     <Legend {viz} />
     <div id="viewer">
-      <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} {aiOpen} ontoggleai={toggleAI} />
+      <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} {aiOpen} ontoggleai={toggleAI}>
+        {#snippet side()}
+          {#if aiMounted}
+            <div class="ai-dock" hidden={!aiOpen}>
+              <AIPanel {viz} {popups} onclose={() => (aiOpen = false)} />
+            </div>
+          {/if}
+        {/snippet}
+      </Viewer>
     </div>
-    {#if aiMounted}
-      <div class="ai-dock" hidden={!aiOpen}>
-        <AIPanel {viz} {popups} onclose={() => (aiOpen = false)} />
-      </div>
-    {/if}
   </figure>
 
   {#if open?.name === 'group'}

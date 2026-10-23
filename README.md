@@ -35,6 +35,9 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 - **Counting:** The "Show counts" button (5) shows how many items are in each group
 - **Analyze with AI:** the toolbar button next to the counts opens the AI panel (see "Analyze with AI" below)
 - **Splitting:** Once you've chosen a "color by" column, the "Split" button (6) separates each row into color bands
+- **Reordering the legend:** drag legend entries up or down (or focus one and press Alt + ↑/↓) to put values in a meaningful
+  order, such as *Not at all satisfied → Extremely satisfied*. Colors are reassigned in the new order, split bands follow it, and
+  rows grouped by the same column follow it when sorted A–Z. "Reset order" puts it back
 - **Detailed viewer:** Hover over any item in the visualization to see all of the data from that row of your file (7):
 	- Click the item to pin its viewer open (click it again to un-pin it)
 	- You can have several viewers open at once. Drag them by their title bar to arrange them, and drag the corner to resize them
@@ -68,7 +71,8 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 - **Settings:** the Settings button (top right) controls box size:
 	- *Stretch to fit* is the same switch as the Stretch to fit button (turning on one turns on the other). With *Remember settings*
 	  on, saving the dialog with it on makes newly opened files start stretched
-	- *Smallest / largest box* (default 4–40 px) limits box size when fitting and when zooming
+	- *Smallest / largest* width and height (default 4–40 px each) limit box sizes when fitting and zooming. Stretch to fit
+	  uses the width and height limits separately; square boxes stay within both
 	- Tick *Remember settings on this device* to keep them in this browser
 	- Changes preview as you make them. *Save* keeps them; *Cancel*, Esc or clicking outside the dialog discards them
 - **Save (11):** Save a PNG image of the full visualization, or a standalone HTML file with your data and current view built in.

@@ -96,35 +96,40 @@
         </span>
       </label>
 
-      <div class="settings-sizes">
-        <label>
-          <span>Smallest box</span>
-          <input
-            type="number"
-            min={BOX_LIMITS.min}
-            max={BOX_LIMITS.max}
-            step="1"
-            bind:value={appSettings.minBox}
-            onchange={() => appSettings.normalize('min')}
-          />
-          <span class="unit">px</span>
-        </label>
-        <label>
-          <span>Largest box</span>
-          <input
-            type="number"
-            min={BOX_LIMITS.min}
-            max={BOX_LIMITS.max}
-            step="1"
-            bind:value={appSettings.maxBox}
-            onchange={() => appSettings.normalize('max')}
-          />
-          <span class="unit">px</span>
-        </label>
-      </div>
+      <table class="settings-limits">
+        <caption class="sr-only">Box size limits in pixels</caption>
+        <thead>
+          <tr>
+            <td></td>
+            <th scope="col">Smallest</th>
+            <th scope="col">Largest</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each [{ label: 'Width', min: 'minWidth', max: 'maxWidth' }, { label: 'Height', min: 'minHeight', max: 'maxHeight' }] as const as dim (dim.label)}
+            <tr>
+              <th scope="row">{dim.label}</th>
+              {#each [dim.min, dim.max] as const as field (field)}
+                <td>
+                  <input
+                    type="number"
+                    min={BOX_LIMITS.min}
+                    max={BOX_LIMITS.max}
+                    step="1"
+                    aria-label="{field.startsWith('min') ? 'Smallest' : 'Largest'} box {dim.label.toLowerCase()}"
+                    bind:value={appSettings[field]}
+                    onchange={() => appSettings.normalize(field)}
+                  />
+                  <span class="unit">px</span>
+                </td>
+              {/each}
+            </tr>
+          {/each}
+        </tbody>
+      </table>
       <p class="settings-hint">
-        Limits how small or large boxes get when fitting and zooming. Defaults: {DEFAULTS.minBox}–{DEFAULTS.maxBox} px (boxes
-        are 18 px at actual size).
+        Limits box sizes when fitting and zooming. Stretch to fit uses the width and height limits separately; square boxes
+        stay within both. Defaults: {DEFAULTS.minWidth}–{DEFAULTS.maxWidth} px (boxes are 18 px at actual size).
       </p>
     </fieldset>
 

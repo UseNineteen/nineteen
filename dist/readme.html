@@ -85,15 +85,15 @@ Each row of your data file becomes a data item, shown as a square in Nineteen&#3
 <li><strong>Settings (13)</strong> and <strong>Analyze with AI (14)</strong> are described below</li>
 </ul>
 <h3>Tagging Your Data</h3>
-<p>Pin a viewer (click an item) to tag that row (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
-or click × to remove one. Tags are kept in a &quot;Tags&quot; column, created the first time you tag a row and sorted alphabetically, so they
+<p>Pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
+or click × to remove one. Tags are kept in a &quot;Tags&quot; column, created the first time you tag a data item and sorted alphabetically, so they
 are saved with your spreadsheet, CSV and HTML downloads.</p>
-<img src="docs/screenshots/tags.png" alt="Tagging rows and coloring by tags" title="Tags in a pinned viewer, with the visualization color-coded by tags"><ul>
-<li><strong>Grouping and coloring by tags:</strong> Group or color by Tags (B) and rows are sorted by their <em>combination</em> of tags (&quot;gift + price&quot;),
-ignoring order and capitalization. Every row still gets exactly one box</li>
+<img src="docs/screenshots/tags.png" alt="Tagging data items and coloring by tags" title="Tags in a pinned viewer, with the visualization color-coded by tags"><ul>
+<li><strong>Grouping and coloring by tags:</strong> Group or color by Tags (B) and data items are grouped by their <em>combination</em> of tags (&quot;gift + price&quot;),
+ignoring order and capitalization. Every data item still gets exactly one box</li>
 <li><strong>Tag options…</strong> (in the Group by and Color by menus) lets you leave some tags out of the combinations, or show only one tag.
 Your data keeps every tag; only the grouping changes</li>
-<li><strong>Finding tags:</strong> Click a tag in a viewer to find every row with that tag. In tag columns, search matches whole tags, so
+<li><strong>Finding tags:</strong> Click a tag in a viewer to find every data item with that tag. In tag columns, search matches whole tags, so
 &quot;price&quot; doesn&#39;t find &quot;pricey&quot;</li>
 <li><strong>Your own tag columns:</strong> Any column can be treated as tags by choosing &quot;holds comma-separated tags&quot; in the Group by or Color by menus</li>
 </ul>
@@ -133,14 +133,14 @@ AI auto-coding</li>
 </ul>
 <h3>Analyze with AI (optional)</h3>
 <p>The <strong>Analyze with AI</strong> button (14) opens a panel with three tools. At the top, <strong>Data to share</strong> sets exactly what any of them
-can see: all rows or only your current search matches, and which columns. Untick names or other personal details there.</p>
+can see: all data items or only your current search matches, and which columns. Untick names or other personal details there.</p>
 <img src="docs/screenshots/ai-panel.png" alt="Analyze with AI panel" title="The Analyze with AI panel"><ul>
 <li><strong>Copy prompt:</strong> Pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
 an executive summary, or your own question). Then copy the prompt, with your data, to paste into Claude, ChatGPT or any
 assistant you already use, or download it as a file. <strong>Nineteen sends nothing.</strong></li>
-<li><strong>Ask:</strong> Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite rows like
-[Row 12]. Click a citation to highlight those items in the visualization and open their viewer</li>
-<li><strong>Auto-code:</strong> Have the AI assign every row to one of your categories, or let it suggest categories first. The result
+<li><strong>Ask:</strong> Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite data items by
+their row in your file, like [Row 12]. Click a citation to highlight those items in the visualization and open their viewer</li>
+<li><strong>Auto-code:</strong> Have the AI assign every data item to one of your categories, or let it suggest categories first. The result
 is added as a new column (with an optional &quot;reason&quot; column), so you can group, color, split and search by it like any other.
 AI coding can be wrong, so spot-check it in the viewer</li>
 </ul>

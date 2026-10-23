@@ -108,7 +108,7 @@
 
 {#snippet tagControls(column: string)}
   <hr />
-  <label title="Treat values like “gift, price” as separate tags; rows are grouped by their combination of tags">
+  <label title="Treat values like “gift, price” as separate tags; data items are grouped by their combination of tags">
     <input type="checkbox" checked={viz.isTagColumn(column)} onchange={(e) => viz.setTagColumn(column, e.currentTarget.checked)} />
     <span>“{column}” holds comma-separated tags</span>
   </label>

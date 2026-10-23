@@ -70,8 +70,8 @@
 
   <div class="settings-body">
     <p class="settings-hint">
-      Rows are grouped and colored by their combination of tags. Untick a tag to leave it out of the combinations; rows
-      keep the tag, and it still shows in the viewer and in search.
+      Data items are grouped and colored by their combination of tags. Untick a tag to leave it out of the combinations;
+      data items keep the tag, and it still shows in the viewer and in search.
     </p>
     {#if catalog.length}
       <ul class="tag-options">

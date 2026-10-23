@@ -264,7 +264,7 @@
     const results = new Map<number, Coding>();
     codeError = '';
     codeResult = null;
-    coding = { done: 0, total: groups.length, label: 'Coding rows…' };
+    coding = { done: 0, total: groups.length, label: 'Coding data items…' };
     controller = new AbortController();
     let partial = false;
 
@@ -287,7 +287,7 @@
         const missing = await request(rows);
         // One retry for any rows the model skipped
         if (missing.length) await request(rows.filter((r) => missing.includes(Number(/^### Row (\d+)/.exec(r)?.[1]))));
-        coding = { done: i + 1, total: groups.length, label: 'Coding rows…' };
+        coding = { done: i + 1, total: groups.length, label: 'Coding data items…' };
       }
     } catch (error) {
       partial = true;
@@ -344,13 +344,13 @@
         </p>
       {:else if tab === 'ask'}
         <p>
-          Ask Claude or ChatGPT questions about your data, using your own API key. Answers cite the rows they draw on;
-          click a citation to see those rows in the visualization.
+          Ask Claude or ChatGPT questions about your data, using your own API key. Answers cite the data items they draw on;
+          click a citation to see them in the visualization.
         </p>
         <p class="ai-hint">Your browser sends the shared data straight to the provider, never through a Nineteen server.</p>
       {:else}
         <p>
-          Have the AI assign every row to one of your categories (or let it suggest some). The result is added as a new
+          Have the AI assign every data item to one of your categories (or let it suggest some). The result is added as a new
           column you can group, color, and search by.
         </p>
         <p class="ai-hint">Uses your own API key. Your browser sends the shared data straight to the provider.</p>
@@ -359,9 +359,9 @@
 
     <section class="ai-section ai-share">
       <h3>Data to share</h3>
-      <div class="ai-segmented" role="radiogroup" aria-label="Rows to share">
+      <div class="ai-segmented" role="radiogroup" aria-label="Data items to share">
         <button type="button" role="radio" aria-checked={scope === 'all'} class:active={scope === 'all'} onclick={() => (rowScope = 'all')}
-          >All rows ({viz.dataset.items.length})</button
+          >All data items ({viz.dataset.items.length})</button
         >
         <button
           type="button"
@@ -383,7 +383,7 @@
           </label>
         {/each}
       </details>
-      <p class="ai-hint">{items.length} rows × {columns.length} columns · {formatTokens(tokens)}</p>
+      <p class="ai-hint">{items.length} data items × {columns.length} columns · {formatTokens(tokens)}</p>
     </section>
 
     {#if tab === 'copy'}
@@ -523,7 +523,7 @@
           </label>
           <label class="ai-check">
             <input type="checkbox" bind:checked={includeReasons} />
-            <span>Also add a column with the AI’s reason for each row</span>
+            <span>Also add a column with the AI’s reason for each data item</span>
           </label>
           <div class="ai-row">
             {#if coding}
@@ -533,7 +533,7 @@
                 type="button"
                 class="btn btn-primary"
                 disabled={!aiSettings.ready || !categories.length || !columnName.trim() || busy}
-                onclick={runCoding}>Code {items.length} rows</button
+                onclick={runCoding}>Code {items.length} data items</button
               >
             {/if}
           </div>
@@ -549,7 +549,7 @@
           {#if codeResult}
             <div class="ai-result" role="status">
               <p>
-                <strong>Added “{codeResult.column}”</strong>: {codeResult.coded} of {codeResult.total} rows coded{codeResult.partial
+                <strong>Added “{codeResult.column}”</strong>: {codeResult.coded} of {codeResult.total} data items coded{codeResult.partial
                   ? ' (stopped early)'
                   : ''}. The view is now color-coded by it.
               </p>
@@ -562,7 +562,7 @@
             </div>
           {/if}
           <p class="ai-hint">
-            Sends the shared columns of every row ({formatTokens(tokens)} in total, split into batches) to {provider.company}.
+            Sends the shared columns of every data item ({formatTokens(tokens)} in total, split into batches) to {provider.company}.
           </p>
         </section>
       {/if}
@@ -575,7 +575,7 @@
         <h3 id="ai-consent-title">Send your data to {provider.company}?</h3>
         <p>
           Until now, everything in Nineteen has stayed in your browser. This action sends the shared data
-          (<strong>{items.length} rows × {columns.length} columns</strong>, {formatTokens(tokens)}) to {provider.company} using
+          (<strong>{items.length} data items × {columns.length} columns</strong>, {formatTokens(tokens)}) to {provider.company} using
           your API key, and {provider.company}’s
           <a href={provider.privacyUrl} target="_blank" rel="noopener noreferrer">terms and privacy policy</a> apply to it.
         </p>

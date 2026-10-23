@@ -90,7 +90,7 @@ function anthropicError(error: unknown): AIError {
 
 function checkStop(stop: string | null | undefined): void {
   if (stop === 'refusal') throw new AIError('The model declined this request.');
-  if (stop === 'max_tokens') throw new AIError('The response was too long and got cut off. Try sharing fewer rows or columns.');
+  if (stop === 'max_tokens') throw new AIError('The response was too long and got cut off. Try sharing fewer data items or columns.');
 }
 
 export const anthropic: Provider = {
@@ -251,7 +251,7 @@ export const openai: Provider = {
             text += delta;
             onText(delta);
           }
-          if (choice?.finish_reason === 'length') throw new AIError('The response was too long and got cut off. Try sharing fewer rows or columns.');
+          if (choice?.finish_reason === 'length') throw new AIError('The response was too long and got cut off. Try sharing fewer data items or columns.');
         }
       }
     } catch (error) {

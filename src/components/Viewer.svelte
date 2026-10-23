@@ -333,7 +333,7 @@
     <div class="viewer-main">
   {#if viz.aiHighlight}
     <div class="ai-highlight-bar" role="status">
-      Highlighting {viz.aiHighlight.size} {viz.aiHighlight.size === 1 ? 'row' : 'rows'} cited by AI
+      Highlighting {viz.aiHighlight.size} {viz.aiHighlight.size === 1 ? 'data item' : 'data items'} cited by AI
       <button type="button" onclick={() => (viz.aiHighlight = null)}>Clear</button>
     </div>
   {/if}

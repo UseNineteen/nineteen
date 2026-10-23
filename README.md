@@ -59,17 +59,17 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 - **Settings (13)** and **Analyze with AI (14)** are described below
 
 ### Tagging Your Data
-Pin a viewer (click an item) to tag that row (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
-or click × to remove one. Tags are kept in a "Tags" column, created the first time you tag a row and sorted alphabetically, so they
+Pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
+or click × to remove one. Tags are kept in a "Tags" column, created the first time you tag a data item and sorted alphabetically, so they
 are saved with your spreadsheet, CSV and HTML downloads.
 
-<img src="docs/screenshots/tags.png" alt="Tagging rows and coloring by tags" title="Tags in a pinned viewer, with the visualization color-coded by tags">
+<img src="docs/screenshots/tags.png" alt="Tagging data items and coloring by tags" title="Tags in a pinned viewer, with the visualization color-coded by tags">
 
-- **Grouping and coloring by tags:** Group or color by Tags (B) and rows are sorted by their *combination* of tags ("gift + price"),
-  ignoring order and capitalization. Every row still gets exactly one box
+- **Grouping and coloring by tags:** Group or color by Tags (B) and data items are grouped by their *combination* of tags ("gift + price"),
+  ignoring order and capitalization. Every data item still gets exactly one box
 - **Tag options…** (in the Group by and Color by menus) lets you leave some tags out of the combinations, or show only one tag.
   Your data keeps every tag; only the grouping changes
-- **Finding tags:** Click a tag in a viewer to find every row with that tag. In tag columns, search matches whole tags, so
+- **Finding tags:** Click a tag in a viewer to find every data item with that tag. In tag columns, search matches whole tags, so
   "price" doesn't find "pricey"
 - **Your own tag columns:** Any column can be treated as tags by choosing "holds comma-separated tags" in the Group by or Color by menus
 
@@ -116,16 +116,16 @@ The Save menu (11) offers:
 
 ### Analyze with AI (optional)
 The **Analyze with AI** button (14) opens a panel with three tools. At the top, **Data to share** sets exactly what any of them
-can see: all rows or only your current search matches, and which columns. Untick names or other personal details there.
+can see: all data items or only your current search matches, and which columns. Untick names or other personal details there.
 
 <img src="docs/screenshots/ai-panel.png" alt="Analyze with AI panel" title="The Analyze with AI panel">
 
 - **Copy prompt:** Pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
   an executive summary, or your own question). Then copy the prompt, with your data, to paste into Claude, ChatGPT or any
   assistant you already use, or download it as a file. **Nineteen sends nothing.**
-- **Ask:** Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite rows like
-  [Row 12]. Click a citation to highlight those items in the visualization and open their viewer
-- **Auto-code:** Have the AI assign every row to one of your categories, or let it suggest categories first. The result
+- **Ask:** Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite data items by
+  their row in your file, like [Row 12]. Click a citation to highlight those items in the visualization and open their viewer
+- **Auto-code:** Have the AI assign every data item to one of your categories, or let it suggest categories first. The result
   is added as a new column (with an optional "reason" column), so you can group, color, split and search by it like any other.
   AI coding can be wrong, so spot-check it in the viewer
 

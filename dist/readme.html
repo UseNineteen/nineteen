@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nineteen: How to use</title>
+<style>
+body { margin: 0; background: #fff; color: #1f2328; font: 16px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+main { box-sizing: border-box; max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
+h1, h2 { border-bottom: 1px solid #d1d9e0; padding-bottom: 0.3em; }
+h1 { font-size: 2em; } h2 { font-size: 1.5em; } h3 { font-size: 1.25em; }
+h1, h2, h3 { margin: 24px 0 16px; font-weight: 600; line-height: 1.25; }
+img { max-width: 100%; border: 1px solid #d1d9e0; }
+a { color: #0969da; }
+code { background: #eff1f3; border-radius: 6px; padding: 0.2em 0.4em; font-size: 85%; }
+pre { background: #f6f8fa; border-radius: 6px; padding: 16px; overflow: auto; }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; display: block; overflow: auto; }
+td, th { border: 1px solid #d1d9e0; padding: 6px 13px; }
+ul { padding-left: 2em; } li + li { margin-top: 0.25em; }
+</style>
+</head>
+<body>
+<main>
+<h1>Nineteen</h1>
+<h3>Nineteen is a qualitative data visualization app that turns .xlsx &amp; .csv files into interactive visual tools</h3>
+<p>Nineteen runs entirely in your web browser. Your data is never uploaded anywhere.</p>
+<h3>Basic Usage</h3>
+<p>New users may find it helpful to use the &quot;Try an example&quot; link (A) at the bottom of <a href="https://usenineteen.com">Nineteen&#39;s main page</a> first,
+before reading more here.</p>
+<p><strong>Loading data:</strong> The simplest way to start is to pick a file from your computer with the &quot;Choose a file&quot; (B) button on
+<a href="https://usenineteen.com">Nineteen&#39;s main page</a>. You can also paste a link to a file hosted on Google Drive, Dropbox or elsewhere (C).
+Each row of your data file becomes a data item, shown as a square in Nineteen&#39;s visualization.</p>
+<img src="docs/screenshots/main-page.png" alt="Nineteen's main page" title="Nineteen's main page"><p><strong>Data files: a few quick guidelines</strong></p>
+<ul>
+<li>For Excel workbooks (.xlsx and .xls files), Nineteen only reads the <em>first</em> worksheet/tab</li>
+<li>Comma- or tab-separated files (.csv, .tsv) work too</li>
+<li>Put column headers/names in the first row (e.g. &quot;Participant&quot;, &quot;Segment&quot;, &quot;Date&quot;, &quot;Description&quot;)</li>
+<li>After the first row, each line becomes an individual data item, shown as a square in Nineteen&#39;s visualization</li>
+<li>See &quot;A Usable Example&quot; below for an actual data file and the visualization it produces</li>
+</ul>
+<p><strong>You can control how data is displayed using two primary controls: grouping and color-coding</strong></p>
+<ul>
+<li>Use the &quot;group by&quot; option (1) to organize your data by a single column, such as participant</li>
+<li>Use the &quot;color by&quot; option (2) to show, through color-coding, how the values in another column are spread across your groups</li>
+<li>For example, you can group your data by participant (column 1), then color-code it by segment (column 2)</li>
+</ul>
+<img src="docs/screenshots/visualization.png" alt="Visualization view" title="Nineteen's visualization view"><h3>A Usable Example</h3>
+<ul>
+<li><strong>Try a demo from the main page of Nineteen:</strong> Click the &quot;Try an example&quot; link (A) on <a href="https://usenineteen.com">Nineteen&#39;s main page</a></li>
+<li><strong>See the example file:</strong> You can download a copy of the <a href="shopping_decision_diary.xlsx">data file</a> used for the example</li>
+</ul>
+<h3>Additional Features to Discover</h3>
+<p>Nineteen never changes your data, so feel free to explore the interface. Additional features include:</p>
+<ul>
+<li><strong>Sorting:</strong> Sort the rows alphabetically (3) or by the number of items in each group (4). Click a sort button again to reverse it</li>
+<li><strong>Counting:</strong> The &quot;Show counts&quot; button (5) shows how many items are in each group</li>
+<li><strong>Splitting:</strong> Once you&#39;ve chosen a &quot;color by&quot; column, the &quot;Split&quot; button (6) separates each row into color bands
+(see &quot;Split View and the Legend&quot; below)</li>
+<li><strong>Detailed viewer:</strong> Hover over any item in the visualization to see all of the data from that row of your file (7):<ul>
+<li>Click the item to pin its viewer open (click it again to un-pin it)</li>
+<li>You can have several viewers open at once. Drag them by their title bar to arrange them, and drag the corner to resize them</li>
+<li>The &quot;Show in viewer&quot; menu (12) controls which columns the viewer shows</li>
+<li>Links in your data become clickable, and links to images are shown as images</li>
+</ul>
+</li>
+<li><strong>Text search:</strong> The search bar (8) is directly above the visualization:<ul>
+<li>Items that match your search stay in color. Everything else turns gray. Matching text is highlighted in the viewers</li>
+<li>Search in one or more columns (also called &quot;fields&quot;) (9). By default search looks in all of them, but you can limit it</li>
+<li>Multi-word searches:<ul>
+<li>Searching for <em>dog food</em> finds items containing &#39;dog&#39; <em>or</em> &#39;food&#39; (either word is enough)</li>
+<li><em>Hint:</em> to find <em>only</em> the word &#39;food&#39; and not longer words like &#39;foodie&#39;, search for &quot; food &quot; (with quotes and spaces)</li>
+<li>Searching for <em>&quot;dog food&quot;</em> (with quotes) finds only items containing the phrase &quot;dog food&quot;</li>
+<li>Searching for <em>dog AND food</em> (&#39;AND&#39; must be capitalized) finds only items containing both &quot;dog&quot; and &quot;food&quot;, though not necessarily together</li>
+<li>An asterisk matches any single character: <em>re*d</em> matches both &quot;read&quot; and &quot;reed&quot;</li>
+</ul>
+</li>
+<li>The drop-down (10) in the search bar lists the most frequent words. Click one to search for it, or shift-click to add it with AND</li>
+</ul>
+</li>
+<li><strong>Zoom:</strong> Use the buttons in the lower right (15) to return to actual size, fit the visualization to the window, stretch it to fit
+(see &quot;Fitting the View&quot; below), or zoom in and out</li>
+<li><strong>Save (11):</strong> Save a standalone HTML file or a PNG image of the visualization, or download the data itself
+(see &quot;Saving and Downloading&quot; below)</li>
+<li><strong>Settings (13)</strong> and <strong>Analyze with AI (14)</strong> are described below</li>
+</ul>
+<h3>Tagging Your Data</h3>
+<p>Pin a viewer (click an item) to tag that row (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
+or click × to remove one. Tags are kept in a &quot;Tags&quot; column, created the first time you tag a row and sorted alphabetically, so they
+are saved with your spreadsheet, CSV and HTML downloads.</p>
+<img src="docs/screenshots/tags.png" alt="Tagging rows and coloring by tags" title="Tags in a pinned viewer, with the visualization color-coded by tags"><ul>
+<li><strong>Grouping and coloring by tags:</strong> Group or color by Tags (B) and rows are sorted by their <em>combination</em> of tags (&quot;gift + price&quot;),
+ignoring order and capitalization. Every row still gets exactly one box</li>
+<li><strong>Tag options…</strong> (in the Group by and Color by menus) lets you leave some tags out of the combinations, or show only one tag.
+Your data keeps every tag; only the grouping changes</li>
+<li><strong>Finding tags:</strong> Click a tag in a viewer to find every row with that tag. In tag columns, search matches whole tags, so
+&quot;price&quot; doesn&#39;t find &quot;pricey&quot;</li>
+<li><strong>Your own tag columns:</strong> Any column can be treated as tags by choosing &quot;holds comma-separated tags&quot; in the Group by or Color by menus</li>
+</ul>
+<h3>Split View and the Legend</h3>
+<p>With Split on, each value of the &quot;color by&quot; column gets its own band, and a label row above the bands (A) shows each value and,
+with counts on, its total. Long labels wrap onto up to 3 lines. If only a few bands are too narrow even for that, just those bands
+get a little wider. If many are, all the labels turn 90° together.</p>
+<img src="docs/screenshots/split-view.png" alt="Split view with labeled bands" title="Split view, with the satisfaction scale in a meaningful order"><ul>
+<li><strong>Reordering the legend:</strong> Drag legend entries up or down by their grip (B), or focus one and press Alt + ↑/↓, to put values in a
+meaningful order, such as <em>Not at all satisfied → Extremely satisfied</em>. Colors are reassigned in the new order, split bands
+follow it, and rows grouped by the same column follow it when sorted A–Z. &quot;Reset order&quot; (C) puts it back</li>
+<li><strong>Legend title:</strong> The name above the legend (16, in the main screenshot) is the column the colors stand for. Click it to change it</li>
+</ul>
+<h3>Fitting the View: Square or Stretched Boxes</h3>
+<p>Boxes don&#39;t have to be square. <strong>Stretch to fit</strong> (in the zoom controls, 15) reshapes them into wider or taller rectangles so the
+whole visualization fills the window, and they resize automatically as you resize the window or regroup your data.
+Settings (13) lets you set the smallest and largest box width and height, and start every file stretched (see below).</p>
+<img src="docs/screenshots/stretch-to-fit.png" alt="Stretch to fit" title="Stretch to fit: boxes reshape to fill the window"><p><strong>Best fit</strong> does the same with square boxes. Both stay on as you resize or regroup, until you zoom in or out yourself
+or click the button again.</p>
+<p><strong>Settings (13)</strong> controls box sizes:</p>
+<img src="docs/screenshots/settings.png" alt="Settings dialog" title="Settings"><ul>
+<li><em>Stretch to fit</em> is the same switch as the Stretch to fit button: turning on one turns on the other. With <em>Remember settings</em>
+on, files you open later start stretched too</li>
+<li><em>Smallest</em> and <em>largest</em> width and height (4–40 px by default) limit box sizes when fitting and zooming. Stretch to fit uses the
+width and height limits separately; square boxes stay within both</li>
+<li>Tick <em>Remember settings on this device</em> to keep your settings in this browser</li>
+<li>Changes preview as you make them. <em>Save</em> keeps them; <em>Cancel</em>, Esc or clicking outside the dialog discards them</li>
+</ul>
+<h3>Saving and Downloading</h3>
+<p>The Save menu (11) offers:</p>
+<ul>
+<li><strong>Download HTML file:</strong> a single standalone file with your data and current view built in. It opens in any browser, works offline,
+and stays fully interactive</li>
+<li><strong>Download PNG image:</strong> a picture of the full visualization, including the parts scrolled out of view</li>
+<li><strong>Download spreadsheet (.xlsx)</strong> and <strong>Download CSV:</strong> your data, including any columns added in Nineteen, such as tags or
+AI auto-coding</li>
+</ul>
+<h3>Analyze with AI (optional)</h3>
+<p>The <strong>Analyze with AI</strong> button (14) opens a panel with three tools. At the top, <strong>Data to share</strong> sets exactly what any of them
+can see: all rows or only your current search matches, and which columns. Untick names or other personal details there.</p>
+<img src="docs/screenshots/ai-panel.png" alt="Analyze with AI panel" title="The Analyze with AI panel"><ul>
+<li><strong>Copy prompt:</strong> Pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
+an executive summary, or your own question). Then copy the prompt, with your data, to paste into Claude, ChatGPT or any
+assistant you already use, or download it as a file. <strong>Nineteen sends nothing.</strong></li>
+<li><strong>Ask:</strong> Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite rows like
+[Row 12]. Click a citation to highlight those items in the visualization and open their viewer</li>
+<li><strong>Auto-code:</strong> Have the AI assign every row to one of your categories, or let it suggest categories first. The result
+is added as a new column (with an optional &quot;reason&quot; column), so you can group, color, split and search by it like any other.
+AI coding can be wrong, so spot-check it in the viewer</li>
+</ul>
+<p>Ask and Auto-code send the shared data directly from your browser to the provider you chose, with your key. Nothing goes
+through a Nineteen server. The first time in each session, Nineteen asks you to confirm before sending anything. Your key
+stays in memory unless you choose to remember it on this device. Claude requests use <code>claude-opus-5-5</code> by default.
+You can pick any model your key can use.</p>
+<h3>A Note About Data Privacy</h3>
+<p>All data processing happens in your browser. Your data never reaches a server, so your research stays <em>your research</em>.
+You can use Nineteen with confidential data.</p>
+<ul>
+<li><strong>No cookies, no tracking.</strong> Nineteen sets no cookies and loads no analytics or third-party scripts</li>
+<li><strong>AI is opt-in.</strong> Data reaches an AI provider only when you press Send or Code in the AI panel, after confirming. It goes
+straight from your browser to Anthropic or OpenAI</li>
+<li><strong>Remembered settings and keys are opt-in.</strong> Display settings and AI keys are stored in this browser&#39;s local storage only
+if you tick &quot;Remember … on this device&quot;</li>
+<li><strong>Session storage only.</strong> While a file is open, a copy is kept in your browser&#39;s session storage so the view survives a reload.
+Your browser deletes it when you close the tab</li>
+<li><strong>Hosted files</strong> are downloaded directly by your browser from the site you link to. Some sites (often Google Drive) don&#39;t allow this,
+and Nineteen will tell you so. In that case, download the file and use &quot;Choose a file&quot; instead</li>
+<li><strong>Saved files</strong> are created in your browser and saved straight to your computer. A saved HTML file contains your data, so share it carefully</li>
+</ul>
+<p>The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app.</p>
+<h2>Have More Questions?</h2>
+<p>Email <a href="mailto:ted@pollari.org?subject=Nineteen">Ted Pollari</a> and/or <a href="mailto:kerwin@id.iit.edu?subject=Nineteen">Kim Erwin</a>, the creators of Nineteen. We&#39;d also love to hear how you&#39;re using Nineteen, if you find it useful!</p>
+<h2>Development</h2>
+<p>Nineteen is a static site built with <a href="https://svelte.dev">Svelte 5</a>, TypeScript and <a href="https://vite.dev">Vite</a>.
+Spreadsheets are read with <a href="https://sheetjs.com">SheetJS</a> and CSV files with <a href="https://www.papaparse.com">Papa Parse</a>.
+It has no server component.</p>
+<pre><code class="language-bash">npm install
+npm run dev       # local development server
+npm test          # unit tests (parsing, search, layout, colors, links, persistence)
+npm run check     # type checking
+npm run build     # production build → dist/
+</code></pre>
+<p><code>npm run build</code> produces <code>dist/index.html</code>, the entire app in a single self-contained file (code, styles, fonts and icons inlined),
+plus <code>dist/shopping_decision_diary.xlsx</code> for &quot;Try an example&quot;. Any static host works (GitHub Pages, Cloudflare Pages, Netlify, S3, …).
+The single-file build also powers &quot;Download HTML file&quot;: a saved copy is the same page with the data embedded.</p>
+<p><code>dist/</code> is committed, so the repository always contains a working copy of the app. A pre-commit hook (<code>.githooks/pre-commit</code>)
+rebuilds it and stages it before every commit; <code>npm install</code> turns the hook on. The README screenshots are in <code>docs/screenshots/</code>.</p>
+<p>SheetJS is installed from the official SheetJS CDN, because the <code>xlsx</code> package on npm is no longer updated and has known vulnerabilities.</p>
+<h3>Project layout</h3>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>src/lib/</code></td>
+<td>Framework-free logic: file parsing, value/date interpretation, search, layout, palette, persistence, PNG and HTML export</td>
+</tr>
+<tr>
+<td><code>src/lib/ai/</code></td>
+<td>AI features: data packaging, prompt templates, answer/citation parsing, auto-coding, provider clients (Anthropic SDK, OpenAI REST)</td>
+</tr>
+<tr>
+<td><code>src/components/</code></td>
+<td>Svelte UI: import page, visualization, legend, toolbar, dropdowns, viewer popups</td>
+</tr>
+<tr>
+<td><code>src/styles/app.css</code></td>
+<td>Styles ported from the original Stylus sources</td>
+</tr>
+<tr>
+<td><code>test/</code></td>
+<td>Vitest suite, including the search cases from the original test suite</td>
+</tr>
+<tr>
+<td><code>dist/</code></td>
+<td>The built app, committed (see above)</td>
+</tr>
+<tr>
+<td><code>docs/</code></td>
+<td>README screenshots and a summary of what&#39;s new</td>
+</tr>
+</tbody></table>
+<h3>What changed in the browser-only rewrite</h3>
+<ul>
+<li>No Node/Express server: uploads, hosted-file downloads, the example and &quot;Save&quot; all happen in the browser</li>
+<li>Replaced Backbone/Marionette, jQuery, d3 v3, Browserify, Babel 6, html2canvas and Modernizr with Svelte 5 + Vite</li>
+<li>Up-to-date, patched spreadsheet parser; locked-down Content Security Policy; no cookies</li>
+<li>PNG export works again (drawn natively instead of screen-captured)</li>
+<li>Standalone HTML export is a single file instead of a zip, and it restores the full view (including search)</li>
+</ul>
+<h2>A Note of Thanks</h2>
+<p>Nineteen started as Ted Pollari&#39;s graduate project at the <a href="http://id.iit.edu">Institute of Design at Illinois Tech</a>,
+with the guidance and collaboration of Kim Erwin and additional support from Matt Mayfield.</p>
+<p>In 2015, the Knight Foundation generously provided a grant from the Knight Prototype Fund, which paid for a complete rewrite of the app.
+We are deeply indebted to them for their support.</p>
+<p>In 2026, Nineteen was rebuilt to run entirely in the browser, with help from Claude, Anthropic&#39;s AI assistant.</p>
+<p>Lastly, Nineteen wouldn&#39;t be what it is without significant work from these Institute of Design students:
+Courtney Garland, David LaPorte, Brewer Palmer, and Mark Supert.</p>
+</main>
+</body>
+</html>

@@ -3,10 +3,10 @@
 </script>
 
 <script lang="ts">
-  import { onMount, tick, type Snippet } from 'svelte';
+  import { onMount, tick, untrack, type Snippet } from 'svelte';
   import { displayLabel, type DataItem } from '../lib/data';
   import { boxScale, GEOMETRY } from '../lib/layout';
-  import { wrapText } from '../lib/wrap';
+  import { minWrapWidth, wrapText } from '../lib/wrap';
   import type { Popups } from '../lib/popups.svelte';
   import { appSettings } from '../lib/settings.svelte';
   import { ZOOM, zoomRange, type Viz } from '../lib/viz.svelte';
@@ -30,6 +30,9 @@
   const px = (n: number) => `${n}px`;
 
   let measureEl: HTMLElement;
+  let wrapperEl: HTMLElement;
+  let visualizerEl: HTMLElement;
+  let rowItemsEl: HTMLElement;
   let viewWidth = $state(0);
   let viewHeight = $state(0);
   /** Label column width at scale 1 */
@@ -110,46 +113,88 @@
    * so it never depends on the label mode it helps decide (no feedback loop with fitting).
    */
   const boxAspect = $derived.by(() => {
-    const base = boxScale({ ...sizing, extraHeight: 0, fit: fitMode !== 'none', square: fitMode !== 'stretch' });
+    // Without the label row's extra height and without any band widening, which this helps decide
+    const base = boxScale({
+      ...sizing,
+      countWidth: layout.countWidth - layout.padWidth,
+      extraHeight: 0,
+      fit: fitMode !== 'none',
+      square: fitMode !== 'stretch',
+    });
     return base.y > 0 ? base.x / base.y : 1;
   });
 
-  /** Decided in label-text units at the on-screen box aspect. All labels share one mode. */
+  /** Widen at most this share of the bands; with more narrow bands than that, turn the labels instead */
+  const WIDEN_AT_MOST = 1 / 3;
+
+  /**
+   * Decided in label-text units at the on-screen box aspect, from band widths without any widening.
+   * One line if everything fits; otherwise wrap (up to 3 lines). When only a few bands are too narrow
+   * to wrap, just those get extra width; when many are, every label turns 90°.
+   */
   const headerMode = $derived.by(() => {
     void fontsReady;
-    const line = { mode: 'line' as 'line' | 'wrap' | 'turn', lines: 1, extra: 0, length: 0 };
+    const line = { mode: 'line' as 'line' | 'wrap' | 'turn', lines: 1, extra: 0, length: 0, pads: [] as number[] };
     if (!layout.headers.length || !measureCtx) return line;
     const measureLabel = (text: string) => {
       measureCtx.font = `500 ${GEOMETRY.font}px ${LABEL_FONT}`;
       return measureCtx.measureText(text).width;
     };
-    let turn = false;
-    let lines = 1;
     let longest = 0;
-    for (const header of layout.headers) {
+    const bands = layout.headers.map((header) => {
       const text = viz.label(header.label, viz.colorKey);
       measureCtx.font = `400 ${GEOMETRY.font}px ${LABEL_FONT}`;
       // The total sits after a 5px gap plus a 4px margin (see .band-label / .band-total)
       const total = header.total ? measureCtx.measureText(header.total).width + 9 : 0;
       longest = Math.max(longest, SWATCH + measureLabel(text) + total);
-      const room = header.width * boxAspect + header.cwidth - SWATCH - total - 4;
+      const room = header.width * boxAspect + (header.cwidth - header.pad) - SWATCH - total - 4;
       const wrapped = wrapText(text, room, measureLabel, MAX_LINES);
-      if (room <= 0 || wrapped.brokenWord || (!wrapped.complete && wrapped.shown < TURN_BELOW)) turn = true;
-      lines = Math.max(lines, wrapped.lines.length);
-    }
-    if (turn) {
+      const tooNarrow = room <= 0 || wrapped.brokenWord || (!wrapped.complete && wrapped.shown < TURN_BELOW);
+      // Extra width that would let it wrap in full (+2px for rounding)
+      const deficit = tooNarrow ? Math.ceil(minWrapWidth(text, measureLabel, MAX_LINES) - room + 2) : 0;
+      return { text, room, deficit, lines: wrapped.lines.length };
+    });
+
+    const narrow = bands.filter((b) => b.deficit > 0).length;
+    if (narrow > 0 && narrow > Math.max(1, Math.floor(bands.length * WIDEN_AT_MOST))) {
       // +3px: canvas measurement and on-screen text can differ by a pixel or two
       const length = Math.ceil(Math.min(longest + 3, TURNED_MAX));
-      return { mode: 'turn' as const, lines: 1, extra: Math.max(0, length + 6 - 20), length };
+      return { mode: 'turn' as const, lines: 1, extra: Math.max(0, length + 6 - 20), length, pads: [] };
     }
-    if (lines > 1) return { mode: 'wrap' as const, lines, extra: (lines - 1) * LINE_HEIGHT, length: 0 };
-    return line;
+    const pads = bands.map((b) => b.deficit);
+    const lines = Math.max(
+      1,
+      ...bands.map((b) => (b.deficit ? wrapText(b.text, b.room + b.deficit, measureLabel, MAX_LINES).lines.length : b.lines)),
+    );
+    const widened = narrow > 0 ? pads : [];
+    if (lines > 1) return { mode: 'wrap' as const, lines, extra: (lines - 1) * LINE_HEIGHT, length: 0, pads: widened };
+    return { ...line, pads: widened };
   });
 
   $effect(() => {
     viz.headerMode = headerMode.mode;
     viz.headerLines = headerMode.lines;
     viz.headerExtra = headerMode.extra;
+    // Only replace the array when it changes, so the layout isn't rebuilt for nothing
+    const pads = headerMode.pads;
+    const current = untrack(() => viz.bandPads);
+    if (pads.length !== current.length || pads.some((p, i) => p !== current[i])) viz.bandPads = pads;
+  });
+
+  // Where the first data row starts (below the toolbar and any split label row), ignoring scrolling,
+  // so the legend's first entry can line up with it
+  $effect(() => {
+    void layout;
+    void scale.x;
+    void scale.y;
+    void headerMode.extra;
+    void viz.aiHighlight;
+    tick().then(() => {
+      const first = rowItemsEl?.querySelector('.row:not(.row-header)');
+      if (!first || !wrapperEl) return;
+      const top = first.getBoundingClientRect().top - wrapperEl.getBoundingClientRect().top + (visualizerEl?.scrollTop ?? 0);
+      viz.firstRowTop = Math.round(top);
+    });
   });
 
   onMount(() => {
@@ -199,7 +244,7 @@
   }
 </script>
 
-<div class="viewer-wrapper">
+<div class="viewer-wrapper" bind:this={wrapperEl}>
   <form id="tool-bar" onsubmit={(e) => e.preventDefault()} aria-label="Visualization tools">
     <button
       type="button"
@@ -243,33 +288,44 @@
       />
     </div>
     <button type="button" id="search-in" class="dropdown-arrow" aria-expanded={open === 'searchIn'} onclick={toggle('searchIn')}>
-      within <strong>{viz.scopeText}</strong>
+      <span class="tool-word">within</span> <strong>{viz.scopeText}</strong>
     </button>
     <button
       type="button"
       id="toggle-view"
       class={viz.split ? 'view-stack' : 'view-split'}
       disabled={viz.automatic}
-      title={viz.automatic ? 'Choose a “color-coded by” column to split rows by color' : undefined}
-      onclick={() => (viz.split = !viz.split)}>{viz.split ? 'Stack' : 'Split'}</button
+      aria-label={viz.split ? 'Stack' : 'Split'}
+      title={viz.automatic ? 'Choose a “color-coded by” column to split rows by color' : viz.split ? 'Stack' : 'Split'}
+      onclick={() => (viz.split = !viz.split)}><span class="tool-label">{viz.split ? 'Stack' : 'Split'}</span></button
     >
-    <button type="button" id="toggle-counts" aria-pressed={viz.counts} onclick={() => (viz.counts = !viz.counts)}>
-      <span class="count-icon">#</span> <span class="count-label">{viz.counts ? 'Hide' : 'Show'} counts</span>
+    <button
+      type="button"
+      id="toggle-counts"
+      aria-pressed={viz.counts}
+      aria-label="{viz.counts ? 'Hide' : 'Show'} counts"
+      title="{viz.counts ? 'Hide' : 'Show'} counts"
+      onclick={() => (viz.counts = !viz.counts)}
+    >
+      <span class="count-icon">#</span> <span class="count-label tool-label">{viz.counts ? 'Hide' : 'Show'} counts</span>
     </button>
     <button
       type="button"
       id="viewer-columns"
       class="dropdown-arrow"
       aria-expanded={open === 'viewerColumns'}
-      onclick={toggle('viewerColumns')}>Show in viewer</button
+      aria-label="Show in viewer"
+      title="Show in viewer"
+      onclick={toggle('viewerColumns')}><span class="tool-label">Show in viewer</span></button
     >
     <button
       type="button"
       id="ai-toggle"
       aria-expanded={aiOpen}
       aria-controls="ai-panel"
-      title={aiOpen ? 'Close the AI panel' : 'Summarize, ask questions about, or auto-code your data with AI'}
-      onclick={ontoggleai}>Analyze with AI</button
+      aria-label="Analyze with AI"
+      title={aiOpen ? 'Close the AI panel' : 'Analyze with AI: summarize, ask questions about, or auto-code your data'}
+      onclick={ontoggleai}><span class="tool-label">Analyze with AI</span></button
     >
   </form>
 
@@ -282,17 +338,16 @@
     </div>
   {/if}
 
-  <div class="visualizer" bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
+  <div class="visualizer" bind:this={visualizerEl} bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
     <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
-      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)}>{viz.colorKey}</div>{/if}
+      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)}></div>{/if}
       {#each layout.groups as group (group.label)}
         <div class="label-item">{viz.label(group.label, viz.groupKey)}</div>
       {/each}
     </div>
     <div class="labels" style:font-size={fontSize} style:width={px(labelWidth * scale.y)} aria-hidden="true">
-      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)} title={viz.colorKey}>
-          {viz.colorKey}
-        </div>{/if}
+      <!-- Empty: the legend's title names the color column -->
+      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)}></div>{/if}
       {#each layout.groups as group (group.label)}
         <div class="label-item" title={viz.label(group.label, viz.groupKey)}>{viz.label(group.label, viz.groupKey)}</div>
       {/each}
@@ -356,7 +411,7 @@
         {/each}
       </div>
       <div class="rows">
-        <div class="row-items" style:font-size={fontSize} style:padding-left={px(labelWidth * scale.y)}>
+        <div class="row-items" bind:this={rowItemsEl} style:font-size={fontSize} style:padding-left={px(labelWidth * scale.y)}>
           {#if layout.rowOffset}<div
               class="row row-header"
               style:width={sx(layout.rowWidth, layout.countWidth)}

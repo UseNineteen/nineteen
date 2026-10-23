@@ -40,3 +40,26 @@ export function wrapText(text: string, width: number, measure: (s: string) => nu
     shown: total ? Math.min(1, shownChars / total) : 1,
   };
 }
+
+/**
+ * The narrowest line width at which `text` wraps into at most `maxLines`
+ * lines without cutting a word (found by bisection between its longest word
+ * and its full width).
+ */
+export function minWrapWidth(text: string, measure: (s: string) => number, maxLines: number): number {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return 0;
+  let lo = Math.max(...words.map(measure));
+  let hi = Math.max(lo, measure(words.join(' ')));
+  const fits = (w: number) => {
+    const wrapped = wrapText(text, w, measure, maxLines);
+    return wrapped.complete && !wrapped.brokenWord;
+  };
+  if (fits(lo)) return lo;
+  for (let i = 0; i < 20 && hi - lo > 0.5; i++) {
+    const mid = (lo + hi) / 2;
+    if (fits(mid)) hi = mid;
+    else lo = mid;
+  }
+  return hi;
+}

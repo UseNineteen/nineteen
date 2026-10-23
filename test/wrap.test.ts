@@ -24,3 +24,16 @@ describe('wrapping value labels', () => {
     expect(wrapText('Grandmothers', 8, measure, 3).brokenWord).toBe(true);
   });
 });
+
+describe('narrowest wrap width', () => {
+  it('finds the narrowest width that fits in the allowed lines without splitting words', async () => {
+    const { minWrapWidth } = await import('../src/lib/wrap');
+    const text = "Shopped offline and didn't purchase";
+    const width = minWrapWidth(text, measure, 3);
+    expect(wrapText(text, width, measure, 3).complete).toBe(true);
+    expect(wrapText(text, width - 1, measure, 3).complete).toBe(false);
+    // Never narrower than the longest word
+    expect(minWrapWidth('Grandmothers', measure, 3)).toBe(12);
+    expect(minWrapWidth('', measure, 3)).toBe(0);
+  });
+});

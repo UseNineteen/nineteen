@@ -3,11 +3,30 @@
 
   interface Props {
     viz: Viz;
+    /** Opens the "Color by" menu under the given element */
+    oncolormenu: (anchor: HTMLElement) => void;
+    colorMenuOpen: boolean;
   }
 
-  let { viz }: Props = $props();
+  let { viz, oncolormenu, colorMenuOpen }: Props = $props();
 
   const showCounts = $derived(viz.counts && !viz.split);
+  /**
+   * Line the first entry up with the first data row. The list starts below the collapse
+   * toggle (20px + 5px margins) and each entry has a 6px top margin.
+   */
+  const LIST_START = 36;
+  const offset = $derived(Math.max(0, viz.firstRowTop - LIST_START));
+
+  /**
+   * The color column's name, just above the first entry. When there's no room there
+   * (no split header row), it shares the top line with the collapse toggle instead.
+   */
+  const TITLE_HEIGHT = 20;
+  const aboveList = $derived(viz.firstRowTop - TITLE_HEIGHT - 4);
+  const titleBesideToggle = $derived(aboveList < 30);
+  /** Beside the toggle it lines up with it (5px from the top, like the toggle's margin) */
+  const titleTop = $derived(titleBesideToggle ? 5 : aboveList);
   const reorderable = $derived(!viz.legendCollapsed && viz.layout.legend.length > 1);
 
   let listEl: HTMLElement;
@@ -70,12 +89,25 @@
     title={viz.legendCollapsed ? 'Show legend' : 'Hide legend'}
     onclick={() => (viz.legendCollapsed = !viz.legendCollapsed)}
   ></button>
+  {#if !viz.legendCollapsed}
+    <button
+      type="button"
+      class="legend-title dropdown-arrow"
+      class:beside-toggle={titleBesideToggle}
+      style:top="{titleTop}px"
+      title="Color-coded by “{viz.colorKey}”. Click to change."
+      aria-haspopup="dialog"
+      aria-expanded={colorMenuOpen}
+      onclick={(e) => oncolormenu(e.currentTarget)}>{viz.colorKey}</button
+    >
+  {/if}
   <ul
     bind:this={listEl}
     class="legend-items"
     class:dimmed={viz.hoveredColor !== null}
     class:reorderable
     class:dragging={dragging !== null}
+    style:padding-top="{offset}px"
     aria-label="Legend: {viz.colorKey}. Drag entries, or press Alt and the arrow keys, to reorder them and their colors."
     onpointermove={pointermove}
     onpointerup={pointerup}

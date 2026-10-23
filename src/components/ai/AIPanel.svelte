@@ -335,6 +335,28 @@
   </nav>
 
   <div class="ai-body">
+    <!-- What this tab does, before any of its controls -->
+    <section class="ai-section ai-intro" aria-live="polite">
+      {#if tab === 'copy'}
+        <p>
+          Build a prompt with your data and paste it into Claude, ChatGPT, or any AI assistant you already use.
+          <strong>Nineteen doesn’t send anything.</strong>
+        </p>
+      {:else if tab === 'ask'}
+        <p>
+          Ask Claude or ChatGPT questions about your data, using your own API key. Answers cite the rows they draw on;
+          click a citation to see those rows in the visualization.
+        </p>
+        <p class="ai-hint">Your browser sends the shared data straight to the provider, never through a Nineteen server.</p>
+      {:else}
+        <p>
+          Have the AI assign every row to one of your categories (or let it suggest some). The result is added as a new
+          column you can group, color, and search by.
+        </p>
+        <p class="ai-hint">Uses your own API key. Your browser sends the shared data straight to the provider.</p>
+      {/if}
+    </section>
+
     <section class="ai-section ai-share">
       <h3>Data to share</h3>
       <div class="ai-segmented" role="radiogroup" aria-label="Rows to share">
@@ -366,10 +388,6 @@
 
     {#if tab === 'copy'}
       <section class="ai-section">
-        <p class="ai-lead">
-          Build a prompt with your data and paste it into Claude, ChatGPT, or any AI assistant you already use.
-          <strong>Nineteen doesn’t send anything.</strong>
-        </p>
         <label class="ai-field">
           <span class="ai-label">What should the AI do?</span>
           <select bind:value={templateId}>
@@ -410,12 +428,6 @@
           </summary>
           <ProviderSettings />
         </details>
-        {#if !aiSettings.ready}
-          <p class="ai-hint">
-            Use your own API key from Anthropic or OpenAI. Your browser sends requests straight to the provider. They
-            never go through a Nineteen server.
-          </p>
-        {/if}
       </section>
 
       {#if tab === 'ask'}
@@ -493,9 +505,6 @@
         </section>
       {:else}
         <section class="ai-section ai-code">
-          <p class="ai-lead">
-            Have the AI assign every row to a category. The result is added as a new column you can group or color by.
-          </p>
           <label class="ai-field">
             <span class="ai-label">What are you coding for? (optional)</span>
             <input type="text" bind:value={goal} placeholder="e.g. Why people did or didn’t buy" />

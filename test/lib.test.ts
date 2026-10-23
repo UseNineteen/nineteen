@@ -186,6 +186,20 @@ describe('layout', () => {
     ]);
   });
 
+  it('widens only the bands given extra label space, shifting later bands', () => {
+    const plain = computeLayout(dataset.items, { ...base, split: true, counts: true });
+    const widened = computeLayout(dataset.items, { ...base, split: true, counts: true, bandPads: [30, 0] });
+    expect(widened.headers.map((h) => [h.pad, h.cwidth - plain.headers[0].cwidth])).toEqual([
+      [30, 30],
+      [0, 0],
+    ]);
+    // The second band (and its boxes) moves right by exactly the first band's widening
+    expect(widened.headers[1].cx - plain.headers[1].cx).toBe(30);
+    expect(widened.positions.get(3)!.cx - plain.positions.get(3)!.cx).toBe(30);
+    expect(widened.countWidth - plain.countWidth).toBe(30);
+    expect(widened.padWidth).toBe(30);
+  });
+
   it('shows header values without totals when split without counts', () => {
     const layout = computeLayout(dataset.items, { ...base, split: true });
     expect(layout.rowCount).toBe(3);

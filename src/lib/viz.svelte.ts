@@ -53,6 +53,10 @@ export class Viz {
   headerLines = $state(1);
   /** Extra height of the label row, at scale 1 */
   headerExtra = $state(0);
+  /** Split view: extra label width for a few too-narrow bands (scale-1 px, by legend position; set by the viewer) */
+  bandPads = $state.raw<number[]>([]);
+  /** Top of the first data row, measured by the viewer, so the legend can line up with it */
+  firstRowTop = $state(0);
   /** Columns holding comma-separated tags */
   tagColumns = $state<string[]>([]);
   /** Per tag column: tags (lower-case) left out of grouping and coloring */
@@ -83,6 +87,7 @@ export class Viz {
       sortBy: this.sortBy,
       sortDirection: this.sortDirection,
       headerExtra: this.headerExtra,
+      bandPads: this.bandPads,
       legendOrder: this.valueOrders[this.colorKey],
       groupOrder: this.valueOrders[this.groupKey],
     }),

@@ -168,7 +168,7 @@
   </header>
 
   <figure id="visualization">
-    <Legend {viz} />
+    <Legend {viz} oncolormenu={(anchor) => toggle('color', anchor)} colorMenuOpen={open?.name === 'color'} />
     <div id="viewer">
       <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} {aiOpen} ontoggleai={toggleAI}>
         {#snippet side()}

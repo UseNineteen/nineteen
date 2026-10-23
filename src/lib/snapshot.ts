@@ -43,11 +43,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
 
   const measure = document.createElement('canvas').getContext('2d')!;
   measure.font = `400 ${font}px ${FONT}`;
-  // Row labels, plus the split view's header ("Date Shopped") and "Total" labels
-  const rowLabels = [
-    ...(layout.rowOffset ? [viz.colorKey] : []),
-    ...layout.groups.map((g) => viz.label(g.label, viz.groupKey)),
-  ];
+  const rowLabels = layout.groups.map((g) => viz.label(g.label, viz.groupKey));
   const maxLabel = Math.min(325, Math.max(0, ...rowLabels.map((label) => measure.measureText(label).width + 20)));
   const rowWidth = layout.rowWidth + layout.countWidth;
 
@@ -57,7 +53,9 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
   const extra = layout.headerExtra;
   const mode = viz.headerMode;
   const plotHeight = layout.rowCount * GEOMETRY.row + extra;
-  const legendHeight = viz.legendCollapsed ? 0 : layout.legend.length * 28 + 10;
+  // The legend starts level with the first data row (below any split label row), under its title
+  const legendTop = rowTop(1 + layout.rowOffset) + extra;
+  const legendHeight = viz.legendCollapsed ? 0 : legendTop + layout.legend.length * 28 + 10;
   const width = Math.ceil(plotLeft + maxLabel + rowWidth + PAD);
   const height = Math.ceil(plotTop + Math.max(plotHeight, legendHeight) + PAD);
 
@@ -104,8 +102,11 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
   // Legend
   if (!viz.legendCollapsed) {
     const showCounts = viz.counts && !viz.split;
+    ctx.font = `700 13px ${FONT}`;
+    ctx.fillStyle = '#47535e';
+    ctx.fillText(ellipsize(ctx, viz.colorKey, LEGEND - PAD - 10), PAD, plotTop + legendTop - 12);
     layout.legend.forEach((entry, i) => {
-      const top = plotTop + i * 28;
+      const top = plotTop + legendTop + i * 28;
       const swatch = viz.colors.get(entry.label)!;
       ctx.fillStyle = swatch.stroke;
       ctx.beginPath();
@@ -134,7 +135,6 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     ctx.fillText(ellipsize(ctx, text, maxLabel - 20), blocksLeft - 10, top + 10);
     ctx.textAlign = 'left';
   };
-  if (layout.rowOffset) drawRowLabel(viz.colorKey, plotTop + rowTop(1) + extra, true);
   layout.groups.forEach((group, i) => {
     const top = plotTop + rowTop(i + 1 + layout.rowOffset) + extra;
     ctx.fillStyle = '#f5f5f5';

@@ -25,6 +25,11 @@ export interface LayoutOptions {
   legendOrder?: string[];
   /** Custom order of the group column's values, used when sorting rows by value */
   groupOrder?: string[];
+  /**
+   * Split view: extra label space after each band (scale-1 px, by legend position), so a few
+   * narrow bands can be widened just enough for their value labels to wrap
+   */
+  bandPads?: number[];
 }
 
 /**
@@ -49,6 +54,8 @@ export interface BandHeader extends Point {
   key: string;
   label: string;
   total: string | null;
+  /** Extra label space given to this band (part of `cwidth`) */
+  pad: number;
   /** Band width, in the same two parts as a Point */
   width: number;
   cwidth: number;
@@ -71,9 +78,11 @@ export interface Layout {
   rowCount: number;
   /** Extra height of the header row (turned labels), included in the group rows' y */
   headerExtra: number;
-  /** Row width in box space, and in count-label space */
+  /** Row width in box space, and in count-label space (count slots plus any band widening) */
   rowWidth: number;
   countWidth: number;
+  /** The part of `countWidth` that is band widening */
+  padWidth: number;
 }
 
 export function columnX(index: number): number {
@@ -140,6 +149,10 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
   // Count labels get a slot wide enough for their longest number
   const largest = split ? Math.max(0, ...bandWidths) : Math.max(0, ...groups.map((g) => g.count));
   const slot = counts ? countSlot(String(largest).length) : 0;
+  // Label-space offset of each band: count slots and any widening of earlier bands
+  const pads = split ? legend.map((_, i) => Math.max(0, options.bandPads?.[i] ?? 0)) : [];
+  const textBefore: number[] = [];
+  pads.reduce((sum, pad, i) => ((textBefore[i] = sum), sum + slot + pad), 0);
 
   const positions = new Map<number, Point>();
   const seen = new Map<string, number>();
@@ -152,7 +165,7 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
     positions.set(
       item.id,
       split
-        ? { x: columnX(index + bandOffsets[band]), cx: band * slot, y: groupY(rowIndex.get(group)!) }
+        ? { x: columnX(index + bandOffsets[band]), cx: textBefore[band], y: groupY(rowIndex.get(group)!) }
         : { x: columnX(index), cx: 0, y: groupY(rowIndex.get(group)!) },
     );
   }
@@ -167,7 +180,7 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
           key: `${pair.label}\u0000${group}`,
           text: String(pair.count),
           x: columnX(bandOffsets[band] + pair.count),
-          cx: band * slot,
+          cx: textBefore[band],
           y: groupY(rowIndex.get(group)!),
         });
       }
@@ -184,10 +197,11 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
         label: entry.label,
         total: counts ? String(entry.count) : null,
         x: columnX(bandOffsets[band]),
-        cx: band * slot,
+        cx: textBefore[band],
         y: rowY(1),
         width: (bandWidths[band] + 1) * (GEOMETRY.size + GEOMETRY.gutter) - GEOMETRY.gutter,
-        cwidth: slot,
+        cwidth: slot + pads[band],
+        pad: pads[band],
       }))
     : [];
 
@@ -206,7 +220,8 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
     rowCount: groups.length + rowOffset,
     headerExtra,
     rowWidth: columnX(columns) + 3 * GEOMETRY.size,
-    countWidth: split ? legend.length * slot : slot,
+    countWidth: split ? legend.length * slot + pads.reduce((a, b) => a + b, 0) : slot,
+    padWidth: pads.reduce((a, b) => a + b, 0),
   };
 }
 

@@ -442,7 +442,8 @@ footer li:first-child::before {
   flex: 1 1 auto;
   margin: 0;
   min-height: 0;
-  overflow: hidden;
+  /* clip (not hidden): the browser can never scroll this sideways and push the legend out of view */
+  overflow: clip;
 }
 
 /* ---------- Title bar & toolbar (header.styl) ---------- */
@@ -649,6 +650,7 @@ footer li:first-child::before {
 /* ---------- Legend (legend.styl) ---------- */
 
 #legend {
+  position: relative;
   color: var(--black);
   flex: 0 0 auto;
   overflow-x: hidden;
@@ -731,6 +733,8 @@ footer li:first-child::before {
   position: relative;
 }
 #viewer .viewer-wrapper {
+  /* The toolbar compacts itself by the viewer's width (container queries below) */
+  container: viewer / inline-size;
   position: absolute;
   inset: 0;
   display: flex;
@@ -1447,8 +1451,11 @@ footer li:first-child::before {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-#ai-panel .ai-lead {
-  margin: 0 0 10px;
+#ai-panel .ai-intro p {
+  margin: 0;
+}
+#ai-panel .ai-intro p + p {
+  margin-top: 6px;
 }
 #ai-panel .ai-hint {
   color: #7d838a;
@@ -2067,4 +2074,79 @@ footer li:first-child::before {
 .nineteen-dialog .settings-limits input:focus {
   border-color: var(--gray);
   outline: none;
+}
+
+/* The color column's name above the legend; opens the "Color by" menu */
+#legend .legend-title {
+  appearance: none;
+  background: none;
+  border: none;
+  box-sizing: border-box;
+  color: var(--trout);
+  font-size: 13px;
+  font-weight: 700;
+  height: 20px;
+  left: 10px;
+  line-height: 20px;
+  max-width: calc(100% - 20px);
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 1;
+}
+#legend .legend-title.beside-toggle {
+  /* Shares the top line with the collapse toggle */
+  left: 34px;
+  max-width: calc(100% - 44px);
+}
+#legend .legend-title::after {
+  color: var(--gray);
+  font-weight: 400;
+}
+#legend .legend-title:hover {
+  opacity: 0.8;
+}
+
+/* ---------- Compact toolbar when the viewer is narrow ---------- */
+
+@container viewer (max-width: 940px) {
+  /* Icons only; each button keeps its name in a tooltip and for screen readers */
+  #tool-bar .tool-label {
+    display: none;
+  }
+  #tool-bar #toggle-view {
+    margin-right: 14px;
+    padding-left: 22px;
+  }
+  #tool-bar #toggle-counts {
+    margin-right: 14px;
+    width: auto;
+  }
+  #tool-bar #toggle-counts .count-icon {
+    margin-right: 0;
+  }
+  #tool-bar #viewer-columns {
+    margin-right: 14px;
+    padding-left: 20px;
+  }
+  #tool-bar #viewer-columns.dropdown-arrow::after {
+    padding-left: 0.2em;
+  }
+  #tool-bar #ai-toggle {
+    background-position: center;
+    padding: 0;
+    width: 34px;
+  }
+}
+@container viewer (max-width: 640px) {
+  #tool-bar .tool-word {
+    display: none;
+  }
+  #tool-bar #search-in {
+    margin-right: 12px;
+    padding-right: 12px;
+  }
 }

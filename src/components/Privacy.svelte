@@ -29,10 +29,14 @@
     provider only when you explicitly send it there.
   </p>
 
-  <h2>No cookies, no tracking</h2>
+  <h2>No cookies, only anonymous visit counts</h2>
   <p>
-    Nineteen sets no cookies and uses no analytics, advertising, or other tracking. Because nothing beyond what
-    is strictly necessary is stored on your device, there is no consent banner.
+    Nineteen sets no cookies and uses no advertising or cross-site tracking. To see how many people use it,
+    usenineteen.com counts visits with <a href="https://www.cloudflare.com/web-analytics/" target="_blank"
+      rel="noopener noreferrer">Cloudflare Web Analytics</a>, which stores nothing on your device and does not
+    identify you. It records which page was viewed, the referring site, your browser type and your country. It never
+    sees your files or data, because those stay in your browser. Saved HTML files contain no analytics. Because
+    nothing beyond what is strictly necessary is stored on your device, there is no consent banner.
   </p>
 
   <h2>What is stored on your device</h2>

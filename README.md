@@ -138,7 +138,9 @@ You can pick any model your key can use.
 All data processing happens in your browser. Your data never reaches a server, so your research stays *your research*.
 You can use Nineteen with confidential data.
 
-- **No cookies, no tracking.** Nineteen sets no cookies and loads no analytics or third-party scripts
+- **No cookies, only anonymous visit counts.** Nineteen sets no cookies and uses no advertising or cross-site tracking.
+  usenineteen.com counts visits with Cloudflare Web Analytics, which stores nothing on your device and never sees your
+  data (page, referrer, browser and country only). Saved HTML files contain no analytics
 - **AI is opt-in.** Data reaches an AI provider only when you press Send or Code in the AI panel, after confirming. It goes
   straight from your browser to Anthropic or OpenAI
 - **Remembered settings and keys are opt-in.** Display settings and AI keys are stored in this browser's local storage only
@@ -149,7 +151,8 @@ You can use Nineteen with confidential data.
   and Nineteen will tell you so. In that case, download the file and use "Choose a file" instead
 - **Saved files** are created in your browser and saved straight to your computer. A saved HTML file contains your data, so share it carefully
 
-The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app.
+The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app,
+plus Cloudflare's analytics script on usenineteen.com.
 
 ## Have More Questions?
 Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen), the creators of Nineteen. We'd also love to hear how you're using Nineteen, if you find it useful!

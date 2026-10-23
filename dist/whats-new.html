@@ -100,6 +100,62 @@
         margin: 28px 0 4px;
         padding: 14px 16px;
       }
+      figure {
+        margin: 2px 0 26px;
+      }
+      figure img {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        display: block;
+        height: auto;
+        width: 100%;
+      }
+      .pair-row {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .pair-row > div {
+        flex: 0 1 260px;
+      }
+      .pair-label {
+        color: var(--muted);
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
+      .pair-arrow {
+        color: var(--trout);
+        font-size: 26px;
+        padding-top: 18px;
+      }
+      figure.narrow img {
+        max-width: 470px;
+      }
+      figcaption {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 8px;
+      }
+      .open-app {
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 4px;
+        color: #ffffff;
+        display: inline-block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 18px;
+        padding: 7px 14px;
+        text-decoration: none;
+      }
+      .open-app:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
       footer {
         color: var(--muted);
         font-size: 13px;
@@ -113,6 +169,7 @@
         <div class="brand">nineteen</div>
         <h1>What's new in Nineteen</h1>
         <p>Major features added in the latest release.</p>
+        <a class="open-app" href="./">Open Nineteen →</a>
       </div>
     </header>
 
@@ -134,11 +191,31 @@
             <strong>Tag-aware grouping and search:</strong>
             <span>Grouping or coloring by tags uses each data item's tag combination, still one box per data item. Tag options can leave tags out or focus on one, and search matches whole tags.</span>
           </li>
+        </ul>
+        <figure>
+          <img src="docs/screenshots/whats-new/tags.png" alt="A pinned viewer with the tags gift and price, and the visualization color-coded by tag combination" loading="lazy" />
+          <figcaption>Tags in a pinned viewer, with the visualization color-coded by tag combination.</figcaption>
+        </figure>
+        <ul>
           <li>
             <strong>Reorderable legend:</strong>
             <span>Drag legend entries, or use Alt + arrow keys, to put values in a meaningful order, such as <em>Not at all satisfied → Extremely satisfied</em>. Colors, split bands and A–Z rows all follow the new order.</span>
           </li>
         </ul>
+        <figure class="pair">
+          <div class="pair-row">
+            <div>
+              <span class="pair-label">Before</span>
+              <img src="docs/screenshots/whats-new/legend-before.png" alt="Legend in alphabetical order: Extremely satisfied, Not at all satisfied, Not satisfied, Satisfied" loading="lazy" />
+            </div>
+            <span class="pair-arrow" aria-hidden="true">→</span>
+            <div>
+              <span class="pair-label">After</span>
+              <img src="docs/screenshots/whats-new/legend-after.png" alt="Legend dragged into scale order: Not at all satisfied, Not satisfied, Satisfied, Extremely satisfied" loading="lazy" />
+            </div>
+          </div>
+          <figcaption>Drag the entries into scale order, and the colors follow: the darkest blue moves to “Not at all satisfied”.</figcaption>
+        </figure>
       </section>
 
       <section>
@@ -148,6 +225,12 @@
             <strong>Split view headers:</strong>
             <span>Split view gets a header row showing each band's value and, with counts on, its total. Labels wrap onto up to 3 lines, only the narrowest columns widen, and labels turn 90° only when many columns are narrow.</span>
           </li>
+        </ul>
+        <figure>
+          <img src="docs/screenshots/whats-new/split-headers.png" alt="Split view by satisfaction level with a label and total above each band" loading="lazy" />
+          <figcaption>Each band is labeled with its value and total; “Not at all satisfied” wraps onto two lines to fit its narrow band.</figcaption>
+        </figure>
+        <ul>
           <li>
             <strong>Compact toolbar:</strong>
             <span>On narrow screens, toolbar buttons shrink to icons so everything fits. "Analyze with AI" sits at the end of the toolbar, with its panel opening directly underneath.</span>
@@ -162,6 +245,12 @@
             <strong>Boxes that reshape to fit your screen:</strong>
             <span>Data boxes no longer have to be square. With Stretch to fit, they become wider or taller rectangles so the whole dataset fills the window, and they resize automatically as the window changes or you regroup.</span>
           </li>
+        </ul>
+        <figure>
+          <img src="docs/screenshots/whats-new/stretch.png" alt="Stretch to fit: boxes reshaped into rectangles that fill the window, grouped by date" loading="lazy" />
+          <figcaption>Stretch to fit: boxes become rectangles so the whole dataset fills the window.</figcaption>
+        </figure>
+        <ul>
           <li>
             <strong>Sticky Best fit:</strong>
             <span>Best fit keeps square boxes sized to the window as you resize or regroup, until you zoom.</span>
@@ -171,6 +260,10 @@
             <span>Separate smallest and largest limits for box width and height, a Stretch to fit default, and an opt-in "Remember settings on this device". Changes preview live and only apply when you save.</span>
           </li>
         </ul>
+        <figure class="narrow">
+          <img src="docs/screenshots/whats-new/settings.png" alt="The Settings dialog with box size limits" loading="lazy" />
+          <figcaption>The Settings dialog.</figcaption>
+        </figure>
       </section>
 
       <section>
@@ -181,6 +274,10 @@
             <span>Save the dataset, including tags and AI-added columns, as .xlsx or CSV, alongside the existing HTML and PNG options.</span>
           </li>
         </ul>
+        <figure class="narrow">
+          <img src="docs/screenshots/whats-new/save.png" alt="The Save menu with HTML, PNG, spreadsheet and CSV downloads" loading="lazy" />
+          <figcaption>The Save menu.</figcaption>
+        </figure>
       </section>
 
       <section>
@@ -203,9 +300,13 @@
             <span>Choose exactly which data items and columns any AI tool sees, with a token estimate. Nothing is sent until you confirm, and API keys stay in memory unless you choose to remember them.</span>
           </li>
         </ul>
+        <figure class="narrow">
+          <img src="docs/screenshots/whats-new/ai.png" alt="The Analyze with AI panel, showing Copy prompt and the Data to share controls" loading="lazy" />
+          <figcaption>The Analyze with AI panel, with the data sharing controls at the top.</figcaption>
+        </figure>
       </section>
 
-      <footer>Nineteen · runs entirely in your browser · no cookies, no tracking</footer>
+      <footer>Nineteen · runs entirely in your browser · no cookies</footer>
     </main>
   </body>
 </html>

@@ -14,8 +14,10 @@
   const GITHUB_URL = 'https://github.com/UseNineteen/nineteen';
   const SAMPLE_URL = './shopping_decision_diary.xlsx';
   const WHATS_NEW_URL = './whats-new.html';
-  /** The "What's new" link only shows on the GitHub Pages preview (and local builds), not the main site */
-  const isPreview = /(\.github\.io|^localhost|^127\.0\.0\.1)$/.test(location.hostname);
+  /** When this release came out; the "New" badge shows until NEW_UNTIL so it never looks stale */
+  const RELEASED = 'Oct 2026';
+  const NEW_UNTIL = new Date('2027-02-01');
+  const showNewBadge = new Date() < NEW_UNTIL;
 
   let fileInput: HTMLInputElement;
   let url = $state('');
@@ -91,13 +93,15 @@
           }}>Privacy</a
         >
       </li>
-      {#if isPreview}
-        <li><a href={WHATS_NEW_URL} target="_blank" rel="noopener noreferrer">What's new</a></li>
-      {/if}
+      <li>
+        <a class="whats-new-link" href={WHATS_NEW_URL}
+          >What's new in Ver. 2.0.0?{#if showNewBadge}<span class="new-badge">New · {RELEASED}</span>{/if}</a
+        >
+      </li>
     </ul>
     <p class="privacy-note">
-      Everything happens in your browser. No cookies, no tracking, no uploads. Data goes to an AI service only if you
-      choose to send it there.
+      Everything happens in your browser. No cookies, no uploads, just anonymous visit counts. Data goes to an AI service
+      only if you choose to send it there.
     </p>
   </footer>
 </div>

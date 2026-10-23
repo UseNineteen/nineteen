@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import { createHash } from 'node:crypto';
-import { copyFileSync, cpSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { marked } from 'marked';
 
@@ -44,7 +44,8 @@ function contentSecurityPolicy(): Plugin {
       }
       const policy = [
         "default-src 'none'",
-        `script-src ${hashes.join(' ')}`,
+        // Plus Cloudflare Web Analytics (cookieless visit counts), which Cloudflare injects on usenineteen.com
+        `script-src ${hashes.join(' ')} https://static.cloudflareinsights.com`,
         "style-src 'unsafe-inline'",
         'font-src data:',
         // Images can appear inside data (autolinked image URLs in the viewer)
@@ -101,7 +102,9 @@ function guidePages(): Plugin {
         `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n` +
           `<title>Nineteen: How to use</title>\n<style>${README_STYLE}</style>\n</head>\n<body>\n<main>\n${body}</main>\n</body>\n</html>\n`,
       );
-      copyFileSync(resolve(root, 'docs/whats-new.html'), resolve(outDir, 'whats-new.html'));
+      // In the repository its images sit beside it in docs/; on the site it is served from the root
+      const whatsNew = readFileSync(resolve(root, 'docs/whats-new.html'), 'utf8').replaceAll('src="screenshots/', 'src="docs/screenshots/');
+      writeFileSync(resolve(outDir, 'whats-new.html'), whatsNew);
       cpSync(resolve(root, 'docs/screenshots'), resolve(outDir, 'docs/screenshots'), { recursive: true });
     },
   };

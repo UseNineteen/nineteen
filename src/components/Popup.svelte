@@ -69,7 +69,7 @@
   </header>
   <section>
     {#if popup.floating || tags.length}
-      <div class="popup-tags">
+      <div class="popup-tags popup-tags-pinned">
         <strong>{tagColumn}</strong>
         <TagEditor
           id="tags-{popup.key}"

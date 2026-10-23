@@ -193,6 +193,46 @@ mark {
   font-weight: 300;
   margin: 0.83em 0;
 }
+/* A row of tiny data boxes in the first palette colors, then the label (last link in the footer) */
+#import footer a.whats-new-link {
+  background: #eef6fd;
+  border: 1px solid #3396e4;
+  border-radius: 999px;
+  color: #0a3bb1;
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 4px 6px 4px 12px;
+  transition: background-color 0.15s, color 0.15s;
+}
+#import footer a.whats-new-link::before {
+  background: #3396e4;
+  border-radius: 2px;
+  box-shadow: 10px 0 0 #02de99, 20px 0 0 #ffd100, 30px 0 0 #ea9333;
+  content: '';
+  display: inline-block;
+  height: 7px;
+  margin-right: 40px;
+  vertical-align: 1px;
+  width: 7px;
+}
+#import footer a.whats-new-link:hover,
+#import footer a.whats-new-link:focus-visible {
+  background: #3396e4;
+  color: #ffffff;
+}
+#import .new-badge {
+  background: #fff4c2;
+  border-radius: 999px;
+  color: #6b5200;
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-left: 8px;
+  padding: 2px 8px;
+  vertical-align: 1px;
+}
 #import .forms {
   flex: 1 1 auto;
 }
@@ -1877,6 +1917,29 @@ footer li:first-child::before {
 .popup .popup-tags > strong {
   display: block;
   margin-bottom: 4px;
+}
+/* The row's own tags stay at the top while the rest of the viewer scrolls, so tagging needs no scrolling back */
+.popup .popup-tags-pinned {
+  background: white;
+  border-bottom: 1px solid #e8eaed;
+  align-items: flex-start;
+  display: flex;
+  gap: 10px;
+  margin: 0 -20px;
+  padding: 8px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+/* Label and tags share one line to save height; line-height matches the tag field so they align */
+.popup .popup-tags-pinned > strong {
+  flex: none;
+  line-height: 24px;
+  margin: 0;
+}
+.popup .popup-tags-pinned .tag-editor {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .tag-list {
   display: flex;

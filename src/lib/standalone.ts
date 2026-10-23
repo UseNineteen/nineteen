@@ -18,6 +18,8 @@ export function capturePristineHtml(): void {
   for (const parent of [root.querySelector('head'), root.querySelector('body')]) {
     for (const child of [...(parent?.children ?? [])]) {
       if (!KEEP.has(child.tagName)) child.remove();
+      // The app's own code is inline; an external script is the host's analytics, which saved files must not carry
+      else if (child.tagName === 'SCRIPT' && child.hasAttribute('src')) child.remove();
     }
   }
   root.querySelector('main')?.replaceChildren();

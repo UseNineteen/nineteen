@@ -26,6 +26,10 @@ export interface ViewState {
   searchTerm: string;
   searchScope: string[];
   legendCollapsed: boolean;
+  /** Columns treated as comma-separated tags */
+  tagColumns?: string[];
+  /** Per tag column, tags (lower-case) left out of grouping */
+  tagIgnored?: Record<string, string[]>;
 }
 
 export interface SavedFile {

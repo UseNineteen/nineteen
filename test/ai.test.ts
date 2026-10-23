@@ -109,3 +109,24 @@ describe('providers', () => {
     expect(preferredOpenAIModel(['o3'])).toBe('o3');
   });
 });
+
+describe('data export', () => {
+  it('round-trips through .xlsx and .csv, keeping added columns', async () => {
+    const { parseBytes } = await import('../src/lib/parse');
+    const { toCsv, toXlsx, tableOf, sheetName } = await import('../src/lib/export-data');
+    const coded = withColumns(dataset, { 'AI theme': new Map([[1, 'Shopping'], [3, 'Skipping']]) });
+    for (const bytes of [toXlsx(coded), new TextEncoder().encode(toCsv(coded))]) {
+      const back = parseBytes('x', bytes);
+      expect(back.columns).toEqual(['Name', 'Segment', 'Note', 'AI theme']);
+      expect(back.items.map((i) => [i.raw.Name, i.raw.Note, i.raw['AI theme']])).toEqual([
+        ['Ada', 'Bought shoes\nonline', 'Shopping'],
+        ['Bo', '', ''],
+        ['Cy', 'Skipped it', 'Skipping'],
+      ]);
+    }
+    // Plain numbers are written as numbers; zip codes and other leading-zero values stay text
+    const numbers = buildDataset('n.csv', [{ A: '42', B: '007', C: '3.5', D: '1,000' }]);
+    expect(tableOf(numbers)[1]).toEqual([42, '007', 3.5, '1,000']);
+    expect(sheetName('Q3 [draft]: notes?.xlsx')).toBe('Q3  draft   notes');
+  });
+});

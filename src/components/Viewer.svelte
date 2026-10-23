@@ -15,9 +15,12 @@
     popups: Popups;
     open: string | null;
     ontoggle: (name: ToolbarDropdown, anchor: HTMLElement) => void;
+    /** "Analyze with AI": lives in the toolbar with the other ways of working with the data */
+    aiOpen: boolean;
+    ontoggleai: () => void;
   }
 
-  let { viz, popups, open, ontoggle }: Props = $props();
+  let { viz, popups, open, ontoggle, aiOpen, ontoggleai }: Props = $props();
 
   /** Vertical sizes use em (they follow the row font size); horizontal sizes use px (they follow scale.x). */
   const em = (px: number) => `${px / GEOMETRY.font}em`;
@@ -46,6 +49,7 @@
     rowWidth: layout.rowWidth,
     countWidth: layout.countWidth,
     rows: layout.rowCount,
+    extraHeight: layout.headerExtra,
   });
   /** Horizontal / vertical scale relative to the original 18px boxes */
   const scale = $derived(boxScale({ ...sizing, fit: fitMode !== 'none', square: fitMode !== 'stretch' }));
@@ -79,13 +83,56 @@
     });
   });
 
+  // ---------- Turned split-view labels ----------
+
+  const LABEL_FONT = 'Colfax, sans-serif';
+  /** Turn when any label would show less than this share of its text */
+  const TURN_BELOW = 0.6;
+  /** Longest turned label (scale-1 px) before it is trimmed */
+  const TURNED_MAX = 200;
+  const measureCtx = document.createElement('canvas').getContext('2d');
+  let fontsReady = $state(0);
+
+  /**
+   * Decided at scale 1 from text and band widths only, so it never depends on the
+   * header height it produces (no feedback loop with fitting).
+   */
+  const rotation = $derived.by(() => {
+    void fontsReady;
+    const none = { angle: 0 as 0 | 45 | 90, extra: 0, length: 0 };
+    if (!layout.headers.length || !measureCtx) return none;
+    let turn = false;
+    let longest = 0;
+    for (const header of layout.headers) {
+      measureCtx.font = `500 ${GEOMETRY.font}px ${LABEL_FONT}`;
+      const label = measureCtx.measureText(viz.label(header.label, viz.colorKey)).width;
+      measureCtx.font = `400 ${GEOMETRY.font}px ${LABEL_FONT}`;
+      const total = header.total ? measureCtx.measureText(header.total).width + 4 : 0;
+      const swatch = 16;
+      longest = Math.max(longest, swatch + label + total);
+      const room = header.width + header.cwidth - swatch - total;
+      if (label > 0 && room / label < TURN_BELOW) turn = true;
+    }
+    if (!turn) return none;
+    const angle = appSettings.labelAngle;
+    const length = Math.ceil(Math.min(longest, TURNED_MAX));
+    const height = angle === 90 ? length + 6 : (length + GEOMETRY.font) * Math.SQRT1_2 + 6;
+    return { angle, extra: Math.max(0, Math.ceil(height - 20)), length };
+  });
+
+  $effect(() => {
+    viz.headerAngle = rotation.angle;
+    viz.headerExtra = rotation.extra;
+  });
+
   onMount(() => {
+    document.fonts?.ready.then(() => fontsReady++);
     // Animate block moves only after the initial placement
     requestAnimationFrame(() => requestAnimationFrame(() => (animate = true)));
   });
 
   function enter(item: DataItem, event: PointerEvent) {
-    viz.hoveredColor = item.raw[viz.colorKey];
+    viz.hoveredColor = viz.colorValue(item);
     if (event.pointerType === 'touch') return;
     popups.show(item.id, (event.currentTarget as HTMLElement).getBoundingClientRect());
   }
@@ -182,6 +229,7 @@
     <button type="button" id="toggle-counts" aria-pressed={viz.counts} onclick={() => (viz.counts = !viz.counts)}>
       <span class="count-icon">#</span> <span class="count-label">{viz.counts ? 'Hide' : 'Show'} counts</span>
     </button>
+    <button type="button" id="ai-toggle" aria-expanded={aiOpen} aria-controls="ai-panel" onclick={ontoggleai}>Analyze with AI</button>
     <button
       type="button"
       id="viewer-columns"
@@ -200,15 +248,17 @@
 
   <div class="visualizer" bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
     <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
-      {#if layout.rowOffset}<div class="label-item label-header">{viz.colorKey}</div>{/if}
+      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + rotation.extra)}>{viz.colorKey}</div>{/if}
       {#each layout.groups as group (group.label)}
-        <div class="label-item">{displayLabel(group.label)}</div>
+        <div class="label-item">{viz.label(group.label, viz.groupKey)}</div>
       {/each}
     </div>
     <div class="labels" style:font-size={fontSize} style:width={px(labelWidth * scale.y)} aria-hidden="true">
-      {#if layout.rowOffset}<div class="label-item label-header" title={viz.colorKey}>{viz.colorKey}</div>{/if}
+      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + rotation.extra)} title={viz.colorKey}>
+          {viz.colorKey}
+        </div>{/if}
       {#each layout.groups as group (group.label)}
-        <div class="label-item" title={displayLabel(group.label)}>{displayLabel(group.label)}</div>
+        <div class="label-item" title={viz.label(group.label, viz.groupKey)}>{viz.label(group.label, viz.groupKey)}</div>
       {/each}
     </div>
 
@@ -250,21 +300,35 @@
         {/each}
         {#each layout.headers as header (header.key)}
           {@const swatch = viz.colors.get(header.key)}
+          {@const text = viz.label(header.label, viz.colorKey)}
           <div
             class="band-header"
-            style:transform="translate({sx(header.x, header.cx)}, {em(header.y)})"
+            class:turned={rotation.angle !== 0}
+            style:transform="translate({sx(header.x, header.cx)}, {em(rotation.angle ? 0 : header.y)})"
             style:width={sx(header.width, header.cwidth)}
-            title={header.total ? `${displayLabel(header.label)}: ${header.total} in total` : displayLabel(header.label)}
+            style:height={rotation.angle ? em(20 + rotation.extra) : undefined}
+            title={header.total ? `${text}: ${header.total} in total` : text}
           >
-            <span class="band-swatch" style:background-color={swatch?.fill} style:border-color={swatch?.stroke}></span><span class="band-text"
-              >{displayLabel(header.label)}</span
-            >{#if header.total}<span class="band-total" title="{header.total} in total">{header.total}</span>{/if}
+            <div
+              class="band-label"
+              class:turn-45={rotation.angle === 45}
+              class:turn-90={rotation.angle === 90}
+              style:width={rotation.angle ? em(rotation.length) : undefined}
+            >
+              <span class="band-swatch" style:background-color={swatch?.fill} style:border-color={swatch?.stroke}></span><span
+                class="band-text">{text}</span
+              >{#if header.total}<span class="band-total">{header.total}</span>{/if}
+            </div>
           </div>
         {/each}
       </div>
       <div class="rows">
         <div class="row-items" style:font-size={fontSize} style:padding-left={px(labelWidth * scale.y)}>
-          {#if layout.rowOffset}<div class="row row-header" style:width={sx(layout.rowWidth, layout.countWidth)}></div>{/if}
+          {#if layout.rowOffset}<div
+              class="row row-header"
+              style:width={sx(layout.rowWidth, layout.countWidth)}
+              style:height={em(20 + rotation.extra)}
+            ></div>{/if}
           {#each layout.groups as group (group.label)}
             <div class="row" style:width={sx(layout.rowWidth, layout.countWidth)}></div>
           {/each}

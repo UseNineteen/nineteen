@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { DataItem } from '../lib/data';
+  import TagEditor from './TagEditor.svelte';
+  import { splitTags, type DataItem } from '../lib/data';
   import { segments, type Piece } from '../lib/linkify';
   import type { PopupState, Popups } from '../lib/popups.svelte';
   import { highlightRanges } from '../lib/search';
@@ -15,6 +16,15 @@
   let { popup, popups, item, viz }: Props = $props();
 
   const highlight = $derived(viz.isMatch(item));
+  const tagColumn = $derived(viz.tagEditColumn);
+  const tags = $derived(splitTags(item.raw[tagColumn]));
+  const listed = $derived(viz.viewerColumns.filter((c) => c !== tagColumn));
+
+  /** Clicking a tag finds every row carrying it */
+  function findTag(column: string, tag: string) {
+    viz.searchTerm = /\s/.test(tag) ? `"${tag}"` : tag;
+    viz.searchScope = [column];
+  }
 
   let dragging: { x: number; y: number } | null = null;
 
@@ -58,15 +68,35 @@
     <button class="close" aria-label="Close" onclick={() => popups.close(popup.key)}>&times;</button>
   </header>
   <section>
-    {#each viz.viewerColumns as column (column)}
+    {#if popup.floating || tags.length}
+      <div class="popup-tags">
+        <strong>{tagColumn}</strong>
+        <TagEditor
+          id="tags-{popup.key}"
+          {tags}
+          editable={popup.floating}
+          suggestions={viz.catalog(tagColumn).map((t) => t.label)}
+          onchange={(next) => viz.setTags(item.id, next)}
+          onpick={(tag) => findTag(tagColumn, tag)}
+        />
+      </div>
+    {/if}
+    {#each listed as column (column)}
       {@const text = item.raw[column] ?? ''}
+      {#if viz.isTagColumn(column)}
+        <div class="popup-tags">
+          <strong>{column}</strong>
+          <TagEditor id="tags-{popup.key}-{column}" tags={splitTags(text)} onpick={(tag) => findTag(column, tag)} />
+        </div>
+      {:else}
       <p>
         <strong>{column}</strong><br />
         <!-- prettier-ignore -->
         <span class="value">{#each segments(text, highlight ? highlightRanges(text, viz.searchTerm) : []) as segment, i (i)}{#if segment.kind === 'image'}<img src={segment.src} alt={segment.alt} referrerpolicy="no-referrer" loading="lazy" />{:else if segment.kind === 'link'}<a href={segment.href} target="_blank" rel="noopener noreferrer">{@render pieces(segment.pieces)}</a>{:else}{@render pieces(segment.pieces)}{/if}{/each}</span>
       </p>
+      {/if}
     {:else}
-      <p class="empty">Please select some columns</p>
+      {#if !popup.floating && !tags.length}<p class="empty">Please select some columns</p>{/if}
     {/each}
   </section>
 </article>

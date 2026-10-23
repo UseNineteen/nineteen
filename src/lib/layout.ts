@@ -19,6 +19,8 @@ export interface LayoutOptions {
   counts: boolean;
   sortBy: SortBy;
   sortDirection: SortDirection;
+  /** Extra height for the split header row when its labels are turned (scale-1 px) */
+  headerExtra?: number;
 }
 
 /**
@@ -63,6 +65,8 @@ export interface Layout {
   rowOffset: number;
   /** All rows, including the header row */
   rowCount: number;
+  /** Extra height of the header row (turned labels), included in the group rows' y */
+  headerExtra: number;
   /** Row width in box space, and in count-label space */
   rowWidth: number;
   countWidth: number;
@@ -102,6 +106,9 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
   const legend = sortGroups(rollup(items, colorKey), 'value', 'ascending');
 
   const rowOffset = split ? 1 : 0;
+  const headerExtra = split ? (options.headerExtra ?? 0) : 0;
+  /** y for a group row: below the header row, which may be taller than a normal row */
+  const groupY = (index: number) => rowY(index) + headerExtra;
   const rowIndex = new Map(groups.map((g, i) => [g.label, i + 1 + rowOffset]));
   const legendIndex = new Map(legend.map((g, i) => [g.label, i]));
 
@@ -130,8 +137,8 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
     positions.set(
       item.id,
       split
-        ? { x: columnX(index + bandOffsets[band]), cx: band * slot, y: rowY(rowIndex.get(group)!) }
-        : { x: columnX(index), cx: 0, y: rowY(rowIndex.get(group)!) },
+        ? { x: columnX(index + bandOffsets[band]), cx: band * slot, y: groupY(rowIndex.get(group)!) }
+        : { x: columnX(index), cx: 0, y: groupY(rowIndex.get(group)!) },
     );
   }
 
@@ -146,12 +153,12 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
           text: String(pair.count),
           x: columnX(bandOffsets[band] + pair.count),
           cx: band * slot,
-          y: rowY(rowIndex.get(group)!),
+          y: groupY(rowIndex.get(group)!),
         });
       }
     } else {
       for (const group of groups) {
-        countLabels.push({ key: group.label, text: String(group.count), x: columnX(group.count), cx: 0, y: rowY(rowIndex.get(group.label)!) });
+        countLabels.push({ key: group.label, text: String(group.count), x: columnX(group.count), cx: 0, y: groupY(rowIndex.get(group.label)!) });
       }
     }
   }
@@ -182,6 +189,7 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
     headers,
     rowOffset,
     rowCount: groups.length + rowOffset,
+    headerExtra,
     rowWidth: columnX(columns) + 3 * GEOMETRY.size,
     countWidth: split ? legend.length * slot : slot,
   };
@@ -215,6 +223,8 @@ export interface ScaleInput {
   rowWidth: number;
   countWidth: number;
   rows: number;
+  /** Extra content height at scale 1 (a taller header row) */
+  extraHeight?: number;
 }
 
 /** The zoom range allowed by the box size limits. */
@@ -238,7 +248,7 @@ export function boxScale(input: ScaleInput): Scale {
     const z = clamp(input.zoom);
     return { x: z, y: z };
   }
-  const vertical = input.viewHeight / contentHeight(input.rows);
+  const vertical = input.viewHeight / (contentHeight(input.rows) + (input.extraHeight ?? 0));
   if (input.square) {
     const s = clamp(Math.min(vertical, input.viewWidth / (input.labelWidth + input.countWidth + input.rowWidth)));
     return { x: s, y: s };

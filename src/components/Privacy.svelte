@@ -85,8 +85,8 @@
 
   <h2>Saved files</h2>
   <p>
-    “Download HTML file” and “Download PNG image” are created inside your browser and saved straight to your
-    computer. A saved HTML file contains your data, so share it only with people who should see that data.
+    “Download HTML file”, “Download PNG image”, and the spreadsheet and CSV downloads are created inside your browser and saved straight to your
+    computer. Saved HTML, spreadsheet and CSV files contain your data, so share them only with people who should see that data.
   </p>
 
   <h2>Questions</h2>

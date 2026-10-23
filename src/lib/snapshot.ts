@@ -1,4 +1,4 @@
-import { datasetDetails, displayLabel } from './data';
+import { datasetDetails } from './data';
 import { GEOMETRY, rowTop } from './layout';
 import type { Viz } from './viz.svelte';
 
@@ -45,7 +45,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
   // Row labels, plus the split view's header ("Date Shopped") and "Total" labels
   const rowLabels = [
     ...(layout.rowOffset ? [viz.colorKey] : []),
-    ...layout.groups.map((g) => displayLabel(g.label)),
+    ...layout.groups.map((g) => viz.label(g.label, viz.groupKey)),
   ];
   const maxLabel = Math.min(325, Math.max(0, ...rowLabels.map((label) => measure.measureText(label).width + 20)));
   const rowWidth = layout.rowWidth + layout.countWidth;
@@ -53,7 +53,9 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
   const legendWidth = viz.legendCollapsed ? 0 : LEGEND;
   const plotTop = HEADER + PAD;
   const plotLeft = legendWidth + PAD;
-  const plotHeight = layout.rowCount * GEOMETRY.row;
+  const extra = layout.headerExtra;
+  const angle = viz.headerAngle;
+  const plotHeight = layout.rowCount * GEOMETRY.row + extra;
   const legendHeight = viz.legendCollapsed ? 0 : layout.legend.length * 28 + 10;
   const width = Math.ceil(plotLeft + maxLabel + rowWidth + PAD);
   const height = Math.ceil(plotTop + Math.max(plotHeight, legendHeight) + PAD);
@@ -112,7 +114,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
       ctx.fillRect(PAD + 4, top + 4, 6, 6);
       ctx.font = `400 13px ${FONT}`;
       ctx.fillStyle = '#222222';
-      const label = ellipsize(ctx, displayLabel(entry.label), LEGEND - PAD - 24 - (showCounts ? 40 : 10));
+      const label = ellipsize(ctx, viz.label(entry.label, viz.colorKey), LEGEND - PAD - 24 - (showCounts ? 40 : 10));
       ctx.fillText(label, PAD + 24, top + 8);
       if (showCounts) {
         const w = ctx.measureText(label).width;
@@ -131,38 +133,49 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     ctx.fillText(ellipsize(ctx, text, maxLabel - 20), blocksLeft - 10, top + 10);
     ctx.textAlign = 'left';
   };
-  if (layout.rowOffset) drawRowLabel(viz.colorKey, plotTop + rowTop(1), true);
+  if (layout.rowOffset) drawRowLabel(viz.colorKey, plotTop + rowTop(1) + extra, true);
   layout.groups.forEach((group, i) => {
-    const top = plotTop + rowTop(i + 1 + layout.rowOffset);
+    const top = plotTop + rowTop(i + 1 + layout.rowOffset) + extra;
     ctx.fillStyle = '#f5f5f5';
     ctx.fillRect(plotLeft, top, maxLabel + rowWidth, 20);
-    drawRowLabel(displayLabel(group.label), top, false);
+    drawRowLabel(viz.label(group.label, viz.groupKey), top, false);
   });
 
-  // Split view: value labels above each band
+  // Split view: value labels above each band (turned when the view turns them)
   for (const header of layout.headers) {
     const left = blocksLeft + header.x + header.cx;
-    const top = plotTop + header.y;
     const swatch = viz.colors.get(header.key);
+    ctx.save();
+    if (angle) {
+      // Pivot on the band's bottom-left corner, like the on-screen labels
+      const bottom = plotTop + 20 + extra;
+      ctx.translate(left + (angle === 90 ? size : 6), bottom);
+      ctx.rotate((-angle * Math.PI) / 180);
+      ctx.translate(0, -size);
+    } else {
+      ctx.translate(left, plotTop + header.y);
+    }
     if (swatch) {
       ctx.fillStyle = swatch.stroke;
-      ctx.fillRect(left, top + 4, 11, 11);
+      ctx.fillRect(0, 4, 11, 11);
       ctx.fillStyle = swatch.fill;
-      ctx.fillRect(left + 3, top + 7, 5, 5);
+      ctx.fillRect(3, 7, 5, 5);
     }
     // The total (if any) is never trimmed; the value text gives way instead
     ctx.font = `400 ${font}px ${FONT}`;
-    const totalWidth = header.total ? ctx.measureText(header.total).width + 5 : 0;
+    const totalWidth = header.total ? ctx.measureText(header.total).width + 9 : 0;
+    const room = angle ? 200 : header.width + header.cwidth;
     ctx.font = `500 ${font}px ${FONT}`;
     ctx.fillStyle = '#47535e';
-    const label = ellipsize(ctx, displayLabel(header.label), header.width + header.cwidth - 16 - totalWidth);
-    ctx.fillText(label, left + 16, top + size / 2);
+    const label = ellipsize(ctx, viz.label(header.label, viz.colorKey), room - 16 - totalWidth);
+    ctx.fillText(label, 16, size / 2);
     if (header.total) {
-      const after = left + 16 + ctx.measureText(label).width + 5;
+      const labelWidth = ctx.measureText(label).width;
       ctx.font = `400 ${font}px ${FONT}`;
       ctx.fillStyle = '#a3a8ae';
-      ctx.fillText(header.total, after, top + size / 2);
+      ctx.fillText(header.total, 16 + labelWidth + 9, size / 2);
     }
+    ctx.restore();
   }
 
   // Blocks

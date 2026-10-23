@@ -839,17 +839,36 @@ footer li:first-child::before {
 }
 /* Split view: value labels (with band totals when counts are on) above the bands */
 #viewer .band-header {
-  align-items: center;
   box-sizing: border-box;
   color: var(--trout);
-  display: flex;
   font-weight: 500;
-  gap: calc(5em / 13);
   height: calc(18em / 13);
-  overflow: hidden;
   position: absolute;
-  text-overflow: ellipsis;
+}
+#viewer .band-label {
+  align-items: center;
+  display: flex;
+  gap: calc(5em / 13);
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
   white-space: nowrap;
+  width: 100%;
+}
+/* Turned labels: all of them at once, pivoting on the band's bottom-left corner */
+#viewer .band-header.turned .band-label {
+  bottom: 0;
+  height: calc(18em / 13);
+  left: 0;
+  position: absolute;
+  transform-origin: 0 100%;
+}
+#viewer .band-label.turn-90 {
+  transform: rotate(-90deg) translateY(100%);
+}
+#viewer .band-label.turn-45 {
+  left: calc(6em / 13);
+  transform: rotate(-45deg);
 }
 #viewer .band-text {
   min-width: 0;
@@ -869,11 +888,17 @@ footer li:first-child::before {
   color: var(--gray);
   flex: 0 0 auto;
   font-weight: 400;
+  margin-left: calc(4em / 13);
 }
 #viewer .row.row-header {
   background-color: transparent;
 }
 #viewer .label-item.label-header {
+  /* Sits at the bottom of the (possibly taller) header row, next to the band labels */
+  align-items: flex-end;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
   background-color: transparent;
   color: var(--trout);
   font-weight: 700;
@@ -1140,6 +1165,10 @@ footer li:first-child::before {
 .dropdown.dropdown-save .save-png {
   background-image: url('../assets/images/save-image.svg');
 }
+.dropdown.dropdown-save .save-xlsx,
+.dropdown.dropdown-save .save-csv {
+  background-image: url('../assets/images/save-table.svg');
+}
 
 /* ---------- Popups (popup.styl) ---------- */
 
@@ -1279,24 +1308,20 @@ footer li:first-child::before {
 
 /* ---------- AI panel (new in Nineteen 2) ---------- */
 
-#title-bar #ai-toggle {
-  appearance: none;
-  background-color: transparent;
-  background-image: url('../assets/images/ai.svg');
+#tool-bar #ai-toggle {
+  background-image: url('../assets/images/ai-dark.svg');
+  background-position: left center;
   background-repeat: no-repeat;
-  background-position: left 1px;
-  border: none;
-  color: var(--white);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 0 0 0 16px;
-  margin-left: 18px;
+  margin-right: 20px;
+  padding: 0 0 0 19px;
+  white-space: nowrap;
 }
-#title-bar #ai-toggle:hover {
+#tool-bar #ai-toggle:hover {
   opacity: 0.8;
 }
-#title-bar #ai-toggle[aria-expanded='true'] {
-  border-bottom: 2px solid;
+#tool-bar #ai-toggle[aria-expanded='true'] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .ai-dock {
   flex: 0 0 auto;
@@ -1680,7 +1705,7 @@ footer li:first-child::before {
 #title-bar #settings-toggle:hover {
   opacity: 0.8;
 }
-#settings {
+.nineteen-dialog {
   border: none;
   border-radius: 2px;
   box-shadow: 0 2px 5px rgba(34, 34, 34, 0.3);
@@ -1691,10 +1716,10 @@ footer li:first-child::before {
   padding: 0;
   width: 440px;
 }
-#settings::backdrop {
+.nineteen-dialog::backdrop {
   background-color: rgba(34, 34, 34, 0.3);
 }
-#settings .title-bar {
+.nineteen-dialog .title-bar {
   background-color: var(--trout);
   color: var(--white);
   display: flex;
@@ -1703,10 +1728,10 @@ footer li:first-child::before {
   line-height: 20px;
   padding: 12px 15px 8px;
 }
-#settings .title {
+.nineteen-dialog .title {
   flex: 1 1 auto;
 }
-#settings .close {
+.nineteen-dialog .close {
   appearance: none;
   background: none;
   border: none;
@@ -1715,16 +1740,16 @@ footer li:first-child::before {
   line-height: 1;
   padding: 0;
 }
-#settings .settings-body {
+.nineteen-dialog .settings-body {
   padding: 5px 15px;
 }
-#settings fieldset {
+.nineteen-dialog fieldset {
   border: none;
   border-bottom: 1px solid var(--lightgray);
   margin: 0;
   padding: 10px 0 12px;
 }
-#settings legend {
+.nineteen-dialog legend {
   color: var(--trout);
   font-size: 13px;
   font-weight: 700;
@@ -1732,65 +1757,170 @@ footer li:first-child::before {
   padding: 10px 0 0;
   text-transform: uppercase;
 }
-#settings .settings-check {
+.nineteen-dialog .settings-check {
   align-items: baseline;
   cursor: pointer;
   display: flex;
   gap: 8px;
   margin: 10px 0;
 }
-#settings .settings-check small {
+.nineteen-dialog .settings-check small {
   color: #7d838a;
   display: block;
   font-size: 12.5px;
 }
-#settings .settings-check.disabled {
+.nineteen-dialog .settings-check.disabled {
   cursor: default;
   opacity: 0.5;
 }
-#settings .settings-sizes {
+.nineteen-dialog .settings-sizes {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 24px;
   margin: 14px 0 4px;
 }
-#settings .settings-sizes label {
+.nineteen-dialog .settings-sizes label {
   align-items: center;
   display: flex;
   gap: 8px;
 }
-#settings .settings-sizes input {
+.nineteen-dialog .settings-sizes input {
   border: 2px solid var(--lightgray);
   border-radius: 3px;
   box-sizing: border-box;
   padding: 4px 6px 2px;
   width: 64px;
 }
-#settings .settings-sizes input:focus {
+.nineteen-dialog .settings-sizes input:focus {
   border-color: var(--gray);
   outline: none;
 }
-#settings .unit,
-#settings .settings-hint {
+.nineteen-dialog .unit,
+.nineteen-dialog .settings-hint {
   color: #7d838a;
   font-size: 12.5px;
 }
-#settings .settings-hint {
+.nineteen-dialog .settings-hint {
   margin: 6px 0 0;
 }
-#settings .settings-remember {
+.nineteen-dialog .settings-remember {
   margin: 14px 0 10px;
 }
-#settings .settings-footer {
+.nineteen-dialog .settings-footer {
   border-top: 1px solid var(--lightgray);
   display: flex;
   gap: 10px;
   padding: 10px 15px;
 }
-#settings .settings-spacer {
+.nineteen-dialog .settings-spacer {
   flex: 1 1 auto;
 }
-#settings .settings-footer .btn {
+.nineteen-dialog .settings-footer .btn {
   font-size: 13px;
   font-weight: 500;
+}
+
+/* ---------- Tags (new in Nineteen 2) ---------- */
+
+.popup .popup-tags {
+  margin: 1em 0;
+}
+.popup .popup-tags > strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tag-chip {
+  align-items: center;
+  background: var(--lightgray);
+  border-radius: 11px;
+  display: inline-flex;
+  font-size: 12.5px;
+  line-height: 1;
+}
+.tag-chip button {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--trout);
+  padding: 4px 9px 3px;
+}
+.tag-chip .tag-name:hover {
+  text-decoration: underline;
+}
+.tag-editor.editable .tag-chip .tag-name {
+  padding-right: 3px;
+}
+.tag-chip .tag-remove {
+  font-size: 14px;
+  padding: 2px 8px 2px 2px;
+}
+.tag-chip .tag-remove:hover {
+  color: var(--black);
+}
+.tag-input {
+  flex: 1 1 90px;
+  min-width: 90px;
+}
+.tag-input input {
+  border: 2px solid var(--lightgray);
+  border-radius: 11px;
+  box-sizing: border-box;
+  font-size: 12.5px;
+  padding: 3px 9px 2px;
+  width: 100%;
+}
+.tag-input input:focus {
+  border-color: var(--gray);
+  outline: none;
+}
+
+.dropdown .dropdown-action {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--trout);
+  display: block;
+  font-weight: 500;
+  line-height: 28px;
+  padding: 0 15px 0 36px;
+  text-align: left;
+  width: 100%;
+}
+.dropdown .dropdown-action:hover,
+.dropdown .dropdown-action:focus-visible {
+  background-color: var(--lightgray);
+}
+#tag-options .tag-options {
+  list-style: none;
+  margin: 8px 0;
+  max-height: min(50vh, 420px);
+  overflow-y: auto;
+  padding: 0;
+}
+#tag-options .tag-options li {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+#tag-options .tag-options .settings-check {
+  flex: 1 1 auto;
+  margin: 6px 0;
+}
+#tag-options .tag-option-count {
+  color: #7d838a;
+  font-size: 12.5px;
+  margin-left: auto;
+  padding-left: 12px;
+}
+#tag-options .tag-only {
+  flex: 0 0 auto;
+  font-size: 12px;
 }

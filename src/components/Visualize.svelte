@@ -7,10 +7,12 @@
   import Viewer, { type ToolbarDropdown } from './Viewer.svelte';
   import AIPanel from './ai/AIPanel.svelte';
   import SettingsDialog from './SettingsDialog.svelte';
+  import TagOptions from './TagOptions.svelte';
   import { datasetDetails } from '../lib/data';
   import { serialize } from '../lib/persist';
   import { Popups } from '../lib/popups.svelte';
   import { addTerm } from '../lib/search';
+  import { toCsv, toXlsx } from '../lib/export-data';
   import { renderSnapshot } from '../lib/snapshot';
   import { canSaveStandalone, standaloneHtml } from '../lib/standalone';
   import type { Viz } from '../lib/viz.svelte';
@@ -30,6 +32,8 @@
   let open = $state<{ name: DropdownName; anchor: HTMLElement } | null>(null);
   let aiOpen = $state(false);
   let settingsOpen = $state(false);
+  /** Column whose Tag options dialog is open */
+  let tagOptionsFor = $state<string | null>(null);
   // Mounted on first open, then kept (hidden) so a conversation survives closing the panel
   let aiMounted = $state(false);
 
@@ -53,13 +57,17 @@
   const stem = $derived(viz.dataset.name.replace(/\.[^.]+$/, '') || 'nineteen');
   let htmlUrl = $state<string | null>(null);
   let pngUrl = $state<string | null>(null);
+  let xlsxUrl = $state<string | null>(null);
+  let csvUrl = $state<string | null>(null);
   let htmlStatus = $state('Save an interactive version of this view');
   let pngStatus = $state('Save a static image of this view');
 
   function revoke() {
     if (htmlUrl) URL.revokeObjectURL(htmlUrl);
     if (pngUrl) URL.revokeObjectURL(pngUrl);
-    htmlUrl = pngUrl = null;
+    if (xlsxUrl) URL.revokeObjectURL(xlsxUrl);
+    if (csvUrl) URL.revokeObjectURL(csvUrl);
+    htmlUrl = pngUrl = xlsxUrl = csvUrl = null;
   }
 
   async function prepareSave() {
@@ -71,6 +79,11 @@
     } else {
       htmlStatus = 'Available in the built app (npm run build)';
     }
+    // The data itself, including any columns added in Nineteen
+    xlsxUrl = URL.createObjectURL(
+      new Blob([toXlsx(viz.dataset) as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+    );
+    csvUrl = URL.createObjectURL(new Blob([toCsv(viz.dataset)], { type: 'text/csv' }));
     pngStatus = 'Generating image...';
     try {
       const blob = await renderSnapshot(viz);
@@ -92,6 +105,24 @@
     onrestart();
   }
 </script>
+
+{#snippet tagControls(column: string)}
+  <hr />
+  <label title="Treat values like “gift, price” as separate tags; rows are grouped by their combination of tags">
+    <input type="checkbox" checked={viz.isTagColumn(column)} onchange={(e) => viz.setTagColumn(column, e.currentTarget.checked)} />
+    <span>“{column}” holds comma-separated tags</span>
+  </label>
+  {#if viz.isTagColumn(column)}
+    <button
+      type="button"
+      class="dropdown-action"
+      onclick={() => {
+        close();
+        tagOptionsFor = column;
+      }}>Tag options…</button
+    >
+  {/if}
+{/snippet}
 
 <div id="visualize">
   <header id="title-bar">
@@ -121,7 +152,6 @@
 
     <div class="title-right">
       <a href="./" id="brand" onclick={restart}>nineteen</a>
-      <button id="ai-toggle" aria-expanded={aiOpen} aria-controls="ai-panel" onclick={toggleAI}>Analyze with AI</button>
       <button id="save" aria-haspopup="dialog" aria-expanded={open?.name === 'save'} onclick={(e) => toggle('save', e.currentTarget)}
         >Save</button
       >
@@ -140,7 +170,7 @@
   <figure id="visualization">
     <Legend {viz} />
     <div id="viewer">
-      <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} />
+      <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} {aiOpen} ontoggleai={toggleAI} />
     </div>
     {#if aiMounted}
       <div class="ai-dock" hidden={!aiOpen}>
@@ -167,6 +197,7 @@
             <span>{column}</span>
           </label>
         {/each}
+        {@render tagControls(viz.groupKey)}
       </section>
     </Dropdown>
   {:else if open?.name === 'color'}
@@ -200,6 +231,7 @@
             <span>{column}</span>
           </label>
         {/each}
+        {#if !viz.automatic}{@render tagControls(viz.colorKey)}{/if}
       </section>
     </Dropdown>
   {:else if open?.name === 'save'}
@@ -211,6 +243,14 @@
       <a class="save-png" href={pngUrl} download="nineteen-snapshot.png" onclick={close}>
         <strong>Download PNG image</strong><br />
         <span class="description">{pngStatus}</span>
+      </a>
+      <a class="save-xlsx" href={xlsxUrl} download="{stem}-nineteen.xlsx" onclick={close}>
+        <strong>Download spreadsheet (.xlsx)</strong><br />
+        <span class="description">All rows and columns, including ones added in Nineteen</span>
+      </a>
+      <a class="save-csv" href={csvUrl} download="{stem}-nineteen.csv" onclick={close}>
+        <strong>Download CSV</strong><br />
+        <span class="description">The same data as plain text</span>
       </a>
     </Dropdown>
   {:else if open?.name === 'terms'}
@@ -257,6 +297,7 @@
     />
   {/if}
 
+  <TagOptions {viz} column={tagOptionsFor} onclose={() => (tagOptionsFor = null)} />
   <SettingsDialog {viz} open={settingsOpen} onclose={() => (settingsOpen = false)} />
 
   <div id="popups">

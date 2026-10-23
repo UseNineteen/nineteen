@@ -1,4 +1,4 @@
-import type { DataItem } from './data';
+import { splitTags, type DataItem } from './data';
 
 /**
  * Search grammar, ported from the original Search model:
@@ -24,14 +24,29 @@ function groups(term: string): string[] {
   return term.split(' AND ');
 }
 
-/** Returns the ids of matching items, or null when there is no search term. */
-export function search(items: DataItem[], term: string, scope: string[]): Set<number> | null {
+/**
+ * Returns the ids of matching items, or null when there is no search term.
+ * In tag columns a term must match a whole tag, so "price" finds "price" but not "pricey".
+ */
+export function search(
+  items: DataItem[],
+  term: string,
+  scope: string[],
+  tagColumns: ReadonlySet<string> = new Set(),
+): Set<number> | null {
   if (term.length === 0) return null;
   const matches = groups(term).map((group) => {
-    const patterns = tokens(group).map((t) => termPattern(t));
+    const toks = tokens(group);
+    const patterns = toks.map((t) => termPattern(t));
+    const whole = toks.map((t) => new RegExp(`^(?:${termPattern(t).source})$`, 'i'));
     const matched = new Set<number>();
     for (const item of items) {
-      if (patterns.some((p) => scope.some((column) => p.test(item.raw[column] ?? '')))) matched.add(item.id);
+      const hit = scope.some((column) => {
+        const value = item.raw[column] ?? '';
+        if (tagColumns.has(column)) return splitTags(value).some((tag) => whole.some((p) => p.test(tag)));
+        return patterns.some((p) => p.test(value));
+      });
+      if (hit) matched.add(item.id);
     }
     return matched;
   });

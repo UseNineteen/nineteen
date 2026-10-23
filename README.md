@@ -33,6 +33,7 @@ New users may find it helpful to use the "Try an example" link (A) at the bottom
 Nineteen never changes your data, so feel free to explore the interface. Additional features include:
 - **Sorting:** Sort the rows alphabetically (3) or by the number of items in each group (4). Click a sort button again to reverse it
 - **Counting:** The "Show counts" button (5) shows how many items are in each group
+- **Analyze with AI:** the toolbar button next to the counts opens the AI panel (see "Analyze with AI" below)
 - **Splitting:** Once you've chosen a "color by" column, the "Split" button (6) separates each row into color bands
 - **Detailed viewer:** Hover over any item in the visualization to see all of the data from that row of your file (7):
 	- Click the item to pin its viewer open (click it again to un-pin it)
@@ -52,6 +53,17 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 - **Zoom:** Use the buttons in the lower right to zoom in and out, return to actual size, or fit the whole visualization on screen.
   *Best fit* stays on, so the view keeps fitting as you resize the window or regroup, until you zoom by hand or click it again.
   *Stretch to fit* does the same but lets boxes become rectangles, to use the window's full width and height
+- **Tags:** pin a viewer (click an item) to tag that row. Type a tag and press Enter or a comma; pick existing tags from the
+  suggestions; click × to remove one. Tags are stored in a "Tags" column (created the first time you tag a row), sorted
+  alphabetically, so they are saved with the spreadsheet/CSV/HTML downloads
+	- Grouping or coloring by Tags groups rows by their *combination* of tags ("gift + Price"), ignoring order and capitalization.
+	  Every row still gets exactly one box
+	- *Tag options…* (in the Group by / Color by menus) lets you leave tags out of the combinations, or show only one tag.
+	  The data keeps the tags; only the grouping changes
+	- Click a tag in a viewer to find every row with that tag (in tag columns, search matches whole tags: "price" doesn't find "pricey")
+	- Any column can be treated as tags with "holds comma-separated tags" in the Group by / Color by menus
+- **Split view labels:** with Split on, a row above the bands shows each value (and its total, with counts on). When columns get
+  too narrow, all the labels turn together, tilted 45° or turned 90° (choose in Settings)
 - **Settings:** the Settings button (top right) controls box size:
 	- *Stretch to fit* is the same switch as the Stretch to fit button (turning on one turns on the other). With *Remember settings*
 	  on, saving the dialog with it on makes newly opened files start stretched
@@ -59,10 +71,11 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 	- Tick *Remember settings on this device* to keep them in this browser
 	- Changes preview as you make them. *Save* keeps them; *Cancel*, Esc or clicking outside the dialog discards them
 - **Save (11):** Save a PNG image of the full visualization, or a standalone HTML file with your data and current view built in.
-  The HTML file opens in any browser, works offline, and stays fully interactive
+  The HTML file opens in any browser, works offline, and stays fully interactive. You can also download the data itself as a
+  spreadsheet (.xlsx) or CSV, including any columns you added in Nineteen (such as AI auto-coding)
 
 ### Analyze with AI (optional)
-The **Analyze with AI** button in the title bar opens a panel with three tools. At the top, **Data to share** sets exactly
+The **Analyze with AI** button in the toolbar opens a panel with three tools. At the top, **Data to share** sets exactly
 what any of them can see: all rows or only your current search matches, and which columns. Untick names or other
 personal details there.
 

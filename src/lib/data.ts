@@ -87,3 +87,49 @@ export function rollup(items: DataItem[], key: string, filter?: string): Group[]
     return { label: filter ? label.split('\u0000')[0] : label, value: list[0].parsed[key], items: sorted, count: list.length };
   });
 }
+
+// ---------------------------------------------------------------------------
+// Tags: comma-separated values in one cell ("gift, price")
+// ---------------------------------------------------------------------------
+
+export const NO_TAGS_LABEL = '(no tags)';
+
+const tagCollator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+
+/** Splits a cell into tags (on commas or semicolons), trimmed, without duplicates (ignoring case). */
+export function splitTags(value: string | undefined): string[] {
+  const seen = new Set<string>();
+  const tags: string[] = [];
+  for (const part of (value ?? '').split(/[,;]/)) {
+    const tag = part.trim().replace(/\s+/g, ' ');
+    const key = tag.toLowerCase();
+    if (!tag || seen.has(key)) continue;
+    seen.add(key);
+    tags.push(tag);
+  }
+  return tags;
+}
+
+/** Tags in alphabetical order, so the same set always looks (and groups) the same. */
+export function sortTags(tags: string[]): string[] {
+  return [...tags].sort(tagCollator.compare);
+}
+
+export function joinTags(tags: string[]): string {
+  return sortTags(splitTags(tags.join(','))).join(', ');
+}
+
+/** Returns a copy of the dataset with one cell changed, adding the column if it doesn't exist yet. */
+export function withCell(dataset: Dataset, id: number, column: string, value: string): Dataset {
+  const isNew = !dataset.columns.includes(column);
+  const columns = isNew ? [...dataset.columns, column] : dataset.columns;
+  const items = dataset.items.map((item) => {
+    if (item.id !== id && !isNew) return item;
+    const raw: Row = Object.assign(Object.create(null), item.raw);
+    const parsed: Record<string, Parsed> = Object.assign(Object.create(null), item.parsed);
+    raw[column] = item.id === id ? value : (raw[column] ?? '');
+    parsed[column] = parseValue(raw[column]);
+    return { id: item.id, raw, parsed };
+  });
+  return { name: dataset.name, columns, items };
+}

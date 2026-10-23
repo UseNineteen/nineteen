@@ -13,6 +13,9 @@
   const HELP_URL = 'https://github.com/UseNineteen/nineteen/blob/main/README.md';
   const GITHUB_URL = 'https://github.com/UseNineteen/nineteen';
   const SAMPLE_URL = './shopping_decision_diary.xlsx';
+  const WHATS_NEW_URL = './whats-new.html';
+  /** The "What's new" link only shows on the GitHub Pages preview (and local builds), not the main site */
+  const isPreview = /(\.github\.io|^localhost|^127\.0\.0\.1)$/.test(location.hostname);
 
   let fileInput: HTMLInputElement;
   let url = $state('');
@@ -88,6 +91,9 @@
           }}>Privacy</a
         >
       </li>
+      {#if isPreview}
+        <li><a href={WHATS_NEW_URL} target="_blank" rel="noopener noreferrer">What's new</a></li>
+      {/if}
     </ul>
     <p class="privacy-note">
       Everything happens in your browser. No cookies, no tracking, no uploads. Data goes to an AI service only if you

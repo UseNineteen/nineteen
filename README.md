@@ -88,6 +88,7 @@ get a little wider. If many are, all the labels turn 90° together.
 ### Fitting the View: Square or Stretched Boxes
 Boxes don't have to be square. **Stretch to fit** (in the zoom controls, 15) reshapes them into wider or taller rectangles so the
 whole visualization fills the window, and they resize automatically as you resize the window or regroup your data.
+Settings (13) lets you set the smallest and largest box width and height, and start every file stretched (see below).
 
 <img src="docs/screenshots/stretch-to-fit.png" alt="Stretch to fit" title="Stretch to fit: boxes reshape to fill the window">
 
@@ -151,8 +152,7 @@ You can use Nineteen with confidential data.
 The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app.
 
 ## Have More Questions?
-Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen),
-the creators of Nineteen. We'd also love to hear how you're using Nineteen, if you find it useful!
+Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen), the creators of Nineteen. We'd also love to hear how you're using Nineteen, if you find it useful!
 
 ## Development
 

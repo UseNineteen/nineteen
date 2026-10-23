@@ -42,14 +42,20 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
 
   const measure = document.createElement('canvas').getContext('2d')!;
   measure.font = `400 ${font}px ${FONT}`;
-  const maxLabel = Math.min(325, Math.max(0, ...layout.groups.map((g) => measure.measureText(displayLabel(g.label)).width + 20)));
+  // Row labels, plus the split view's header ("Date Shopped") and "Total" labels
+  const rowLabels = [
+    ...(layout.rowOffset ? [viz.colorKey] : []),
+    ...layout.groups.map((g) => displayLabel(g.label)),
+  ];
+  const maxLabel = Math.min(325, Math.max(0, ...rowLabels.map((label) => measure.measureText(label).width + 20)));
+  const rowWidth = layout.rowWidth + layout.countWidth;
 
   const legendWidth = viz.legendCollapsed ? 0 : LEGEND;
   const plotTop = HEADER + PAD;
   const plotLeft = legendWidth + PAD;
-  const plotHeight = layout.groups.length * GEOMETRY.row;
+  const plotHeight = layout.rowCount * GEOMETRY.row;
   const legendHeight = viz.legendCollapsed ? 0 : layout.legend.length * 28 + 10;
-  const width = Math.ceil(plotLeft + maxLabel + layout.rowWidth + PAD);
+  const width = Math.ceil(plotLeft + maxLabel + rowWidth + PAD);
   const height = Math.ceil(plotTop + Math.max(plotHeight, legendHeight) + PAD);
 
   const scale = Math.min(2, MAX_SIDE / width, MAX_SIDE / height, Math.sqrt(MAX_AREA / (width * height)));
@@ -118,23 +124,53 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
 
   // Rows and labels
   const blocksLeft = plotLeft + maxLabel;
-  layout.groups.forEach((group, i) => {
-    const top = plotTop + rowTop(i + 1);
-    ctx.fillStyle = '#f5f5f5';
-    ctx.fillRect(plotLeft, top, maxLabel + layout.rowWidth, 20);
-    ctx.font = `400 ${font}px ${FONT}`;
-    ctx.fillStyle = '#222222';
+  const drawRowLabel = (text: string, top: number, bold: boolean) => {
+    ctx.font = `${bold ? 700 : 400} ${font}px ${FONT}`;
+    ctx.fillStyle = bold ? '#47535e' : '#222222';
     ctx.textAlign = 'right';
-    ctx.fillText(ellipsize(ctx, displayLabel(group.label), maxLabel - 20), blocksLeft - 10, top + 10);
+    ctx.fillText(ellipsize(ctx, text, maxLabel - 20), blocksLeft - 10, top + 10);
     ctx.textAlign = 'left';
+  };
+  if (layout.rowOffset) drawRowLabel(viz.colorKey, plotTop + rowTop(1), true);
+  layout.groups.forEach((group, i) => {
+    const top = plotTop + rowTop(i + 1 + layout.rowOffset);
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(plotLeft, top, maxLabel + rowWidth, 20);
+    drawRowLabel(displayLabel(group.label), top, false);
   });
+
+  // Split view: value labels above each band
+  for (const header of layout.headers) {
+    const left = blocksLeft + header.x + header.cx;
+    const top = plotTop + header.y;
+    const swatch = viz.colors.get(header.key);
+    if (swatch) {
+      ctx.fillStyle = swatch.stroke;
+      ctx.fillRect(left, top + 4, 11, 11);
+      ctx.fillStyle = swatch.fill;
+      ctx.fillRect(left + 3, top + 7, 5, 5);
+    }
+    // The total (if any) is never trimmed; the value text gives way instead
+    ctx.font = `400 ${font}px ${FONT}`;
+    const totalWidth = header.total ? ctx.measureText(header.total).width + 5 : 0;
+    ctx.font = `500 ${font}px ${FONT}`;
+    ctx.fillStyle = '#47535e';
+    const label = ellipsize(ctx, displayLabel(header.label), header.width + header.cwidth - 16 - totalWidth);
+    ctx.fillText(label, left + 16, top + size / 2);
+    if (header.total) {
+      const after = left + 16 + ctx.measureText(label).width + 5;
+      ctx.font = `400 ${font}px ${FONT}`;
+      ctx.fillStyle = '#a3a8ae';
+      ctx.fillText(header.total, after, top + size / 2);
+    }
+  }
 
   // Blocks
   for (const item of layout.items) {
     const p = layout.positions.get(item.id)!;
     const filtered = viz.isFiltered(item);
     const swatch = viz.colorOf(item);
-    const bx = blocksLeft + p.x;
+    const bx = blocksLeft + p.x + p.cx;
     const by = plotTop + p.y;
     ctx.fillStyle = filtered ? '#cccccc' : swatch.stroke;
     ctx.beginPath();
@@ -150,7 +186,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
   ctx.font = `400 ${font}px ${FONT}`;
   ctx.fillStyle = '#a3a8ae';
   for (const count of layout.counts) {
-    ctx.fillText(count.text, blocksLeft + count.x + 5, plotTop + count.y + size / 2);
+    ctx.fillText(count.text, blocksLeft + count.x + count.cx + 5, plotTop + count.y + size / 2);
   }
 
   return new Promise((resolve, reject) =>

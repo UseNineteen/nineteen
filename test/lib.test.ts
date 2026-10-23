@@ -5,7 +5,7 @@ import { buildDataset, rollup } from '../src/lib/data';
 import { compareValues, parseValue } from '../src/lib/values';
 import { addTerm, highlightRanges, search } from '../src/lib/search';
 import { colorsFor, darker } from '../src/lib/colors';
-import { boxScale, computeLayout, columnX, rowY, zoomBounds } from '../src/lib/layout';
+import { boxScale, computeLayout, columnX, countSlot, rowY, zoomBounds } from '../src/lib/layout';
 import { detectFormat, parseBytes } from '../src/lib/parse';
 import { resolveHostedUrl } from '../src/lib/hosted';
 import { segments } from '../src/lib/linkify';
@@ -159,16 +159,38 @@ describe('layout', () => {
     const layout = computeLayout(dataset.items, base);
     expect(layout.groups.map((g) => g.label)).toEqual(['Ann', 'Bob']);
     expect(layout.items.map((i) => i.id)).toEqual([1, 4, 3, 2]);
-    expect(layout.positions.get(3)).toEqual({ x: columnX(2), y: rowY(1) });
-    expect(layout.positions.get(2)).toEqual({ x: columnX(0), y: rowY(2) });
+    expect(layout.positions.get(3)).toEqual({ x: columnX(2), cx: 0, y: rowY(1) });
+    expect(layout.positions.get(2)).toEqual({ x: columnX(0), cx: 0, y: rowY(2) });
     expect(layout.rowWidth).toBe(columnX(3) + 54);
+    expect(layout.countWidth).toBe(0);
+    expect(layout.headers).toEqual([]);
+    expect(layout.rowCount).toBe(2);
   });
 
   it('splits into color bands', () => {
     const layout = computeLayout(dataset.items, { ...base, split: true, counts: true });
-    // band x: widest group has 2 (+1 count slot) → band y starts at 3 + 1 gap
-    expect(layout.positions.get(3)!.x).toBe(columnX(4));
-    expect(layout.counts.find((c) => c.key === 'x\u0000Ann')).toMatchObject({ text: '2', x: columnX(2) });
+    const slot = countSlot(1);
+    // band x: widest group has 2 + 1 gap column → band y starts at column 3, after one count slot
+    expect(layout.positions.get(3)).toEqual({ x: columnX(3), cx: slot, y: rowY(2) });
+    expect(layout.counts.find((c) => c.key === 'x\u0000Ann')).toMatchObject({ text: '2', x: columnX(2), cx: 0 });
+    expect(layout.countWidth).toBe(2 * slot);
+  });
+
+  it('adds a header row of values, with band totals when counts are on', () => {
+    const layout = computeLayout(dataset.items, { ...base, split: true, counts: true });
+    expect(layout.rowOffset).toBe(1);
+    expect(layout.rowCount).toBe(3); // header, Ann, Bob
+    expect(layout.headers.map((h) => [h.label, h.total, h.y])).toEqual([
+      ['x', '2', rowY(1)],
+      ['y', '2', rowY(1)],
+    ]);
+  });
+
+  it('shows header values without totals when split without counts', () => {
+    const layout = computeLayout(dataset.items, { ...base, split: true });
+    expect(layout.rowCount).toBe(3);
+    expect(layout.headers.map((h) => h.total)).toEqual([null, null]);
+    expect(layout.countWidth).toBe(0);
   });
 
   it('sorts rows by count', () => {
@@ -237,7 +259,7 @@ describe('persistence', () => {
 describe('box scaling', () => {
   const base = {
     fit: true, square: true, minBox: 4, maxBox: 40, zoom: 1,
-    viewWidth: 1000, viewHeight: 540, labelWidth: 100, rowWidth: 400, rows: 20,
+    viewWidth: 1000, viewHeight: 540, labelWidth: 100, rowWidth: 400, countWidth: 0, rows: 20,
   };
 
   it('uses the zoom, within the box limits, when not fitting', () => {
@@ -255,6 +277,17 @@ describe('box scaling', () => {
     // y = 1, x = (1000 - 100*1) / 400 = 2.25
     expect(boxScale({ ...base, square: false })).toEqual({ x: 2.222, y: 1 });
     expect(boxScale({ ...base, square: false, maxBox: 60 })).toEqual({ x: 2.25, y: 1 });
+  });
+
+  it('keeps room for counts, which scale with text height, when stretching', () => {
+    // x = (1000 - (100 + 200) * 1) / 400 = 1.75
+    expect(boxScale({ ...base, square: false, countWidth: 200 })).toEqual({ x: 1.75, y: 1 });
+  });
+
+  it('shrinks the height when stretched boxes would get too narrow', () => {
+    // Height alone allows y = 1, but then x = (1000 - 900) / 400 = 0.25 (4.5px) — below the 0.5 (9px) minimum.
+    // So x = 0.5 and y = (1000 - 400 * 0.5) / 900 = 0.889
+    expect(boxScale({ ...base, square: false, minBox: 9, labelWidth: 100, countWidth: 800 })).toEqual({ x: 0.5, y: 0.889 });
   });
 
   it('never goes below the smallest box size', () => {

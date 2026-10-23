@@ -837,6 +837,47 @@ footer li:first-child::before {
   width: auto;
   animation: fade-in 300ms 800ms both;
 }
+/* Split view: value labels (with band totals when counts are on) above the bands */
+#viewer .band-header {
+  align-items: center;
+  box-sizing: border-box;
+  color: var(--trout);
+  display: flex;
+  font-weight: 500;
+  gap: calc(5em / 13);
+  height: calc(18em / 13);
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#viewer .band-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#viewer .band-swatch {
+  border: calc(3em / 13) solid transparent;
+  border-radius: calc(2em / 13);
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  height: calc(11em / 13);
+  width: calc(11em / 13);
+}
+#viewer .band-total {
+  /* Like the legend and row counts; never trimmed, the value text gives way instead */
+  color: var(--gray);
+  flex: 0 0 auto;
+  font-weight: 400;
+}
+#viewer .row.row-header {
+  background-color: transparent;
+}
+#viewer .label-item.label-header {
+  background-color: transparent;
+  color: var(--trout);
+  font-weight: 700;
+}
 #viewer .block-item-label:hover {
   background-color: transparent !important;
 }

@@ -44,7 +44,8 @@
     viewHeight,
     labelWidth,
     rowWidth: layout.rowWidth,
-    rows: layout.groups.length,
+    countWidth: layout.countWidth,
+    rows: layout.rowCount,
   });
   /** Horizontal / vertical scale relative to the original 18px boxes */
   const scale = $derived(boxScale({ ...sizing, fit: fitMode !== 'none', square: fitMode !== 'stretch' }));
@@ -54,6 +55,8 @@
     viz.displayScale = scale.y;
   });
   const edge = $derived(Math.min(scale.x, scale.y));
+  /** Screen x for a layout position: box space follows box width, count space follows text size */
+  const sx = (x: number, cx: number) => px(x * scale.x + cx * scale.y);
 
   // Boxes animate when regrouping, but not while they are being resized
   let lastScale = { x: 1, y: 1 };
@@ -197,11 +200,13 @@
 
   <div class="visualizer" bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
     <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
+      {#if layout.rowOffset}<div class="label-item label-header">{viz.colorKey}</div>{/if}
       {#each layout.groups as group (group.label)}
         <div class="label-item">{displayLabel(group.label)}</div>
       {/each}
     </div>
     <div class="labels" style:font-size={fontSize} style:width={px(labelWidth * scale.y)} aria-hidden="true">
+      {#if layout.rowOffset}<div class="label-item label-header" title={viz.colorKey}>{viz.colorKey}</div>{/if}
       {#each layout.groups as group (group.label)}
         <div class="label-item" title={displayLabel(group.label)}>{displayLabel(group.label)}</div>
       {/each}
@@ -224,7 +229,7 @@
             class="block-item"
             class:filtered={viz.isFiltered(item)}
             class:floating={popups.isFloating(item.id)}
-            style:transform="translate({px(p.x * scale.x)}, {em(p.y)})"
+            style:transform="translate({sx(p.x, p.cx)}, {em(p.y)})"
             style:width={px(GEOMETRY.size * scale.x)}
             style:border-width={px(5 * edge)}
             style:border-radius={px(2 * edge)}
@@ -241,13 +246,27 @@
           ></div>
         {/each}
         {#each layout.counts as count (count.key)}
-          <div class="block-item block-item-label" style:transform="translate({px(count.x * scale.x)}, {em(count.y)})">{count.text}</div>
+          <div class="block-item block-item-label" style:transform="translate({sx(count.x, count.cx)}, {em(count.y)})">{count.text}</div>
+        {/each}
+        {#each layout.headers as header (header.key)}
+          {@const swatch = viz.colors.get(header.key)}
+          <div
+            class="band-header"
+            style:transform="translate({sx(header.x, header.cx)}, {em(header.y)})"
+            style:width={sx(header.width, header.cwidth)}
+            title={header.total ? `${displayLabel(header.label)}: ${header.total} in total` : displayLabel(header.label)}
+          >
+            <span class="band-swatch" style:background-color={swatch?.fill} style:border-color={swatch?.stroke}></span><span class="band-text"
+              >{displayLabel(header.label)}</span
+            >{#if header.total}<span class="band-total" title="{header.total} in total">{header.total}</span>{/if}
+          </div>
         {/each}
       </div>
       <div class="rows">
         <div class="row-items" style:font-size={fontSize} style:padding-left={px(labelWidth * scale.y)}>
+          {#if layout.rowOffset}<div class="row row-header" style:width={sx(layout.rowWidth, layout.countWidth)}></div>{/if}
           {#each layout.groups as group (group.label)}
-            <div class="row" style:width={px(layout.rowWidth * scale.x)}></div>
+            <div class="row" style:width={sx(layout.rowWidth, layout.countWidth)}></div>
           {/each}
         </div>
       </div>

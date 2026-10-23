@@ -6,6 +6,7 @@
   import { onMount, tick } from 'svelte';
   import { displayLabel, type DataItem } from '../lib/data';
   import { boxScale, GEOMETRY } from '../lib/layout';
+  import { wrapText } from '../lib/wrap';
   import type { Popups } from '../lib/popups.svelte';
   import { appSettings } from '../lib/settings.svelte';
   import { ZOOM, zoomRange, type Viz } from '../lib/viz.svelte';
@@ -83,46 +84,58 @@
     });
   });
 
-  // ---------- Turned split-view labels ----------
+  // ---------- Split-view value labels: one line, wrapped, or turned ----------
 
   const LABEL_FONT = 'Colfax, sans-serif';
-  /** Turn when any label would show less than this share of its text */
+  /** Wrap onto at most this many lines before turning */
+  const MAX_LINES = 3;
+  /** Line height of wrapped labels (scale-1 px) */
+  const LINE_HEIGHT = 16;
+  /** Turn when even wrapped, any label would show less than this share of its text */
   const TURN_BELOW = 0.6;
-  /** Longest turned label (scale-1 px) before it is trimmed */
-  const TURNED_MAX = 200;
+  /** Longest turned label (scale-1 px, about 20 characters) before it is trimmed */
+  const TURNED_MAX = 140;
+  const SWATCH = 16;
   const measureCtx = document.createElement('canvas').getContext('2d');
   let fontsReady = $state(0);
 
   /**
    * Decided at scale 1 from text and band widths only, so it never depends on the
-   * header height it produces (no feedback loop with fitting).
+   * header height it produces (no feedback loop with fitting). All labels share one mode.
    */
-  const rotation = $derived.by(() => {
+  const headerMode = $derived.by(() => {
     void fontsReady;
-    const none = { angle: 0 as 0 | 45 | 90, extra: 0, length: 0 };
-    if (!layout.headers.length || !measureCtx) return none;
+    const line = { mode: 'line' as 'line' | 'wrap' | 'turn', lines: 1, extra: 0, length: 0 };
+    if (!layout.headers.length || !measureCtx) return line;
+    const measureLabel = (text: string) => {
+      measureCtx.font = `500 ${GEOMETRY.font}px ${LABEL_FONT}`;
+      return measureCtx.measureText(text).width;
+    };
     let turn = false;
+    let lines = 1;
     let longest = 0;
     for (const header of layout.headers) {
-      measureCtx.font = `500 ${GEOMETRY.font}px ${LABEL_FONT}`;
-      const label = measureCtx.measureText(viz.label(header.label, viz.colorKey)).width;
+      const text = viz.label(header.label, viz.colorKey);
       measureCtx.font = `400 ${GEOMETRY.font}px ${LABEL_FONT}`;
       const total = header.total ? measureCtx.measureText(header.total).width + 4 : 0;
-      const swatch = 16;
-      longest = Math.max(longest, swatch + label + total);
-      const room = header.width + header.cwidth - swatch - total;
-      if (label > 0 && room / label < TURN_BELOW) turn = true;
+      longest = Math.max(longest, SWATCH + measureLabel(text) + total);
+      const room = header.width + header.cwidth - SWATCH - total - 4;
+      const wrapped = wrapText(text, room, measureLabel, MAX_LINES);
+      if (room <= 0 || wrapped.brokenWord || (!wrapped.complete && wrapped.shown < TURN_BELOW)) turn = true;
+      lines = Math.max(lines, wrapped.lines.length);
     }
-    if (!turn) return none;
-    const angle = appSettings.labelAngle;
-    const length = Math.ceil(Math.min(longest, TURNED_MAX));
-    const height = angle === 90 ? length + 6 : (length + GEOMETRY.font) * Math.SQRT1_2 + 6;
-    return { angle, extra: Math.max(0, Math.ceil(height - 20)), length };
+    if (turn) {
+      const length = Math.ceil(Math.min(longest, TURNED_MAX));
+      return { mode: 'turn' as const, lines: 1, extra: Math.max(0, length + 6 - 20), length };
+    }
+    if (lines > 1) return { mode: 'wrap' as const, lines, extra: (lines - 1) * LINE_HEIGHT, length: 0 };
+    return line;
   });
 
   $effect(() => {
-    viz.headerAngle = rotation.angle;
-    viz.headerExtra = rotation.extra;
+    viz.headerMode = headerMode.mode;
+    viz.headerLines = headerMode.lines;
+    viz.headerExtra = headerMode.extra;
   });
 
   onMount(() => {
@@ -248,13 +261,13 @@
 
   <div class="visualizer" bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
     <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
-      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + rotation.extra)}>{viz.colorKey}</div>{/if}
+      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)}>{viz.colorKey}</div>{/if}
       {#each layout.groups as group (group.label)}
         <div class="label-item">{viz.label(group.label, viz.groupKey)}</div>
       {/each}
     </div>
     <div class="labels" style:font-size={fontSize} style:width={px(labelWidth * scale.y)} aria-hidden="true">
-      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + rotation.extra)} title={viz.colorKey}>
+      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)} title={viz.colorKey}>
           {viz.colorKey}
         </div>{/if}
       {#each layout.groups as group (group.label)}
@@ -303,20 +316,17 @@
           {@const text = viz.label(header.label, viz.colorKey)}
           <div
             class="band-header"
-            class:turned={rotation.angle !== 0}
-            style:transform="translate({sx(header.x, header.cx)}, {em(rotation.angle ? 0 : header.y)})"
+            class:turned={headerMode.mode === 'turn'}
+            class:wrapped={headerMode.mode === 'wrap'}
+            style:transform="translate({sx(header.x, header.cx)}, {em(headerMode.mode === 'line' ? header.y : 0)})"
             style:width={sx(header.width, header.cwidth)}
-            style:height={rotation.angle ? em(20 + rotation.extra) : undefined}
+            style:height={headerMode.mode === 'line' ? undefined : em(20 + headerMode.extra)}
             title={header.total ? `${text}: ${header.total} in total` : text}
           >
-            <div
-              class="band-label"
-              class:turn-45={rotation.angle === 45}
-              class:turn-90={rotation.angle === 90}
-              style:width={rotation.angle ? em(rotation.length) : undefined}
-            >
+            <div class="band-label" style:width={headerMode.mode === 'turn' ? em(headerMode.length) : undefined}>
               <span class="band-swatch" style:background-color={swatch?.fill} style:border-color={swatch?.stroke}></span><span
-                class="band-text">{text}</span
+                class="band-text"
+                style:-webkit-line-clamp={headerMode.mode === 'wrap' ? headerMode.lines : undefined}>{text}</span
               >{#if header.total}<span class="band-total">{header.total}</span>{/if}
             </div>
           </div>
@@ -327,7 +337,7 @@
           {#if layout.rowOffset}<div
               class="row row-header"
               style:width={sx(layout.rowWidth, layout.countWidth)}
-              style:height={em(20 + rotation.extra)}
+              style:height={em(20 + headerMode.extra)}
             ></div>{/if}
           {#each layout.groups as group (group.label)}
             <div class="row" style:width={sx(layout.rowWidth, layout.countWidth)}></div>

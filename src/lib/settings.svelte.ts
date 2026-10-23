@@ -10,17 +10,12 @@ export const BOX_LIMITS = { min: 2, max: 100 } as const;
 
 export const DEFAULTS = {
   stretchByDefault: false,
-  labelAngle: 45 as LabelAngle,
   minBox: 4,
   maxBox: 40,
 } as const;
 
-/** How split-view value labels turn when their columns get too narrow */
-export type LabelAngle = 45 | 90;
-
 export interface DisplaySettings {
   stretchByDefault: boolean;
-  labelAngle: LabelAngle;
   minBox: number;
   maxBox: number;
 }
@@ -34,7 +29,6 @@ function sanitizeBox(value: unknown, fallback: number): number {
 class AppSettings {
   /** Newly opened files start in "Stretch to fit" (saved from the current view when Settings is saved) */
   stretchByDefault = $state<boolean>(DEFAULTS.stretchByDefault);
-  labelAngle = $state<LabelAngle>(DEFAULTS.labelAngle);
   /** Smallest / largest box side in screen pixels (applies to fitting and zooming) */
   minBox = $state<number>(DEFAULTS.minBox);
   maxBox = $state<number>(DEFAULTS.maxBox);
@@ -46,7 +40,6 @@ class AppSettings {
       if (!text) return;
       const stored = JSON.parse(text) as Partial<DisplaySettings>;
       this.stretchByDefault = stored.stretchByDefault === true;
-      this.labelAngle = stored.labelAngle === 90 ? 90 : 45;
       this.minBox = sanitizeBox(stored.minBox, DEFAULTS.minBox);
       this.maxBox = Math.max(this.minBox, sanitizeBox(stored.maxBox, DEFAULTS.maxBox));
       this.remember = true;
@@ -66,12 +59,11 @@ class AppSettings {
   }
 
   snapshot(): DisplaySettings & { remember: boolean } {
-    return { stretchByDefault: this.stretchByDefault, labelAngle: this.labelAngle, minBox: this.minBox, maxBox: this.maxBox, remember: this.remember };
+    return { stretchByDefault: this.stretchByDefault, minBox: this.minBox, maxBox: this.maxBox, remember: this.remember };
   }
 
   restore(saved: DisplaySettings & { remember: boolean }): void {
     this.stretchByDefault = saved.stretchByDefault;
-    this.labelAngle = saved.labelAngle;
     this.minBox = saved.minBox;
     this.maxBox = saved.maxBox;
     this.remember = saved.remember;
@@ -80,7 +72,6 @@ class AppSettings {
   /** Display values back to their defaults (the "remember" choice is left as is). */
   resetDisplay(): void {
     this.stretchByDefault = DEFAULTS.stretchByDefault;
-    this.labelAngle = DEFAULTS.labelAngle;
     this.minBox = DEFAULTS.minBox;
     this.maxBox = DEFAULTS.maxBox;
   }
@@ -89,7 +80,7 @@ class AppSettings {
   persist(): void {
     try {
       if (this.remember) {
-        const stored: DisplaySettings = { stretchByDefault: this.stretchByDefault, labelAngle: this.labelAngle, minBox: this.minBox, maxBox: this.maxBox };
+        const stored: DisplaySettings = { stretchByDefault: this.stretchByDefault, minBox: this.minBox, maxBox: this.maxBox };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
       } else {
         localStorage.removeItem(STORAGE_KEY);

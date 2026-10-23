@@ -45,9 +45,13 @@ export class Viz {
   hoveredColor = $state<string | null>(null);
   /** Rows cited by an AI answer; when set, every other row is grayed out */
   aiHighlight = $state.raw<Set<number> | null>(null);
-  /** Split view labels turned to fit narrow columns (set by the viewer, which measures the text) */
-  headerAngle = $state<0 | 45 | 90>(0);
-  /** Extra height of the turned label row, at scale 1 */
+  /**
+   * Split view labels: on one line, wrapped onto up to 3 lines, or turned 90° when columns are
+   * too narrow even for that (set by the viewer, which measures the text)
+   */
+  headerMode = $state<'line' | 'wrap' | 'turn'>('line');
+  headerLines = $state(1);
+  /** Extra height of the label row, at scale 1 */
   headerExtra = $state(0);
   /** Columns holding comma-separated tags */
   tagColumns = $state<string[]>([]);

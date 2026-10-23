@@ -855,20 +855,29 @@ footer li:first-child::before {
   white-space: nowrap;
   width: 100%;
 }
-/* Turned labels: all of them at once, pivoting on the band's bottom-left corner */
+/* Wrapped labels: up to 3 lines, sitting on the boxes below */
+#viewer .band-header.wrapped .band-label {
+  align-items: flex-end;
+  padding-bottom: calc(1em / 13);
+}
+#viewer .band-header.wrapped .band-text {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  line-height: calc(16em / 13);
+  white-space: normal;
+}
+#viewer .band-header.wrapped .band-swatch,
+#viewer .band-header.wrapped .band-total {
+  margin-bottom: calc(3em / 13);
+}
+/* Turned labels (columns too narrow even to wrap): all at once, 90°, pivoting on the band's bottom-left corner */
 #viewer .band-header.turned .band-label {
   bottom: 0;
   height: calc(18em / 13);
   left: 0;
   position: absolute;
-  transform-origin: 0 100%;
-}
-#viewer .band-label.turn-90 {
   transform: rotate(-90deg) translateY(100%);
-}
-#viewer .band-label.turn-45 {
-  left: calc(6em / 13);
-  transform: rotate(-45deg);
+  transform-origin: 0 100%;
 }
 #viewer .band-text {
   min-width: 0;

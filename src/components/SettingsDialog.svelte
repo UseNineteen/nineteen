@@ -128,23 +128,6 @@
       </p>
     </fieldset>
 
-    <fieldset>
-      <legend>Split view labels</legend>
-      <p class="settings-hint">
-        When columns get too narrow for their value labels, all the labels turn together, and the label row grows to fit.
-      </p>
-      <div class="settings-angles" role="radiogroup" aria-label="Turn labels by">
-        <label class="settings-check">
-          <input type="radio" name="label-angle" value={45} bind:group={appSettings.labelAngle} />
-          <span><strong>Tilt 45°</strong> <small>Easier to read; uses less height</small></span>
-        </label>
-        <label class="settings-check">
-          <input type="radio" name="label-angle" value={90} bind:group={appSettings.labelAngle} />
-          <span><strong>Turn 90°</strong> <small>Most compact across; reads bottom to top</small></span>
-        </label>
-      </div>
-    </fieldset>
-
     <label class="settings-check settings-remember">
       <input type="checkbox" bind:checked={appSettings.remember} />
       <span>

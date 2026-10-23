@@ -62,8 +62,9 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 	  The data keeps the tags; only the grouping changes
 	- Click a tag in a viewer to find every row with that tag (in tag columns, search matches whole tags: "price" doesn't find "pricey")
 	- Any column can be treated as tags with "holds comma-separated tags" in the Group by / Color by menus
-- **Split view labels:** with Split on, a row above the bands shows each value (and its total, with counts on). When columns get
-  too narrow, all the labels turn together, tilted 45° or turned 90° (choose in Settings)
+- **Split view labels:** with Split on, a row above the bands shows each value (and its total, with counts on). When a value
+  doesn't fit, the labels wrap onto up to 3 lines. If a column is too narrow even for that, all the labels turn 90° together,
+  trimmed after about 20 characters (hover for the full value)
 - **Settings:** the Settings button (top right) controls box size:
 	- *Stretch to fit* is the same switch as the Stretch to fit button (turning on one turns on the other). With *Remember settings*
 	  on, saving the dialog with it on makes newly opened files start stretched

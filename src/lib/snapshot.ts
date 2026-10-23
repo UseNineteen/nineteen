@@ -1,5 +1,6 @@
 import { datasetDetails } from './data';
 import { GEOMETRY, rowTop } from './layout';
+import { wrapText } from './wrap';
 import type { Viz } from './viz.svelte';
 
 /**
@@ -54,7 +55,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
   const plotTop = HEADER + PAD;
   const plotLeft = legendWidth + PAD;
   const extra = layout.headerExtra;
-  const angle = viz.headerAngle;
+  const mode = viz.headerMode;
   const plotHeight = layout.rowCount * GEOMETRY.row + extra;
   const legendHeight = viz.legendCollapsed ? 0 : layout.legend.length * 28 + 10;
   const width = Math.ceil(plotLeft + maxLabel + rowWidth + PAD);
@@ -141,39 +142,47 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     drawRowLabel(viz.label(group.label, viz.groupKey), top, false);
   });
 
-  // Split view: value labels above each band (turned when the view turns them)
+  // Split view: value labels above each band (on one line, wrapped, or turned, like the screen)
   for (const header of layout.headers) {
     const left = blocksLeft + header.x + header.cx;
     const swatch = viz.colors.get(header.key);
-    ctx.save();
-    if (angle) {
-      // Pivot on the band's bottom-left corner, like the on-screen labels
-      const bottom = plotTop + 20 + extra;
-      ctx.translate(left + (angle === 90 ? size : 6), bottom);
-      ctx.rotate((-angle * Math.PI) / 180);
-      ctx.translate(0, -size);
-    } else {
-      ctx.translate(left, plotTop + header.y);
-    }
-    if (swatch) {
-      ctx.fillStyle = swatch.stroke;
-      ctx.fillRect(0, 4, 11, 11);
-      ctx.fillStyle = swatch.fill;
-      ctx.fillRect(3, 7, 5, 5);
-    }
-    // The total (if any) is never trimmed; the value text gives way instead
+    const text = viz.label(header.label, viz.colorKey);
     ctx.font = `400 ${font}px ${FONT}`;
     const totalWidth = header.total ? ctx.measureText(header.total).width + 9 : 0;
-    const room = angle ? 200 : header.width + header.cwidth;
     ctx.font = `500 ${font}px ${FONT}`;
+    const room = header.width + header.cwidth - 16 - totalWidth;
+    // Lines of text, bottom line last; the row's bottom edge is where the boxes begin
+    let lines: string[];
+    if (mode === 'turn') lines = [ellipsize(ctx, text, 140 - 16 - totalWidth)];
+    else if (mode === 'wrap') {
+      const wrapped = wrapText(text, room, (t) => ctx.measureText(t).width, viz.headerLines);
+      lines = wrapped.lines;
+      if (!wrapped.complete) lines[lines.length - 1] = ellipsize(ctx, lines[lines.length - 1] + '…', room);
+    } else lines = [ellipsize(ctx, text, room)];
+
+    ctx.save();
+    const bottom = plotTop + 20 + extra;
+    if (mode === 'turn') {
+      ctx.translate(left + size, bottom);
+      ctx.rotate(-Math.PI / 2);
+      ctx.translate(0, -size);
+    } else {
+      ctx.translate(left, bottom - size - (lines.length - 1) * 16 - (mode === 'line' ? 20 - size - 1.67 : 0));
+    }
+    const lastY = (lines.length - 1) * 16;
+    if (swatch) {
+      ctx.fillStyle = swatch.stroke;
+      ctx.fillRect(0, lastY + 4, 11, 11);
+      ctx.fillStyle = swatch.fill;
+      ctx.fillRect(3, lastY + 7, 5, 5);
+    }
     ctx.fillStyle = '#47535e';
-    const label = ellipsize(ctx, viz.label(header.label, viz.colorKey), room - 16 - totalWidth);
-    ctx.fillText(label, 16, size / 2);
+    lines.forEach((line, n) => ctx.fillText(line, 16, n * 16 + size / 2));
     if (header.total) {
-      const labelWidth = ctx.measureText(label).width;
+      const lastWidth = ctx.measureText(lines[lines.length - 1]).width;
       ctx.font = `400 ${font}px ${FONT}`;
       ctx.fillStyle = '#a3a8ae';
-      ctx.fillText(header.total, 16 + labelWidth + 9, size / 2);
+      ctx.fillText(header.total, 16 + (mode === 'wrap' ? Math.max(...lines.map((l) => ctx.measureText(l).width)) : lastWidth) + 9, lastY + size / 2);
     }
     ctx.restore();
   }

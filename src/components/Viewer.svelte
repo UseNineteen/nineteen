@@ -145,6 +145,13 @@
     >
   </form>
 
+  {#if viz.aiHighlight}
+    <div class="ai-highlight-bar" role="status">
+      Highlighting {viz.aiHighlight.size} {viz.aiHighlight.size === 1 ? 'row' : 'rows'} cited by AI
+      <button type="button" onclick={() => (viz.aiHighlight = null)}>Clear</button>
+    </div>
+  {/if}
+
   <div class="visualizer">
     <div class="labels" bind:this={labelsEl} style:font-size={fontSize} aria-hidden="true">
       {#each layout.groups as group (group.label)}
@@ -172,6 +179,7 @@
             style:transform="translate({em(p.x)}, {em(p.y)})"
             style:background-color={color.fill}
             style:border-color={color.stroke}
+            data-item-id={item.id}
             role="button"
             tabindex="-1"
             aria-label="File row {item.id}: {displayLabel(item.raw[viz.groupKey])}"

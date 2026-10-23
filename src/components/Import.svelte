@@ -89,6 +89,9 @@
         >
       </li>
     </ul>
-    <p class="privacy-note">Everything happens in your browser. No cookies, no tracking, no uploads.</p>
+    <p class="privacy-note">
+      Everything happens in your browser. No cookies, no tracking, no uploads. Data goes to an AI service only if you
+      choose to send it there.
+    </p>
   </footer>
 </div>

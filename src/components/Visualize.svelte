@@ -5,6 +5,7 @@
   import Legend from './Legend.svelte';
   import Popup from './Popup.svelte';
   import Viewer, { type ToolbarDropdown } from './Viewer.svelte';
+  import AIPanel from './ai/AIPanel.svelte';
   import { datasetDetails } from '../lib/data';
   import { serialize } from '../lib/persist';
   import { Popups } from '../lib/popups.svelte';
@@ -26,6 +27,15 @@
   const itemsById = $derived(new Map(viz.dataset.items.map((item) => [item.id, item])));
 
   let open = $state<{ name: DropdownName; anchor: HTMLElement } | null>(null);
+  let aiOpen = $state(false);
+  // Mounted on first open, then kept (hidden) so a conversation survives closing the panel
+  let aiMounted = $state(false);
+
+  function toggleAI() {
+    aiOpen = !aiOpen;
+    aiMounted = true;
+    close();
+  }
 
   function toggle(name: DropdownName, anchor: HTMLElement) {
     open = open?.name === name ? null : { name, anchor };
@@ -109,6 +119,7 @@
 
     <div class="title-right">
       <a href="./" id="brand" onclick={restart}>nineteen</a>
+      <button id="ai-toggle" aria-expanded={aiOpen} aria-controls="ai-panel" onclick={toggleAI}>Analyze with AI</button>
       <button id="save" aria-haspopup="dialog" aria-expanded={open?.name === 'save'} onclick={(e) => toggle('save', e.currentTarget)}
         >Save</button
       >
@@ -120,6 +131,11 @@
     <div id="viewer">
       <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} />
     </div>
+    {#if aiMounted}
+      <div class="ai-dock" hidden={!aiOpen}>
+        <AIPanel {viz} {popups} onclose={() => (aiOpen = false)} />
+      </div>
+    {/if}
   </figure>
 
   {#if open?.name === 'group'}

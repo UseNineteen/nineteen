@@ -24,8 +24,9 @@
 
   <h2>Your data never leaves your computer</h2>
   <p>
-    Files you open are read and visualized by your browser. They are never uploaded to Nineteen or to anyone
-    else. There is no Nineteen server that processes data.
+    Files you open are read and visualized by your browser. They are never uploaded to Nineteen. There is no Nineteen
+    server that processes data. The one exception is the optional AI features described below. Data goes to an AI
+    provider only when you explicitly send it there.
   </p>
 
   <h2>No cookies, no tracking</h2>
@@ -53,6 +54,28 @@
   <p>
     If a cell in your data contains a link to an image, the viewer shows that image, which means your browser
     loads it from the site where it is hosted.
+  </p>
+
+  <h2>Analyzing with AI (optional)</h2>
+  <p>
+    “Analyze with AI” offers two ways to work with AI services. Neither runs unless you use it.
+  </p>
+  <ul>
+    <li>
+      <strong>Copy prompt</strong> builds a prompt containing your data, for you to paste into an AI assistant
+      yourself. Nineteen sends nothing. Where the data goes is up to you.
+    </li>
+    <li>
+      <strong>Ask</strong> and <strong>Auto-code</strong> use your own API key from Anthropic (Claude) or OpenAI
+      (ChatGPT). When you use them, your browser sends the rows and columns you chose under “Data to share” directly to
+      that company. It never passes through a Nineteen server. The first time in each session, Nineteen asks you to
+      confirm before sending anything. That provider’s terms and privacy policy apply to data you send it.
+    </li>
+  </ul>
+  <p>
+    Your API key is kept only in the page’s memory, unless you choose “Remember key on this device”. In that case it
+    is stored in this browser’s local storage until you choose “Forget my keys”. It is only ever sent to the provider
+    it belongs to.
   </p>
 
   <h2>Saved files</h2>

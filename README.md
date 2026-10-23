@@ -53,11 +53,32 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 - **Save (11):** Save a PNG image of the full visualization, or a standalone HTML file with your data and current view built in.
   The HTML file opens in any browser, works offline, and stays fully interactive
 
+### Analyze with AI (optional)
+The **Analyze with AI** button in the title bar opens a panel with three tools. At the top, **Data to share** sets exactly
+what any of them can see: all rows or only your current search matches, and which columns. Untick names or other
+personal details there.
+
+- **Copy prompt:** pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
+  an executive summary, or your own question). Then copy the prompt, with your data, to paste into Claude, ChatGPT or any
+  assistant you already use, or download it as a file. **Nineteen sends nothing.**
+- **Ask:** chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite rows like
+  [Row 12]. Click a citation to highlight those items in the visualization and open their viewer.
+- **Auto-code:** have the AI assign every row to one of your categories, or let it suggest categories first. The result
+  is added as a new column (with an optional "reason" column), so you can group, color, split and search by it like any other.
+  AI coding can be wrong, so spot-check it in the viewer.
+
+Ask and Auto-code send the shared data directly from your browser to the provider you chose, with your key. Nothing goes
+through a Nineteen server. The first time in each session, Nineteen asks you to confirm before sending anything. Your key
+stays in memory unless you choose to remember it on this device. Claude requests use `claude-opus-5-5` by default.
+You can pick any model your key can use.
+
 ### A Note About Data Privacy
 All data processing happens in your browser. Your data never reaches a server, so your research stays *your research*.
 You can use Nineteen with confidential data.
 
 - **No cookies, no tracking.** Nineteen sets no cookies and loads no analytics or third-party scripts
+- **AI is opt-in.** Data reaches an AI provider only when you press Send or Code in the AI panel, after confirming. It goes
+  straight from your browser to Anthropic or OpenAI
 - **Session storage only.** While a file is open, a copy is kept in your browser's session storage so the view survives a reload.
   Your browser deletes it when you close the tab
 - **Hosted files** are downloaded directly by your browser from the site you link to. Some sites (often Google Drive) don't allow this,
@@ -95,6 +116,7 @@ SheetJS is installed from the official SheetJS CDN, because the `xlsx` package o
 | Path | Contents |
 | --- | --- |
 | `src/lib/` | Framework-free logic: file parsing, value/date interpretation, search, layout, palette, persistence, PNG and HTML export |
+| `src/lib/ai/` | AI features: data packaging, prompt templates, answer/citation parsing, auto-coding, provider clients (Anthropic SDK, OpenAI REST) |
 | `src/components/` | Svelte UI: import page, visualization, legend, toolbar, dropdowns, viewer popups |
 | `src/styles/app.css` | Styles ported from the original Stylus sources |
 | `test/` | Vitest suite, including the search cases from the original test suite |

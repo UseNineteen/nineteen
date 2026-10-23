@@ -11,7 +11,8 @@ const FALLBACK: Swatch = { fill: '#cccccc', stroke: '#cccccc' };
 
 /** Everything about the current visualization view, ported from the original Visualize + Search models. */
 export class Viz {
-  readonly dataset: Dataset;
+  /** Replaced (not mutated) when AI auto-coding adds a column */
+  dataset = $state.raw<Dataset>(null!);
 
   groupKey = $state('');
   colorKey = $state('');
@@ -31,6 +32,8 @@ export class Viz {
   legendCollapsed = $state(false);
   /** Color label of the hovered block, used to highlight its legend entry */
   hoveredColor = $state<string | null>(null);
+  /** Rows cited by an AI answer; when set, every other row is grayed out */
+  aiHighlight = $state.raw<Set<number> | null>(null);
 
   layout = $derived.by(() =>
     computeLayout(this.dataset.items, {
@@ -120,7 +123,20 @@ export class Viz {
   }
 
   isFiltered(item: DataItem): boolean {
+    if (this.aiHighlight) return !this.aiHighlight.has(item.id);
     return this.matches !== null && !this.matches.has(item.id);
+  }
+
+  /**
+   * Swaps in a dataset with added AI columns and colors the view by `colorKey`.
+   * New columns are shown in the viewer and included in search.
+   */
+  replaceDataset(dataset: Dataset, colorKey: string): void {
+    const added = dataset.columns.filter((c) => !this.dataset.columns.includes(c));
+    this.dataset = dataset;
+    this.viewerColumns = dataset.columns.filter((c) => this.viewerColumns.includes(c) || added.includes(c));
+    this.searchScope = dataset.columns.filter((c) => this.searchScope.includes(c) || added.includes(c));
+    this.setColorKey(colorKey);
   }
 
   isMatch(item: DataItem): boolean {

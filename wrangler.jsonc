@@ -1,0 +1,11 @@
+// Cloudflare Workers deployment for usenineteen.com.
+// Nineteen is a static site: this Worker only serves the committed build in dist/.
+{
+  "name": "nineteen",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Unknown paths (such as the old app's /visualize) open the app instead of a 404
+    "not_found_handling": "single-page-application"
+  }
+}

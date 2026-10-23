@@ -90,7 +90,7 @@ Boxes don't have to be square. **Stretch to fit** (in the zoom controls, 15) res
 whole visualization fills the window, and they resize automatically as you resize the window or regroup your data.
 Settings (13) lets you set the smallest and largest box width and height, and start every file stretched (see below).
 
-<img src="docs/screenshots/stretch-to-fit.png" alt="Stretch to fit" title="Stretch to fit: boxes reshape to fill the window">
+<img src="docs/screenshots/whats-new/stretch.png" alt="Stretch to fit: boxes reshaped into rectangles that fill the window, grouped by date" title="Stretch to fit: boxes reshape to fill the window">
 
 **Best fit** does the same with square boxes. Both stay on as you resize or regroup, until you zoom in or out yourself
 or click the button again.

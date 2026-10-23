@@ -42,6 +42,11 @@
     you close the tab. Nothing is sent anywhere.
   </p>
 
+  <p>
+    Your display settings (box size options) are kept only in the page’s memory and reset when you reload or close it, unless you tick “Remember settings on
+    this device”. In that case they are stored in this browser’s local storage, and unticking the option removes them.
+  </p>
+
   <h2>Hosted files</h2>
   <p>
     If you paste a link to a hosted file, your browser downloads it directly from the site you linked to (for

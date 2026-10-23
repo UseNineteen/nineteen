@@ -1,11 +1,17 @@
 import { colorScale, type Swatch } from './colors';
-import { computeLayout, type SortBy, type SortDirection } from './layout';
+import { computeLayout, zoomBounds, type SortBy, type SortDirection } from './layout';
 import type { Dataset, DataItem } from './data';
-import type { ViewState } from './persist';
+import type { FitMode, ViewState } from './persist';
 import { search } from './search';
 import { topTerms } from './terms';
+import { appSettings } from './settings.svelte';
 
-export const ZOOM = { min: 0.1, max: 5, step: 0.1 } as const;
+export const ZOOM = { step: 0.1 } as const;
+
+/** Zoom range allowed by the box size limits in Settings. */
+export function zoomRange(): { min: number; max: number } {
+  return zoomBounds(appSettings.minBox, appSettings.maxBox);
+}
 
 const FALLBACK: Swatch = { fill: '#cccccc', stroke: '#cccccc' };
 
@@ -21,6 +27,10 @@ export class Viz {
   counts = $state(false);
   split = $state(false);
   zoom = $state(1);
+  /** Fitting stays on (through resizes and regrouping) until the user zooms by hand */
+  fit = $state<FitMode>('none');
+  /** The scale currently on screen (kept up to date by the viewer), so leaving a fit keeps the same size */
+  displayScale = 1;
   zooming = $state(false);
   sortBy = $state<SortBy>('value');
   sortDirection = $state<SortDirection>('ascending');
@@ -62,6 +72,7 @@ export class Viz {
     this.counts = view?.counts ?? false;
     this.split = !this.automatic && (view?.split ?? false);
     this.zoom = view?.zoom ?? 1;
+    this.fit = view?.fit ?? (appSettings.stretchByDefault ? 'stretch' : 'none');
     this.sortBy = view?.sortBy ?? 'value';
     this.sortDirection = view?.sortDirection ?? 'ascending';
     this.buttonDirections[this.sortBy] = this.sortDirection;
@@ -101,8 +112,11 @@ export class Viz {
   }
 
   setZoom(zoom: number): void {
-    const next = Math.round(Math.min(ZOOM.max, Math.max(ZOOM.min, zoom)) * 1000) / 1000;
-    if (next === this.zoom) return;
+    const { min, max } = zoomRange();
+    const next = Math.round(Math.min(max, Math.max(min, zoom)) * 1000) / 1000;
+    const wasFitting = this.fit !== 'none';
+    this.fit = 'none';
+    if (next === this.zoom && !wasFitting) return;
     // Suppress the block movement animation while the scale changes
     this.zooming = true;
     this.zoom = next;
@@ -110,12 +124,13 @@ export class Viz {
     this.#zoomTimer = setTimeout(() => (this.zooming = false), 150);
   }
 
-  zoomIn(): void {
-    this.setZoom(this.zoom + ZOOM.step);
-  }
-
-  zoomOut(): void {
-    this.setZoom(this.zoom - ZOOM.step);
+  /**
+   * "Stretch to fit": the bottom-right button and the Settings checkbox both call this.
+   * Turning it off keeps the boxes at their current (square) size.
+   */
+  setStretch(on: boolean): void {
+    if (on) this.fit = 'stretch';
+    else if (this.fit === 'stretch') this.setZoom(this.displayScale);
   }
 
   colorOf(item: DataItem): Swatch {
@@ -160,6 +175,7 @@ export class Viz {
       counts: this.counts,
       split: this.split,
       zoom: this.zoom,
+      fit: this.fit,
       sortBy: this.sortBy,
       sortDirection: this.sortDirection,
       viewerColumns: [...this.viewerColumns],

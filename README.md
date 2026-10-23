@@ -49,7 +49,15 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 		- Searching for *dog AND food* ('AND' must be capitalized) finds only items containing both "dog" and "food", though not necessarily together
 		- An asterisk matches any single character: *re\*d* matches both "read" and "reed"
 	- The drop-down (10) in the search bar lists the most frequent words. Click one to search for it, or shift-click to add it with AND
-- **Zoom:** Use the buttons in the lower right to zoom in and out, return to actual size, or fit the whole visualization on screen
+- **Zoom:** Use the buttons in the lower right to zoom in and out, return to actual size, or fit the whole visualization on screen.
+  *Best fit* stays on, so the view keeps fitting as you resize the window or regroup, until you zoom by hand or click it again.
+  *Stretch to fit* does the same but lets boxes become rectangles, to use the window's full width and height
+- **Settings:** the Settings button (top right) controls box size:
+	- *Stretch to fit* is the same switch as the Stretch to fit button (turning on one turns on the other). With *Remember settings*
+	  on, saving the dialog with it on makes newly opened files start stretched
+	- *Smallest / largest box* (default 4–40 px) limits box size when fitting and when zooming
+	- Tick *Remember settings on this device* to keep them in this browser
+	- Changes preview as you make them. *Save* keeps them; *Cancel*, Esc or clicking outside the dialog discards them
 - **Save (11):** Save a PNG image of the full visualization, or a standalone HTML file with your data and current view built in.
   The HTML file opens in any browser, works offline, and stays fully interactive
 
@@ -79,6 +87,8 @@ You can use Nineteen with confidential data.
 - **No cookies, no tracking.** Nineteen sets no cookies and loads no analytics or third-party scripts
 - **AI is opt-in.** Data reaches an AI provider only when you press Send or Code in the AI panel, after confirming. It goes
   straight from your browser to Anthropic or OpenAI
+- **Remembered settings and keys are opt-in.** Display settings and AI keys are stored in this browser's local storage only
+  if you tick "Remember … on this device"
 - **Session storage only.** While a file is open, a copy is kept in your browser's session storage so the view survives a reload.
   Your browser deletes it when you close the tab
 - **Hosted files** are downloaded directly by your browser from the site you link to. Some sites (often Google Drive) don't allow this,

@@ -128,3 +128,64 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
     rowWidth: columnX(columns) + 3 * GEOMETRY.size,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Box scaling (Settings → Box size)
+// ---------------------------------------------------------------------------
+
+/** Horizontal and vertical scale relative to the original 18px boxes. */
+export interface Scale {
+  x: number;
+  y: number;
+}
+
+export interface ScaleInput {
+  /** Fit everything inside the visible area */
+  fit: boolean;
+  /** Boxes stay square (otherwise width and height scale separately) */
+  square: boolean;
+  /** Smallest and largest box side, in screen pixels */
+  minBox: number;
+  maxBox: number;
+  /** Manual zoom, used when not fitting */
+  zoom: number;
+  viewWidth: number;
+  viewHeight: number;
+  /** Label column width at scale 1 */
+  labelWidth: number;
+  /** Row width at scale 1 (from computeLayout) */
+  rowWidth: number;
+  rows: number;
+}
+
+/** The zoom range allowed by the box size limits. */
+export function zoomBounds(minBox: number, maxBox: number): { min: number; max: number } {
+  const min = Math.max(1, minBox) / GEOMETRY.size;
+  return { min, max: Math.max(min, maxBox / GEOMETRY.size) };
+}
+
+/** Height needed for all rows at scale 1, including the bottom margin. */
+export function contentHeight(rows: number): number {
+  return rows * GEOMETRY.row + 20;
+}
+
+const round = (n: number) => Math.round(n * 1000) / 1000;
+
+export function boxScale(input: ScaleInput): Scale {
+  const bounds = zoomBounds(input.minBox, input.maxBox);
+  const clamp = (n: number) => round(Math.min(bounds.max, Math.max(bounds.min, n)));
+  const canFit = input.fit && input.viewWidth > 0 && input.viewHeight > 0 && input.rows > 0 && input.rowWidth > 0;
+  if (!canFit) {
+    const z = clamp(input.zoom);
+    return { x: z, y: z };
+  }
+  const vertical = input.viewHeight / contentHeight(input.rows);
+  if (input.square) {
+    const s = clamp(Math.min(vertical, input.viewWidth / (input.labelWidth + input.rowWidth)));
+    return { x: s, y: s };
+  }
+  // Rectangles: rows use the height, then boxes use whatever width is left beside the labels
+  const y = clamp(vertical);
+  const x = clamp((input.viewWidth - input.labelWidth * y) / input.rowWidth);
+  return { x, y };
+}

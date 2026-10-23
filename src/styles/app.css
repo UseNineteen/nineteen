@@ -741,6 +741,15 @@ footer li:first-child::before {
   overflow: auto;
   overflow-x: hidden;
   position: relative;
+  /* A scrollbar appearing must not change the width used for fitting */
+  scrollbar-gutter: stable;
+}
+#viewer .labels-measure {
+  font-size: 13px;
+  visibility: hidden;
+  /* Only its width matters; zero height keeps it from adding scroll space */
+  height: 0;
+  overflow: hidden;
 }
 #viewer .blocks {
   overflow: auto;
@@ -873,6 +882,15 @@ footer li:first-child::before {
 }
 #zoom-controls .zoom-reset {
   background-image: url('../assets/images/zoom-reset.svg');
+}
+#zoom-controls .zoom-stretch {
+  background-image: url('../assets/images/zoom-stretch.svg');
+}
+/* An active fit button stays pressed while it keeps the view fitted */
+#zoom-controls button.active {
+  background-color: var(--lightgray);
+  border-color: var(--trout);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 /* ---------- Dropdowns (dropdowns.styl) ---------- */
@@ -1601,4 +1619,137 @@ footer li:first-child::before {
     background: var(--white);
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
   }
+}
+
+/* ---------- Settings (new in Nineteen 2) ---------- */
+
+#title-bar #settings-toggle {
+  appearance: none;
+  background-color: transparent;
+  background-image: url('../assets/images/settings.svg');
+  background-repeat: no-repeat;
+  background-position: left 1px;
+  border: none;
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 10px;
+  padding: 0 0 0 16px;
+}
+#title-bar #settings-toggle:hover {
+  opacity: 0.8;
+}
+#settings {
+  border: none;
+  border-radius: 2px;
+  box-shadow: 0 2px 5px rgba(34, 34, 34, 0.3);
+  color: var(--black);
+  font-size: 14px;
+  line-height: 1.45;
+  max-width: calc(100vw - 32px);
+  padding: 0;
+  width: 440px;
+}
+#settings::backdrop {
+  background-color: rgba(34, 34, 34, 0.3);
+}
+#settings .title-bar {
+  background-color: var(--trout);
+  color: var(--white);
+  display: flex;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  padding: 12px 15px 8px;
+}
+#settings .title {
+  flex: 1 1 auto;
+}
+#settings .close {
+  appearance: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+#settings .settings-body {
+  padding: 5px 15px;
+}
+#settings fieldset {
+  border: none;
+  border-bottom: 1px solid var(--lightgray);
+  margin: 0;
+  padding: 10px 0 12px;
+}
+#settings legend {
+  color: var(--trout);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 10px 0 0;
+  text-transform: uppercase;
+}
+#settings .settings-check {
+  align-items: baseline;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+#settings .settings-check small {
+  color: #7d838a;
+  display: block;
+  font-size: 12.5px;
+}
+#settings .settings-check.disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+#settings .settings-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin: 14px 0 4px;
+}
+#settings .settings-sizes label {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+#settings .settings-sizes input {
+  border: 2px solid var(--lightgray);
+  border-radius: 3px;
+  box-sizing: border-box;
+  padding: 4px 6px 2px;
+  width: 64px;
+}
+#settings .settings-sizes input:focus {
+  border-color: var(--gray);
+  outline: none;
+}
+#settings .unit,
+#settings .settings-hint {
+  color: #7d838a;
+  font-size: 12.5px;
+}
+#settings .settings-hint {
+  margin: 6px 0 0;
+}
+#settings .settings-remember {
+  margin: 14px 0 10px;
+}
+#settings .settings-footer {
+  border-top: 1px solid var(--lightgray);
+  display: flex;
+  gap: 10px;
+  padding: 10px 15px;
+}
+#settings .settings-spacer {
+  flex: 1 1 auto;
+}
+#settings .settings-footer .btn {
+  font-size: 13px;
+  font-weight: 500;
 }

@@ -5,7 +5,7 @@ import { buildDataset, rollup } from '../src/lib/data';
 import { compareValues, parseValue } from '../src/lib/values';
 import { addTerm, highlightRanges, search } from '../src/lib/search';
 import { colorsFor, darker } from '../src/lib/colors';
-import { computeLayout, columnX, rowY } from '../src/lib/layout';
+import { boxScale, computeLayout, columnX, rowY, zoomBounds } from '../src/lib/layout';
 import { detectFormat, parseBytes } from '../src/lib/parse';
 import { resolveHostedUrl } from '../src/lib/hosted';
 import { segments } from '../src/lib/linkify';
@@ -215,11 +215,54 @@ describe('linkify', () => {
 });
 
 describe('persistence', () => {
+  it('keeps the fit mode in saved views', () => {
+    const dataset = buildDataset('t.csv', [{ A: '1' }]);
+    const view = {
+      groupKey: 'A', colorKey: 'A', automatic: true, counts: false, split: false, zoom: 1, fit: 'stretch' as const,
+      sortBy: 'value' as const, sortDirection: 'ascending' as const, viewerColumns: ['A'], searchTerm: '', searchScope: ['A'],
+      legendCollapsed: false,
+    };
+    expect(deserialize(JSON.parse(scriptSafeJson(serialize(dataset, view)))).view?.fit).toBe('stretch');
+  });
+
   it('round-trips a dataset', () => {
     const dataset = buildDataset('t.csv', [{ A: '1', B: '</script><b>' }]);
     const text = scriptSafeJson(serialize(dataset));
     expect(text).not.toContain('</script>');
     const restored = deserialize(JSON.parse(text)).dataset;
     expect(plain(restored.items[0].raw)).toEqual({ A: '1', B: '</script><b>' });
+  });
+});
+
+describe('box scaling', () => {
+  const base = {
+    fit: true, square: true, minBox: 4, maxBox: 40, zoom: 1,
+    viewWidth: 1000, viewHeight: 540, labelWidth: 100, rowWidth: 400, rows: 20,
+  };
+
+  it('uses the zoom, within the box limits, when not fitting', () => {
+    expect(boxScale({ ...base, fit: false, zoom: 1.5 })).toEqual({ x: 1.5, y: 1.5 });
+    expect(boxScale({ ...base, fit: false, zoom: 5 })).toEqual({ x: 2.222, y: 2.222 });
+    expect(boxScale({ ...base, fit: false, zoom: 0.1 })).toEqual({ x: 0.222, y: 0.222 });
+  });
+
+  it('fits squares to the tighter direction', () => {
+    // height: 540 / (20*26+20) = 1; width: 1000 / 500 = 2
+    expect(boxScale(base)).toEqual({ x: 1, y: 1 });
+  });
+
+  it('stretches rectangles to use both directions', () => {
+    // y = 1, x = (1000 - 100*1) / 400 = 2.25
+    expect(boxScale({ ...base, square: false })).toEqual({ x: 2.222, y: 1 });
+    expect(boxScale({ ...base, square: false, maxBox: 60 })).toEqual({ x: 2.25, y: 1 });
+  });
+
+  it('never goes below the smallest box size', () => {
+    expect(boxScale({ ...base, rows: 2000 })).toEqual({ x: 0.222, y: 0.222 });
+  });
+
+  it('turns box limits into a zoom range', () => {
+    expect(zoomBounds(9, 36)).toEqual({ min: 0.5, max: 2 });
+    expect(zoomBounds(30, 10).max).toBeGreaterThanOrEqual(zoomBounds(30, 10).min);
   });
 });

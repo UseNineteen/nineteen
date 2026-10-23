@@ -6,6 +6,7 @@
   import Popup from './Popup.svelte';
   import Viewer, { type ToolbarDropdown } from './Viewer.svelte';
   import AIPanel from './ai/AIPanel.svelte';
+  import SettingsDialog from './SettingsDialog.svelte';
   import { datasetDetails } from '../lib/data';
   import { serialize } from '../lib/persist';
   import { Popups } from '../lib/popups.svelte';
@@ -28,6 +29,7 @@
 
   let open = $state<{ name: DropdownName; anchor: HTMLElement } | null>(null);
   let aiOpen = $state(false);
+  let settingsOpen = $state(false);
   // Mounted on first open, then kept (hidden) so a conversation survives closing the panel
   let aiMounted = $state(false);
 
@@ -122,6 +124,15 @@
       <button id="ai-toggle" aria-expanded={aiOpen} aria-controls="ai-panel" onclick={toggleAI}>Analyze with AI</button>
       <button id="save" aria-haspopup="dialog" aria-expanded={open?.name === 'save'} onclick={(e) => toggle('save', e.currentTarget)}
         >Save</button
+      >
+      <button
+        id="settings-toggle"
+        aria-haspopup="dialog"
+        aria-expanded={settingsOpen}
+        onclick={() => {
+          close();
+          settingsOpen = true;
+        }}>Settings</button
       >
     </div>
   </header>
@@ -245,6 +256,8 @@
       onclose={close}
     />
   {/if}
+
+  <SettingsDialog {viz} open={settingsOpen} onclose={() => (settingsOpen = false)} />
 
   <div id="popups">
     {#each popups.list as popup (popup.key)}

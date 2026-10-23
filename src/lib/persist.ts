@@ -8,6 +8,9 @@ import type { SortBy, SortDirection } from './layout';
  * - Saved HTML files carry their data in an inert JSON <script> block.
  */
 
+/** 'square': Best fit, 'stretch': Stretch to fit (boxes may become rectangles) */
+export type FitMode = 'none' | 'square' | 'stretch';
+
 export interface ViewState {
   groupKey: string;
   colorKey: string;
@@ -15,6 +18,8 @@ export interface ViewState {
   counts: boolean;
   split: boolean;
   zoom: number;
+  /** Optional so files saved before fit modes existed still open */
+  fit?: FitMode;
   sortBy: SortBy;
   sortDirection: SortDirection;
   viewerColumns: string[];

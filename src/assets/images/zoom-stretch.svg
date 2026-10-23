@@ -1,0 +1,10 @@
+<svg width="22px" height="22px" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+  <title>Stretch to fit</title>
+  <g fill="none" fill-rule="evenodd">
+    <rect stroke="#47535E" stroke-width="2" x="6" y="8" width="10" height="6"></rect>
+    <path fill="#47535E" d="M1 11 L4.5 7.5 L4.5 14.5 Z"></path>
+    <path fill="#47535E" d="M21 11 L17.5 7.5 L17.5 14.5 Z"></path>
+    <path fill="#47535E" d="M11 2 L8.5 5.5 L13.5 5.5 Z"></path>
+    <path fill="#47535E" d="M11 20 L8.5 16.5 L13.5 16.5 Z"></path>
+  </g>
+</svg>

@@ -5,9 +5,10 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { displayLabel, type DataItem } from '../lib/data';
-  import { GEOMETRY } from '../lib/layout';
+  import { boxScale, GEOMETRY } from '../lib/layout';
   import type { Popups } from '../lib/popups.svelte';
-  import { ZOOM, type Viz } from '../lib/viz.svelte';
+  import { appSettings } from '../lib/settings.svelte';
+  import { ZOOM, zoomRange, type Viz } from '../lib/viz.svelte';
 
   interface Props {
     viz: Viz;
@@ -18,29 +19,60 @@
 
   let { viz, popups, open, ontoggle }: Props = $props();
 
+  /** Vertical sizes use em (they follow the row font size); horizontal sizes use px (they follow scale.x). */
   const em = (px: number) => `${px / GEOMETRY.font}em`;
+  const px = (n: number) => `${n}px`;
 
-  let labelsEl: HTMLElement;
-  let width = $state(0);
-  let height = $state(0);
+  let measureEl: HTMLElement;
+  let viewWidth = $state(0);
+  let viewHeight = $state(0);
+  /** Label column width at scale 1 */
   let labelWidth = $state(0);
   let animate = $state(false);
+  let resizing = $state(false);
+  let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 
   const layout = $derived(viz.layout);
-  const fontSize = $derived(`${viz.zoom * GEOMETRY.font}px`);
-  const zoomFit = $derived.by(() => {
-    const total = labelWidth + layout.rowWidth;
-    if (!width || !height || !total) return 1;
-    const fit = Math.min(width / total, height / (layout.groups.length * 28));
-    return Math.round(Math.min(ZOOM.max, Math.max(ZOOM.min, fit)) * 1000) / 1000;
+  const fitMode = $derived(viz.fit);
+  const range = $derived(zoomRange());
+  const sizing = $derived({
+    minBox: appSettings.minBox,
+    maxBox: appSettings.maxBox,
+    zoom: viz.zoom,
+    // Leave room for a vertical scrollbar
+    viewWidth: viewWidth - 4,
+    viewHeight,
+    labelWidth,
+    rowWidth: layout.rowWidth,
+    rows: layout.groups.length,
+  });
+  /** Horizontal / vertical scale relative to the original 18px boxes */
+  const scale = $derived(boxScale({ ...sizing, fit: fitMode !== 'none', square: fitMode !== 'stretch' }));
+  const fontSize = $derived(px(scale.y * GEOMETRY.font));
+
+  $effect(() => {
+    viz.displayScale = scale.y;
+  });
+  const edge = $derived(Math.min(scale.x, scale.y));
+
+  // Boxes animate when regrouping, but not while they are being resized
+  let lastScale = { x: 1, y: 1 };
+  $effect.pre(() => {
+    const { x, y } = scale;
+    if (x === lastScale.x && y === lastScale.y) return;
+    lastScale = { x, y };
+    resizing = true;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => (resizing = false), 150);
   });
 
-  // Label column width (in unzoomed px) decides where the blocks start
+  // Label column width at scale 1 decides where the blocks start. It is measured on a hidden copy
+  // at the base font size, so it never depends on the current scale (which itself depends on it).
   $effect(() => {
     void layout.groups;
-    void viz.zoom;
     tick().then(() => {
-      if (labelsEl) labelWidth = labelsEl.offsetWidth / viz.zoom;
+      // +2px: small fonts render slightly wider than a straight scale-down predicts
+      if (measureEl) labelWidth = measureEl.offsetWidth + 2;
     });
   });
 
@@ -74,12 +106,23 @@
     }
   }
 
+  /** Clicking an active fit button keeps the current size and returns to manual zoom. */
+  function toggleBestFit() {
+    if (fitMode === 'square') viz.setZoom(scale.y);
+    else viz.fit = 'square';
+  }
+
+  /** Manual zoom continues from whatever size is showing, including a fitted one. */
+  function zoomBy(step: number) {
+    viz.setZoom(scale.y + step);
+  }
+
   function toggle(name: ToolbarDropdown) {
     return (event: MouseEvent) => ontoggle(name, event.currentTarget as HTMLElement);
   }
 </script>
 
-<div class="viewer-wrapper" bind:clientWidth={width} bind:clientHeight={height}>
+<div class="viewer-wrapper">
   <form id="tool-bar" onsubmit={(e) => e.preventDefault()} aria-label="Visualization tools">
     <button
       type="button"
@@ -152,8 +195,13 @@
     </div>
   {/if}
 
-  <div class="visualizer">
-    <div class="labels" bind:this={labelsEl} style:font-size={fontSize} aria-hidden="true">
+  <div class="visualizer" bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
+    <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
+      {#each layout.groups as group (group.label)}
+        <div class="label-item">{displayLabel(group.label)}</div>
+      {/each}
+    </div>
+    <div class="labels" style:font-size={fontSize} style:width={px(labelWidth * scale.y)} aria-hidden="true">
       {#each layout.groups as group (group.label)}
         <div class="label-item" title={displayLabel(group.label)}>{displayLabel(group.label)}</div>
       {/each}
@@ -163,9 +211,9 @@
       <div
         class="block-items"
         class:animate
-        class:zooming={viz.zooming}
+        class:zooming={viz.zooming || resizing}
         style:font-size={fontSize}
-        style:padding-left={em(labelWidth)}
+        style:padding-left={px(labelWidth * scale.y)}
         role="group"
         aria-label="{viz.dataset.items.length} items grouped by {viz.groupKey}"
       >
@@ -176,7 +224,10 @@
             class="block-item"
             class:filtered={viz.isFiltered(item)}
             class:floating={popups.isFloating(item.id)}
-            style:transform="translate({em(p.x)}, {em(p.y)})"
+            style:transform="translate({px(p.x * scale.x)}, {em(p.y)})"
+            style:width={px(GEOMETRY.size * scale.x)}
+            style:border-width={px(5 * edge)}
+            style:border-radius={px(2 * edge)}
             style:background-color={color.fill}
             style:border-color={color.stroke}
             data-item-id={item.id}
@@ -190,13 +241,13 @@
           ></div>
         {/each}
         {#each layout.counts as count (count.key)}
-          <div class="block-item block-item-label" style:transform="translate({em(count.x)}, {em(count.y)})">{count.text}</div>
+          <div class="block-item block-item-label" style:transform="translate({px(count.x * scale.x)}, {em(count.y)})">{count.text}</div>
         {/each}
       </div>
       <div class="rows">
-        <div class="row-items" style:font-size={fontSize} style:padding-left={em(labelWidth)}>
+        <div class="row-items" style:font-size={fontSize} style:padding-left={px(labelWidth * scale.y)}>
           {#each layout.groups as group (group.label)}
-            <div class="row" style:width={em(layout.rowWidth)}></div>
+            <div class="row" style:width={px(layout.rowWidth * scale.x)}></div>
           {/each}
         </div>
       </div>
@@ -204,9 +255,30 @@
   </div>
 
   <div id="zoom-controls">
-    <button class="zoom-reset" title="Actual Size" aria-label="Actual size" disabled={viz.zoom === 1} onclick={() => viz.setZoom(1)}></button>
-    <button class="zoom-fit" title="Best Fit" aria-label="Best fit" disabled={viz.zoom === zoomFit} onclick={() => viz.setZoom(zoomFit)}></button>
-    <button class="zoom-in" title="Zoom In" aria-label="Zoom in" disabled={viz.zoom >= ZOOM.max} onclick={() => viz.zoomIn()}></button>
-    <button class="zoom-out" title="Zoom Out" aria-label="Zoom out" disabled={viz.zoom <= ZOOM.min} onclick={() => viz.zoomOut()}></button>
+    <button
+      class="zoom-reset"
+      title="Actual Size"
+      aria-label="Actual size"
+      disabled={fitMode === 'none' && viz.zoom === 1}
+      onclick={() => viz.setZoom(1)}
+    ></button>
+    <button
+      class="zoom-fit"
+      class:active={fitMode === 'square'}
+      title={fitMode === 'square' ? 'Best Fit (on: keeps fitting until you zoom)' : 'Best Fit'}
+      aria-label="Best fit"
+      aria-pressed={fitMode === 'square'}
+      onclick={toggleBestFit}
+    ></button>
+    <button
+      class="zoom-stretch"
+      class:active={fitMode === 'stretch'}
+      title={fitMode === 'stretch' ? 'Stretch to Fit (on: boxes reshape to fill the window)' : 'Stretch to Fit (boxes may become rectangles)'}
+      aria-label="Stretch to fit"
+      aria-pressed={fitMode === 'stretch'}
+      onclick={() => viz.setStretch(fitMode !== 'stretch')}
+    ></button>
+    <button class="zoom-in" title="Zoom In" aria-label="Zoom in" disabled={scale.y >= range.max} onclick={() => zoomBy(ZOOM.step)}></button>
+    <button class="zoom-out" title="Zoom Out" aria-label="Zoom out" disabled={scale.y <= range.min} onclick={() => zoomBy(-ZOOM.step)}></button>
   </div>
 </div>

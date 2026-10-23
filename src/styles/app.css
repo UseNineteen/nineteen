@@ -1319,7 +1319,7 @@ footer li:first-child::before {
   font-style: italic;
 }
 
-/* ---------- AI panel (new in Nineteen 2) ---------- */
+/* ---------- AI panel ---------- */
 
 /* Toolbar, then the visualization with the AI panel beside it, directly under its button */
 #viewer .viewer-body {
@@ -1736,7 +1736,7 @@ footer li:first-child::before {
   }
 }
 
-/* ---------- Settings (new in Nineteen 2) ---------- */
+/* ---------- Settings ---------- */
 
 #title-bar #settings-toggle {
   appearance: none;
@@ -1869,7 +1869,7 @@ footer li:first-child::before {
   font-weight: 500;
 }
 
-/* ---------- Tags (new in Nineteen 2) ---------- */
+/* ---------- Tags ---------- */
 
 .popup .popup-tags {
   margin: 1em 0;
@@ -1974,7 +1974,7 @@ footer li:first-child::before {
   font-size: 12px;
 }
 
-/* ---------- Legend reordering (new in Nineteen 2) ---------- */
+/* ---------- Legend reordering ---------- */
 
 #legend .legend-items.reorderable .legend-item {
   cursor: grab;

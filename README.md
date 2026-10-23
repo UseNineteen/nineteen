@@ -122,7 +122,7 @@ the creators of Nineteen. We'd also love to hear how you're using Nineteen, if y
 
 ## Development
 
-Nineteen 2 is a static site built with [Svelte 5](https://svelte.dev), TypeScript and [Vite](https://vite.dev).
+Nineteen is a static site built with [Svelte 5](https://svelte.dev), TypeScript and [Vite](https://vite.dev).
 Spreadsheets are read with [SheetJS](https://sheetjs.com) and CSV files with [Papa Parse](https://www.papaparse.com).
 It has no server component.
 
@@ -150,7 +150,7 @@ SheetJS is installed from the official SheetJS CDN, because the `xlsx` package o
 | `src/styles/app.css` | Styles ported from the original Stylus sources |
 | `test/` | Vitest suite, including the search cases from the original test suite |
 
-### What changed from Nineteen 1 (2015)
+### What changed in the browser-only rewrite
 - No Node/Express server: uploads, hosted-file downloads, the example and "Save" all happen in the browser
 - Replaced Backbone/Marionette, jQuery, d3 v3, Browserify, Babel 6, html2canvas and Modernizr with Svelte 5 + Vite
 - Up-to-date, patched spreadsheet parser; locked-down Content Security Policy; no cookies

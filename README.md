@@ -203,5 +203,7 @@ with the guidance and collaboration of Kim Erwin and additional support from Mat
 In 2015, the Knight Foundation generously provided a grant from the Knight Prototype Fund, which paid for a complete rewrite of the app.
 We are deeply indebted to them for their support.
 
+In 2026, Nineteen was rebuilt to run entirely in the browser, with help from Claude, Anthropic's AI assistant.
+
 Lastly, Nineteen wouldn't be what it is without significant work from these Institute of Design students:
 Courtney Garland, David LaPorte, Brewer Palmer, and Mark Supert.

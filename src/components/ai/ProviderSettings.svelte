@@ -16,10 +16,16 @@
     try {
       const list = await provider.listModels(aiSettings.key);
       models[id] = list;
-      if (!aiSettings.models[id] || !list.includes(aiSettings.models[id])) {
-        aiSettings.models[id] = id === 'openai' ? preferredOpenAIModel(list) : list.includes(provider.defaultModel) ? provider.defaultModel : list[0] ?? '';
+      const model = aiSettings.models[id].trim();
+      if (!model) {
+        aiSettings.models[id] = id === 'openai' ? preferredOpenAIModel(list) : list.includes(provider.defaultModel) ? provider.defaultModel : (list[0] ?? '');
+        status = { text: 'Key works.', error: false };
+      } else if (!list.includes(model)) {
+        // A typed model is kept: aliases such as "claude-opus-5-5" work for requests without appearing in the list
+        status = { text: `Key works. “${model}” isn’t in ${provider.company}’s model list; it stays in case it’s an alias.`, error: false };
+      } else {
+        status = { text: 'Key works.', error: false };
       }
-      status = { text: 'Key works.', error: false };
       aiSettings.persist();
     } catch (error) {
       status = { text: (error as Error).message, error: true };

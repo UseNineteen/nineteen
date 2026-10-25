@@ -51,13 +51,15 @@
   let columns = $state<string[]>(untrack(() => [...viz.dataset.columns]));
   let knownColumns = untrack(() => [...viz.dataset.columns]);
 
-  // Include columns added later (e.g. by auto-coding)
+  // Follow the dataset's columns: include ones added later (e.g. by auto-coding) and drop ones
+  // that no longer exist (e.g. an undone "convert into a data field"), keeping the file's order
   $effect(() => {
-    const added = viz.dataset.columns.filter((c) => !knownColumns.includes(c));
-    if (added.length) {
-      knownColumns = [...viz.dataset.columns];
-      columns = viz.dataset.columns.filter((c) => columns.includes(c) || added.includes(c));
-    }
+    const current = viz.dataset.columns;
+    const added = current.filter((c) => !knownColumns.includes(c));
+    knownColumns = [...current];
+    const shared = untrack(() => columns);
+    const next = current.filter((c) => shared.includes(c) || added.includes(c));
+    if (next.length !== shared.length || next.some((c, i) => c !== shared[i])) columns = next;
   });
 
   const hasSearch = $derived(viz.matches !== null);
@@ -172,6 +174,8 @@
       });
       turns.push({ role: 'assistant', content: answer });
     } catch (error) {
+      // "New conversation" aborted this question and already emptied the history: nothing to report
+      if (turns.length === 0) return;
       const message = error instanceof AIError ? error.message : String(error);
       // Drop the unanswered question from the history so the conversation stays valid
       const last = turns.pop();

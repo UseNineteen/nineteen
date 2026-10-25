@@ -1314,33 +1314,37 @@ footer li:first-child::before {
   border-top: 1px solid rgba(0, 0, 0, 0.1);
   z-index: 1;
 }
-.dropdown.dropdown-save a {
+/* Each entry is a button that builds and downloads its file when clicked */
+.dropdown.dropdown-save button {
   box-sizing: border-box;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
   color: var(--gray);
   cursor: default;
   display: block;
+  font: inherit;
   opacity: 0.5;
   padding: 10px 15px 10px 35px;
   position: relative;
   text-align: left;
-  text-decoration: none;
   white-space: nowrap;
   width: 100%;
   z-index: 2;
   background-repeat: no-repeat;
   background-position: 10px center;
 }
-.dropdown.dropdown-save a[href] {
+.dropdown.dropdown-save button:not(:disabled) {
   cursor: pointer;
   opacity: 1;
 }
-.dropdown.dropdown-save a[href]:hover {
+.dropdown.dropdown-save button:not(:disabled):hover {
   background-color: var(--lightgray);
 }
-.dropdown.dropdown-save a + a {
+.dropdown.dropdown-save button + button {
   border-top: 1px solid var(--lightgray);
 }
-.dropdown.dropdown-save a strong {
+.dropdown.dropdown-save button strong {
   color: var(--black);
 }
 .dropdown.dropdown-save .save-html {

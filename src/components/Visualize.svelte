@@ -35,8 +35,10 @@
   let settingsOpen = $state(false);
   /** Column whose List display options dialog is open */
   let tagOptionsFor = $state<string | null>(null);
-  // Mounted on first open, then kept (hidden) so a conversation survives closing the panel
+  // Both panels are mounted on first open, then kept (hidden) so a conversation, an Undo message
+  // or a half-finished rename survives closing or switching panels
   let aiMounted = $state(false);
+  let tagsMounted = $state(false);
 
   let tagsOpen = $state(false);
 
@@ -50,13 +52,13 @@
 
   function toggleTags() {
     tagsOpen = !tagsOpen;
+    tagsMounted = true;
     if (tagsOpen) aiOpen = false;
     close();
   }
 
   function toggle(name: DropdownName, anchor: HTMLElement) {
     open = open?.name === name ? null : { name, anchor };
-    if (open?.name === 'save') prepareSave();
   }
 
   function close() {
@@ -65,51 +67,62 @@
 
   // ---------- Save ----------
 
+  // Each file is built when its entry is clicked, not when the menu opens: building all four up
+  // front stalled the menu on large files and left object URLs around to revoke.
   const stem = $derived(viz.dataset.name.replace(/\.[^.]+$/, '') || 'nineteen');
-  let htmlUrl = $state<string | null>(null);
-  let pngUrl = $state<string | null>(null);
-  let xlsxUrl = $state<string | null>(null);
-  let csvUrl = $state<string | null>(null);
-  let htmlStatus = $state('Save an interactive version of this view');
-  let pngStatus = $state('Save a static image of this view');
+  /** Only the built single-file app can copy itself (fixed for the page's lifetime) */
+  const standalone = canSaveStandalone();
+  const PNG_READY = 'Save a static image of this view';
+  let pngStatus = $state(PNG_READY);
+  let rendering = $state(false);
 
-  function revoke() {
-    if (htmlUrl) URL.revokeObjectURL(htmlUrl);
-    if (pngUrl) URL.revokeObjectURL(pngUrl);
-    if (xlsxUrl) URL.revokeObjectURL(xlsxUrl);
-    if (csvUrl) URL.revokeObjectURL(csvUrl);
-    htmlUrl = pngUrl = xlsxUrl = csvUrl = null;
+  /** Hands a file to the browser as a download; the object URL lives only as long as the click needs it */
+  function download(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  async function prepareSave() {
-    revoke();
-    if (canSaveStandalone()) {
-      const html = standaloneHtml(serialize(viz.dataset, viz.toViewState()));
-      htmlUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-      htmlStatus = 'Save an interactive version of this view';
-    } else {
-      htmlStatus = 'Available in the built app (npm run build)';
-    }
-    // The data itself, including any columns added in Nineteen
-    xlsxUrl = URL.createObjectURL(
-      new Blob([toXlsx(viz.dataset) as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-    );
-    csvUrl = URL.createObjectURL(new Blob([toCsv(viz.dataset)], { type: 'text/csv' }));
-    pngStatus = 'Generating image...';
+  function saveHtml() {
+    const html = standaloneHtml(serialize(viz.dataset, viz.toViewState()));
+    download(new Blob([html], { type: 'text/html' }), `${stem}-nineteen.html`);
+    close();
+  }
+
+  // The data itself, including any columns added in Nineteen
+  function saveXlsx() {
+    const type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    download(new Blob([toXlsx(viz.dataset) as BlobPart], { type }), `${stem}-nineteen.xlsx`);
+    close();
+  }
+
+  function saveCsv() {
+    download(new Blob([toCsv(viz.dataset)], { type: 'text/csv' }), `${stem}-nineteen.csv`);
+    close();
+  }
+
+  async function savePng() {
+    if (rendering) return;
+    rendering = true;
+    pngStatus = 'Generating image…';
     try {
       const blob = await renderSnapshot(viz);
-      if (open?.name !== 'save') return;
-      pngUrl = URL.createObjectURL(blob);
-      pngStatus = 'Save a static image of this view';
+      download(blob, 'nineteen-snapshot.png');
+      pngStatus = PNG_READY;
+      close();
     } catch {
       pngStatus = 'The image could not be created';
+    } finally {
+      rendering = false;
     }
   }
 
-  onDestroy(() => {
-    revoke();
-    popups.clear();
-  });
+  onDestroy(() => popups.clear());
 
   function restart(event: MouseEvent) {
     event.preventDefault();
@@ -211,8 +224,8 @@
     <div id="viewer">
       <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} {aiOpen} ontoggleai={toggleAI} {tagsOpen} ontoggletags={toggleTags}>
         {#snippet side()}
-          {#if tagsOpen}
-            <div class="ai-dock">
+          {#if tagsMounted}
+            <div class="ai-dock" hidden={!tagsOpen}>
               <TagsPanel {viz} onclose={() => (tagsOpen = false)} ondisplayoptions={(column) => (tagOptionsFor = column)} />
             </div>
           {/if}
@@ -283,22 +296,22 @@
     </Dropdown>
   {:else if open?.name === 'save'}
     <Dropdown anchor={open.anchor} align="right" className="dropdown-save" label="Save" onclose={close}>
-      <a class="save-html" href={htmlUrl} download="{stem}-nineteen.html" onclick={close}>
+      <button type="button" class="save-html" disabled={!standalone} onclick={saveHtml}>
         <strong>Download HTML file</strong><br />
-        <span class="description">{htmlStatus}</span>
-      </a>
-      <a class="save-png" href={pngUrl} download="nineteen-snapshot.png" onclick={close}>
+        <span class="description">{standalone ? 'Save an interactive version of this view' : 'Available in the built app (npm run build)'}</span>
+      </button>
+      <button type="button" class="save-png" disabled={rendering} aria-busy={rendering} onclick={savePng}>
         <strong>Download PNG image</strong><br />
         <span class="description">{pngStatus}</span>
-      </a>
-      <a class="save-xlsx" href={xlsxUrl} download="{stem}-nineteen.xlsx" onclick={close}>
+      </button>
+      <button type="button" class="save-xlsx" onclick={saveXlsx}>
         <strong>Download spreadsheet (.xlsx)</strong><br />
         <span class="description">All rows and columns, including ones added in Nineteen</span>
-      </a>
-      <a class="save-csv" href={csvUrl} download="{stem}-nineteen.csv" onclick={close}>
+      </button>
+      <button type="button" class="save-csv" onclick={saveCsv}>
         <strong>Download CSV</strong><br />
         <span class="description">The same data as plain text</span>
-      </a>
+      </button>
     </Dropdown>
   {:else if open?.name === 'terms'}
     <Dropdown anchor={open.anchor} offset={-35} label="High-frequency words" onclose={close}>

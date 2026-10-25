@@ -49,6 +49,13 @@ describe('data packaging', () => {
     expect(again.columns).toEqual(['Name', 'Segment', 'Note', 'Theme']);
     expect(again.items[1].raw.Theme).toBe('X');
   });
+
+  it('keeps every row and its id when replacing a column that held a row’s only content', () => {
+    const sparse = buildDataset('x.csv', [{ Name: 'Ada', Note: 'hello' }, { Name: '', Note: 'only note' }, { Name: 'Cy', Note: 'bye' }]);
+    const replaced = withColumns(sparse, { Note: new Map([[1, 'A'], [3, 'C']]) });
+    expect(replaced.columns).toEqual(['Name', 'Note']);
+    expect(replaced.items.map((i) => [i.id, i.raw.Name, i.raw.Note])).toEqual([[1, 'Ada', 'A'], [2, '', ''], [3, 'Cy', 'C']]);
+  });
 });
 
 describe('answers', () => {

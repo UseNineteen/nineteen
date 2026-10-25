@@ -1,4 +1,4 @@
-import { buildDataset, displayLabel, type DataItem, type Dataset } from '../data';
+import { displayLabel, withColumn, type DataItem, type Dataset } from '../data';
 
 /**
  * Packages the user's data for an AI model: which rows, which columns, and a
@@ -65,20 +65,15 @@ export function formatTokens(tokens: number): string {
   return `~${(tokens / 1_000_000).toFixed(1)}M tokens`;
 }
 
-/** Adds (or replaces) columns, keeping row ids and every existing value. */
+/**
+ * Adds columns (or replaces existing ones in place), keeping every row, its id and its other
+ * values. Rows the model didn't code get a blank cell.
+ */
 export function withColumns(dataset: Dataset, added: Record<string, Map<number, string>>): Dataset {
-  const names = Object.keys(added);
-  const columns = [...dataset.columns.filter((c) => !names.includes(c)), ...names];
-  const rows = dataset.items.map((item) => {
-    const row: Record<string, string> = Object.create(null);
-    for (const column of dataset.columns) row[column] = item.raw[column];
-    for (const name of names) row[name] = added[name].get(item.id) ?? '';
-    return row;
-  });
-  const next = buildDataset(dataset.name, rows, columns);
-  // Keep the original file row numbers (rows are never dropped, so ids line up)
-  next.items.forEach((item, i) => (item.id = dataset.items[i].id));
-  return next;
+  return Object.entries(added).reduce(
+    (current, [name, values]) => withColumn(current, name, (item) => values.get(item.id) ?? ''),
+    dataset,
+  );
 }
 
 export function groupValues(items: DataItem[], key: string): string[] {

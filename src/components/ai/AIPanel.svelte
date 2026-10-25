@@ -216,6 +216,10 @@
 
   const categories = $derived(parseCategories(categoryText));
   const codeColumns = $derived(columns.filter((c) => c !== columnName.trim() && c !== `${columnName.trim()} (reason)`));
+  /** Existing columns that coding under this name would overwrite (re-running a coding does this on purpose) */
+  const replaces = $derived(
+    [columnName.trim(), ...(includeReasons ? [`${columnName.trim()} (reason)`] : [])].filter((c) => viz.dataset.columns.includes(c)),
+  );
 
   function suggest() {
     if (!aiSettings.ready || coding) return;
@@ -525,6 +529,13 @@
             <input type="checkbox" bind:checked={includeReasons} />
             <span>Also add a column with the AI’s reason for each data item</span>
           </label>
+          {#if replaces.length}
+            <p class="ai-hint ai-warning" role="status">
+              <strong>Replaces {replaces.map((c) => `“${c}”`).join(' and ')}.</strong>
+              Every value now in {replaces.length === 1 ? 'that column' : 'those columns'} will be overwritten. Choose another name to keep
+              {replaces.length === 1 ? 'it' : 'them'}.
+            </p>
+          {/if}
           <div class="ai-row">
             {#if coding}
               <button type="button" class="btn" onclick={stop}>Stop</button>
@@ -533,7 +544,7 @@
                 type="button"
                 class="btn btn-primary"
                 disabled={!aiSettings.ready || !categories.length || !columnName.trim() || busy}
-                onclick={runCoding}>Code {items.length} data items</button
+                onclick={runCoding}>{replaces.length ? 'Replace and code' : 'Code'} {items.length} data items</button
               >
             {/if}
           </div>

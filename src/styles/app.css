@@ -1645,6 +1645,10 @@ footer li:first-child::before {
   font-size: 12.5px;
   margin: 6px 0;
 }
+/* The new column's name matches an existing column: coding will overwrite it */
+#ai-panel .ai-warning {
+  color: #8a5a00;
+}
 #ai-panel a {
   color: var(--trout);
   font-weight: 500;

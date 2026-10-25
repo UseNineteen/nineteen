@@ -112,6 +112,9 @@ describe('search (ported from the original test suite)', () => {
 
   it('returns null with no term', () => {
     expect(search(dataset.items, '', all)).toBeNull();
+    // Spaces alone are not a term either, and an AND without a second term doesn't filter yet
+    expect(search(dataset.items, '   ', all)).toBeNull();
+    expect(count('kombucha AND ')).toBe(count('kombucha'));
   });
 
   it('merges overlapping highlights', () => {
@@ -235,6 +238,11 @@ describe('hosted links', () => {
   it('rejects non-web URLs', () => {
     expect(() => resolveHostedUrl('javascript:alert(1)')).toThrow();
     expect(() => resolveHostedUrl('file:///etc/passwd')).toThrow();
+  });
+
+  it('names files with malformed percent-encoding instead of throwing', () => {
+    expect(resolveHostedUrl('https://example.com/files/caf%C3%A9.csv').name).toBe('café.csv');
+    expect(resolveHostedUrl('https://example.com/files/a%zz.csv').name).toBe('a%zz.csv');
   });
 });
 

@@ -157,8 +157,10 @@
 
   // Label column width at scale 1 decides where the blocks start. It is measured on a hidden copy
   // at the base font size, so it never depends on the current scale (which itself depends on it).
+  // Measured again once the web font has loaded, since the fallback font has different widths.
   $effect(() => {
     void layout.groups;
+    void fontsReady;
     tick().then(() => {
       // +2px: small fonts render slightly wider than a straight scale-down predicts
       if (measureEl) labelWidth = measureEl.offsetWidth + 2;
@@ -366,10 +368,11 @@
         autocomplete="off"
         spellcheck="false"
         bind:value={viz.searchTerm}
-        style:padding-right={viz.searchTerm ? `${countWidth + 30}px` : null}
+        style:padding-right={viz.matches ? `${countWidth + 30}px` : null}
         onkeydown={(e) => e.key === 'Enter' && e.preventDefault()}
       />
-      {#if viz.searchTerm}
+      <!-- Only while the text actually searches (spaces alone, or a dangling AND, don't) -->
+      {#if viz.matches}
         <span class="search-count" bind:clientWidth={countWidth}>
           <span class="search-count-text">{st.count} of {st.total}</span>
           {#if st.count > 0 && !st.tagging}

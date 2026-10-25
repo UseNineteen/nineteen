@@ -15,8 +15,13 @@ export interface HostedSource {
 export class HostedFileError extends Error {}
 
 function basename(url: URL): string {
-  const last = decodeURIComponent(url.pathname.split('/').filter(Boolean).pop() ?? '');
-  return last || 'hosted-file';
+  const last = url.pathname.split('/').filter(Boolean).pop() ?? '';
+  try {
+    return decodeURIComponent(last) || 'hosted-file';
+  } catch {
+    // Not valid percent-encoding (e.g. "a%zz.csv"): the name is cosmetic, so keep it as typed
+    return last || 'hosted-file';
+  }
 }
 
 export function resolveHostedUrl(input: string): HostedSource {

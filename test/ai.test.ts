@@ -77,6 +77,30 @@ describe('answers', () => {
     const ordered = blocks[3];
     expect(ordered.kind === 'list' && ordered.ordered).toBe(true);
   });
+
+  it('marks italics only around whole runs of text', () => {
+    const parts = (text: string) => {
+      const [block] = parseAnswer(text);
+      return block.kind === 'paragraph' ? block.parts : [];
+    };
+    expect(parts('say *hi* (*there*) and *a*')).toEqual([
+      { kind: 'text', text: 'say ' },
+      { kind: 'text', text: 'hi', italic: true },
+      { kind: 'text', text: ' (' },
+      { kind: 'text', text: 'there', italic: true },
+      { kind: 'text', text: ') and ' },
+      { kind: 'text', text: 'a', italic: true },
+    ]);
+    expect(parts('*lead* in')).toEqual([
+      { kind: 'text', text: 'lead', italic: true },
+      { kind: 'text', text: ' in' },
+    ]);
+    // Asterisks inside words or around spaces are arithmetic or stray characters, not emphasis
+    expect(parts('2*3*4 and * loose * and **bold**')).toEqual([
+      { kind: 'text', text: '2*3*4 and * loose * and ' },
+      { kind: 'text', text: 'bold', bold: true },
+    ]);
+  });
 });
 
 describe('auto-coding', () => {

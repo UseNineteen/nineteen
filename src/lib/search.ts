@@ -35,9 +35,10 @@ export function search(
   /** List (tag) columns, with how each one's cells are split */
   tagColumns: ReadonlySet<string> | ReadonlyMap<string, ListSeparator> = new Set(),
 ): Set<number> | null {
-  if (term.length === 0) return null;
-  const matches = groups(term).map((group) => {
-    const toks = tokens(group);
+  // Groups without a term don't filter (a blank search, or "dog AND " before its second term is typed)
+  const termGroups = groups(term).map(tokens).filter((toks) => toks.length > 0);
+  if (termGroups.length === 0) return null;
+  const matches = termGroups.map((toks) => {
     const patterns = toks.map((t) => termPattern(t));
     const whole = toks.map((t) => new RegExp(`^(?:${termPattern(t).source})$`, 'i'));
     const matched = new Set<number>();

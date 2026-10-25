@@ -28,14 +28,23 @@ export function citedRows(text: string): number[] {
   return [...rows].sort((a, b) => a - b);
 }
 
+/**
+ * **bold** and *italic*. An italic run starts after a non-word character (or the start), opens and
+ * closes on non-space text, and isn't followed by a word character, so "2*3*4" stays plain.
+ * Written without lookbehind: a regex that one browser can't parse would stop the whole bundle
+ * from loading, not just this function.
+ */
+const EMPHASIS = /\*\*(.+?)\*\*|(^|[^*\w])\*([^\s*](?:.*?\S)?)\*(?![*\w])/g;
+
 function emphasis(text: string): Inline[] {
   const parts: Inline[] = [];
-  const pattern = /\*\*(.+?)\*\*|(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])/g;
   let cursor = 0;
-  for (const m of text.matchAll(pattern)) {
-    if (m.index > cursor) parts.push({ kind: 'text', text: text.slice(cursor, m.index) });
+  for (const m of text.matchAll(EMPHASIS)) {
+    // The character before an italic run is part of the match but stays plain text
+    const start = m.index + (m[2]?.length ?? 0);
+    if (start > cursor) parts.push({ kind: 'text', text: text.slice(cursor, start) });
     if (m[1] !== undefined) parts.push({ kind: 'text', text: m[1], bold: true });
-    else parts.push({ kind: 'text', text: m[2], italic: true });
+    else parts.push({ kind: 'text', text: m[3], italic: true });
     cursor = m.index + m[0].length;
   }
   if (cursor < text.length) parts.push({ kind: 'text', text: text.slice(cursor) });

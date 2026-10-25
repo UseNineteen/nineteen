@@ -9,7 +9,8 @@ export const GEOMETRY = {
   row: 26,
 } as const;
 
-export type SortBy = 'value' | 'count';
+/** 'custom': a dragged order of values (rows, or legend entries); values it doesn't mention follow, A–Z */
+export type SortBy = 'value' | 'count' | 'custom';
 export type SortDirection = 'ascending' | 'descending';
 
 export interface LayoutOptions {
@@ -106,12 +107,13 @@ export function countSlot(digits: number): number {
 }
 
 /**
- * Sorts groups by count, or by value: a custom order when one is given (values it
- * doesn't mention follow, in their natural order), otherwise the values' natural order.
+ * Sorts groups by count, by value (the values' natural order), or in a custom order
+ * (values the order doesn't mention follow, in their natural order).
  */
 export function sortGroups(groups: Group[], sortBy: SortBy, direction: SortDirection, order?: string[]): Group[] {
-  const sign = direction === 'ascending' ? 1 : -1;
-  const rank = order?.length ? new Map(order.map((label, i) => [label, i])) : null;
+  // A custom order is shown as given
+  const sign = direction === 'ascending' || sortBy === 'custom' ? 1 : -1;
+  const rank = sortBy === 'custom' && order?.length ? new Map(order.map((label, i) => [label, i])) : null;
   const byValue = (a: Group, b: Group) => {
     if (rank) {
       const ra = rank.get(a.label) ?? Infinity;
@@ -127,7 +129,7 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
   const { groupKey, colorKey, split, counts } = options;
   const items = [...all].sort(itemComparator(groupKey, colorKey));
   const groups = sortGroups(rollup(items, groupKey), options.sortBy, options.sortDirection, options.groupOrder);
-  const legend = sortGroups(rollup(items, colorKey), 'value', 'ascending', options.legendOrder);
+  const legend = sortGroups(rollup(items, colorKey), 'custom', 'ascending', options.legendOrder);
 
   const rowOffset = split ? 1 : 0;
   const headerExtra = split ? (options.headerExtra ?? 0) : 0;

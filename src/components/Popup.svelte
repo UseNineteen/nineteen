@@ -17,7 +17,7 @@
 
   const highlight = $derived(viz.isMatch(item));
   const tagColumn = $derived(viz.tagEditColumn);
-  const tags = $derived(splitTags(item.raw[tagColumn]));
+  const tags = $derived(splitTags(item.raw[tagColumn], viz.separatorOf(tagColumn)));
   const listed = $derived(viz.viewerColumns.filter((c) => c !== tagColumn));
 
   /** Clicking a tag finds every row carrying it */
@@ -76,6 +76,7 @@
           {tags}
           editable={popup.floating}
           suggestions={viz.catalog(tagColumn).map((t) => t.label)}
+          separator={viz.separatorOf(tagColumn)}
           onchange={(next) => viz.setTags(item.id, next)}
           onpick={(tag) => findTag(tagColumn, tag)}
         />
@@ -86,7 +87,11 @@
       {#if viz.isTagColumn(column)}
         <div class="popup-tags">
           <strong>{column}</strong>
-          <TagEditor id="tags-{popup.key}-{column}" tags={splitTags(text)} onpick={(tag) => findTag(column, tag)} />
+          <TagEditor
+            id="tags-{popup.key}-{column}"
+            tags={splitTags(text, viz.separatorOf(column))}
+            onpick={(tag) => findTag(column, tag)}
+          />
         </div>
       {:else}
       <p>

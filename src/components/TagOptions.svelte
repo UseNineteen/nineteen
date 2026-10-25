@@ -64,14 +64,14 @@
   }}
 >
   <header class="title-bar">
-    <strong class="title" id="tag-options-title">Tag options: {column}</strong>
+    <strong class="title" id="tag-options-title">List display options: {column}</strong>
     <button type="button" class="close" aria-label="Close" onclick={onclose}>&times;</button>
   </header>
 
   <div class="settings-body">
     <p class="settings-hint">
-      Data items are grouped and colored by their combination of tags. Untick a tag to leave it out of the combinations;
-      data items keep the tag, and it still shows in the viewer and in search.
+      Data items are grouped and colored by their combination of values. Untick a value to leave it out of the
+      combinations; data items keep it, and it still shows in the viewer and in search.
     </p>
     {#if catalog.length}
       <ul class="tag-options">
@@ -80,19 +80,19 @@
             <label class="settings-check">
               <input type="checkbox" checked={!ignored.has(tag.key)} onchange={(e) => setIncluded(tag.key, e.currentTarget.checked)} />
               <span class="tag-option-name">{tag.label}</span>
-              <span class="tag-option-count">{tag.count} {tag.count === 1 ? 'row' : 'rows'}</span>
+              <span class="tag-option-count">{tag.count} {tag.count === 1 ? 'data item' : 'data items'}</span>
             </label>
-            <button type="button" class="ai-link tag-only" onclick={() => only(tag.key)} title="Ignore every other tag">Only this</button>
+            <button type="button" class="ai-link tag-only" onclick={() => only(tag.key)} title="Leave out every other value">Only this</button>
           </li>
         {/each}
       </ul>
     {:else}
-      <p class="settings-hint">No tags yet. Pin a viewer (click a box) to add tags to a row.</p>
+      <p class="settings-hint">No values yet.</p>
     {/if}
   </div>
 
   <footer class="settings-footer">
-    <button type="button" class="btn" disabled={ignored.size === 0} onclick={includeAll}>Include all tags</button>
+    <button type="button" class="btn" disabled={ignored.size === 0} onclick={includeAll}>Include all</button>
     <span class="settings-spacer"></span>
     <button type="button" class="btn btn-primary" onclick={onclose}>Done</button>
   </footer>

@@ -8,7 +8,8 @@
   import AIPanel from './ai/AIPanel.svelte';
   import SettingsDialog from './SettingsDialog.svelte';
   import TagOptions from './TagOptions.svelte';
-  import { datasetDetails } from '../lib/data';
+  import TagsPanel from './TagsPanel.svelte';
+  import { datasetDetails, LIST_SEPARATORS, type ListSeparator } from '../lib/data';
   import { serialize } from '../lib/persist';
   import { Popups } from '../lib/popups.svelte';
   import { addTerm } from '../lib/search';
@@ -32,14 +33,24 @@
   let open = $state<{ name: DropdownName; anchor: HTMLElement } | null>(null);
   let aiOpen = $state(false);
   let settingsOpen = $state(false);
-  /** Column whose Tag options dialog is open */
+  /** Column whose List display options dialog is open */
   let tagOptionsFor = $state<string | null>(null);
   // Mounted on first open, then kept (hidden) so a conversation survives closing the panel
   let aiMounted = $state(false);
 
+  let tagsOpen = $state(false);
+
+  // The AI panel and Manage tags share the space under the toolbar: one at a time
   function toggleAI() {
     aiOpen = !aiOpen;
     aiMounted = true;
+    if (aiOpen) tagsOpen = false;
+    close();
+  }
+
+  function toggleTags() {
+    tagsOpen = !tagsOpen;
+    if (tagsOpen) aiOpen = false;
     close();
   }
 
@@ -107,19 +118,47 @@
 </script>
 
 {#snippet tagControls(column: string)}
+  {@const isList = viz.isTagColumn(column)}
+  {@const isTags = isList && viz.tagEditColumn === column}
   <hr />
-  <label title="Treat values like “gift, price” as separate tags; data items are grouped by their combination of tags">
-    <input type="checkbox" checked={viz.isTagColumn(column)} onchange={(e) => viz.setTagColumn(column, e.currentTarget.checked)} />
-    <span>“{column}” holds comma-separated tags</span>
+  <label title="Split each cell into separate values, like “gift, price”; data items are grouped by their combination of values">
+    <input type="checkbox" checked={isList} onchange={(e) => viz.setTagColumn(column, e.currentTarget.checked)} />
+    <span>“{column}” holds lists of values</span>
   </label>
-  {#if viz.isTagColumn(column)}
+  <label
+    class:disabled={isTags && !viz.tagsColumnChoice}
+    title={isTags && !viz.tagsColumnChoice
+      ? 'Tags are stored in a column named “Tags” unless you choose another one'
+      : 'The viewer’s tag field, “Tag matches” and Manage tags write to this column'}
+  >
+    <input
+      type="checkbox"
+      checked={isTags}
+      disabled={isTags && !viz.tagsColumnChoice}
+      onchange={(e) => (e.currentTarget.checked ? viz.setTagsColumn(column) : viz.resetTagsColumn())}
+    />
+    <span>Use “{column}” for tags</span>
+  </label>
+  {#if isList}
+    <div class="dropdown-field">
+      <span>Split values on</span>
+      <select
+        value={viz.separatorOf(column)}
+        aria-label="Split “{column}” values on"
+        onchange={(e) => viz.setListSeparator(column, e.currentTarget.value as ListSeparator)}
+      >
+        {#each LIST_SEPARATORS as option (option.value)}
+          <option value={option.value}>{option.label}</option>
+        {/each}
+      </select>
+    </div>
     <button
       type="button"
       class="dropdown-action"
       onclick={() => {
         close();
         tagOptionsFor = column;
-      }}>Tag options…</button
+      }}>List display options…</button
     >
   {/if}
 {/snippet}
@@ -170,8 +209,13 @@
   <figure id="visualization">
     <Legend {viz} oncolormenu={(anchor) => toggle('color', anchor)} colorMenuOpen={open?.name === 'color'} />
     <div id="viewer">
-      <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} {aiOpen} ontoggleai={toggleAI}>
+      <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} {aiOpen} ontoggleai={toggleAI} {tagsOpen} ontoggletags={toggleTags}>
         {#snippet side()}
+          {#if tagsOpen}
+            <div class="ai-dock">
+              <TagsPanel {viz} onclose={() => (tagsOpen = false)} ondisplayoptions={(column) => (tagOptionsFor = column)} />
+            </div>
+          {/if}
           {#if aiMounted}
             <div class="ai-dock" hidden={!aiOpen}>
               <AIPanel {viz} {popups} onclose={() => (aiOpen = false)} />

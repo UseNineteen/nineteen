@@ -33,6 +33,8 @@
   /** Index of the entry being dragged, and where it would land */
   let dragging = $state<number | null>(null);
   let dropAt = $state<number | null>(null);
+  /** How far the dragged entry has moved (px): its label follows the pointer */
+  let dragDy = $state(0);
   let pressed: { index: number; y: number; id: number } | null = null;
 
   /** The gap (0…n) closest to the pointer */
@@ -56,9 +58,14 @@
     if (dragging === null && Math.abs(event.clientY - pressed.y) < 4) return;
     if (dragging === null) {
       dragging = pressed.index;
-      listEl.setPointerCapture(event.pointerId);
+      try {
+        listEl.setPointerCapture(event.pointerId);
+      } catch {
+        // The pointer is already gone; the drag still works while it stays over the list
+      }
     }
     dropAt = gapAt(event.clientY);
+    dragDy = event.clientY - pressed.y;
   }
 
   function pointerup() {
@@ -68,6 +75,7 @@
     }
     pressed = null;
     dragging = dropAt = null;
+    dragDy = 0;
   }
 
   function keydown(index: number, event: KeyboardEvent) {
@@ -125,6 +133,7 @@
         class:drop-after={dragging !== null && dropAt === viz.layout.legend.length && i === viz.layout.legend.length - 1 && dragging !== i}
         title={reorderable ? `${viz.label(entry.label, viz.colorKey)} (drag to reorder)` : viz.label(entry.label, viz.colorKey)}
         tabindex={reorderable ? 0 : -1}
+        style:--drag-dy={dragging === i ? `${dragDy}px` : null}
         onpointerdown={(e) => pointerdown(i, e)}
         onkeydown={(e) => keydown(i, e)}
       >

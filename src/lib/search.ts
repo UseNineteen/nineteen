@@ -1,4 +1,4 @@
-import { splitTags, type DataItem } from './data';
+import { splitTags, type DataItem, type ListSeparator } from './data';
 
 /**
  * Search grammar, ported from the original Search model:
@@ -32,7 +32,8 @@ export function search(
   items: DataItem[],
   term: string,
   scope: string[],
-  tagColumns: ReadonlySet<string> = new Set(),
+  /** List (tag) columns, with how each one's cells are split */
+  tagColumns: ReadonlySet<string> | ReadonlyMap<string, ListSeparator> = new Set(),
 ): Set<number> | null {
   if (term.length === 0) return null;
   const matches = groups(term).map((group) => {
@@ -43,7 +44,10 @@ export function search(
     for (const item of items) {
       const hit = scope.some((column) => {
         const value = item.raw[column] ?? '';
-        if (tagColumns.has(column)) return splitTags(value).some((tag) => whole.some((p) => p.test(tag)));
+        if (tagColumns.has(column)) {
+          const separator = tagColumns instanceof Map ? tagColumns.get(column) : 'auto';
+          return splitTags(value, separator).some((tag) => whole.some((p) => p.test(tag)));
+        }
         return patterns.some((p) => p.test(value));
       });
       if (hit) matched.add(item.id);

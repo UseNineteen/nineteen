@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { splitTags } from '../lib/data';
+  import { splitTags, type ListSeparator } from '../lib/data';
   import { tagKey } from '../lib/tags';
 
   interface Props {
@@ -11,9 +11,15 @@
     /** Clicking a tag (to search for it) */
     onpick?: (tag: string) => void;
     id: string;
+    /** How the column's cells are split; typing that separator finishes a tag */
+    separator?: ListSeparator;
   }
 
-  let { tags, suggestions = [], editable = false, onchange, onpick, id }: Props = $props();
+  let { tags, suggestions = [], editable = false, onchange, onpick, id, separator = 'auto' }: Props = $props();
+
+  /** Keys that finish a tag (new lines can't be typed into the field, so Enter does it) */
+  const FINISH_KEYS: Record<ListSeparator, string[]> = { auto: [',', ';'], comma: [','], semicolon: [';'], newline: [] };
+  const FINISH: Record<ListSeparator, RegExp | null> = { auto: /[,;]/, comma: /,/, semicolon: /;/, newline: null };
 
   let draft = $state('');
 
@@ -25,28 +31,30 @@
   }
 
   function add(text: string) {
-    const added = splitTags(text).map(canonical);
+    // A typed tag is one value: only the column's own separator splits it
+    const added = (separator === 'newline' ? [text.trim()] : splitTags(text, separator)).filter(Boolean).map(canonical);
     draft = '';
     if (!added.length) return;
-    onchange?.(splitTags([...tags, ...added].join(',')));
+    onchange?.([...tags, ...added.filter((a) => !tags.some((t) => tagKey(t) === tagKey(a)))]);
   }
 
   function remove(tag: string) {
     onchange?.(tags.filter((t) => t !== tag));
   }
 
-  /** Typing or pasting a comma/semicolon finishes the tags before it (pasting "gift, price" adds both) */
+  /** Typing or pasting the separator finishes the tags before it (pasting "gift, price" adds both) */
   function input(event: Event & { currentTarget: HTMLInputElement }) {
     draft = event.currentTarget.value;
-    if (!/[,;]/.test(draft)) return;
-    const parts = draft.split(/[,;]/);
+    const finish = FINISH[separator];
+    if (!finish || !finish.test(draft)) return;
+    const parts = draft.split(finish);
     const rest = parts.pop() ?? '';
-    add(parts.join(','));
+    for (const part of parts) add(part);
     draft = rest.trimStart();
   }
 
   function keydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' || event.key === ',' || event.key === ';') {
+    if (event.key === 'Enter' || FINISH_KEYS[separator].includes(event.key)) {
       event.preventDefault();
       add(draft);
     } else if (event.key === 'Backspace' && draft === '' && tags.length) {

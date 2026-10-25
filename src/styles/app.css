@@ -596,6 +596,10 @@ footer li:first-child::before {
 #tool-bar .block-sort.sort-value.sort-reverse {
   background-image: url('../assets/images/sort-value-desc.svg');
 }
+/* Rows in a dragged, custom order */
+#tool-bar .block-sort.sort-value.sort-custom {
+  background-image: url('../assets/images/sort-value-custom.svg');
+}
 #tool-bar .block-sort.sort-count {
   background-image: url('../assets/images/sort-count-asc.svg');
   width: 35px;
@@ -616,6 +620,8 @@ footer li:first-child::before {
   font-size: 13px;
 }
 #tool-bar #search {
+  /* The match count inside shrinks with the box (see .search-count) */
+  container: search / inline-size;
   font-size: 16px;
   flex: 1 1 auto;
   line-height: 20px;
@@ -630,6 +636,53 @@ footer li:first-child::before {
   inset: 0;
   width: 100%;
   outline: none;
+}
+/* Match count (and "Tag these…") at the right of the search box, left of the browser's clear button */
+#tool-bar .search-count {
+  align-items: center;
+  bottom: 0;
+  color: var(--gray);
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  pointer-events: none;
+  position: absolute;
+  right: 26px;
+  top: 0;
+  white-space: nowrap;
+}
+#tool-bar .search-count button {
+  background: #eef6fd;
+  border: 1px solid #9cc7ee;
+  border-radius: 11px;
+  color: #0a3bb1;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 1px 9px;
+  pointer-events: auto;
+}
+#tool-bar .search-count button:hover {
+  background: #dcecfb;
+}
+/* A narrower search box keeps room for typing: the button becomes a tag icon, then the count goes */
+@container search (max-width: 250px) {
+  #tool-bar .search-count button {
+    background-image: url('../assets/images/tag-dark.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 22px;
+    padding: 0;
+    width: 28px;
+  }
+  #tool-bar .search-count-label {
+    display: none;
+  }
+}
+@container search (max-width: 150px) {
+  #tool-bar .search-count-text {
+    display: none;
+  }
 }
 #tool-bar #search-field::placeholder {
   color: var(--gray);
@@ -782,6 +835,8 @@ footer li:first-child::before {
 }
 #viewer .visualizer {
   flex: 1 1 auto;
+  /* A little breathing room between the toolbar and the first row */
+  margin-top: 8px;
   overflow: auto;
   overflow-x: hidden;
   position: relative;
@@ -825,6 +880,50 @@ footer li:first-child::before {
   z-index: 2;
   pointer-events: none;
 }
+/* Row labels can be dragged up and down to reorder rows (the label column itself ignores the pointer) */
+#viewer .labels .row-label {
+  cursor: grab;
+  pointer-events: auto;
+  position: relative;
+  user-select: none;
+}
+#viewer .labels.row-dragging .row-label {
+  cursor: grabbing;
+}
+#viewer .labels .row-label:focus-visible {
+  outline: 2px solid #3396e4;
+  outline-offset: -2px;
+}
+/* The same grip as the legend, at the label's left edge, on hover or keyboard focus */
+#viewer .labels .row-label::before {
+  background-image: radial-gradient(circle, #a1a7ad 1px, transparent 1.2px);
+  background-size: 3px 3px;
+  content: '';
+  height: 10px;
+  left: 3px;
+  opacity: 0;
+  position: absolute;
+  top: calc(50% - 5px);
+  transition: opacity 100ms;
+  width: 6px;
+}
+#viewer .labels .row-label:hover::before,
+#viewer .labels .row-label:focus-visible::before,
+#viewer .labels .row-label.being-dragged::before {
+  opacity: 1;
+}
+#viewer .labels .row-label.being-dragged {
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  color: #0a3bb1;
+  z-index: 3;
+}
+#viewer .labels .row-label.drop-before {
+  box-shadow: inset 0 3px 0 #3396e4;
+}
+#viewer .labels .row-label.drop-after {
+  box-shadow: inset 0 -3px 0 #3396e4;
+}
 #viewer .label-item {
   background-color: rgba(245, 245, 245, 0.9);
   height: calc(20em / 13);
@@ -855,8 +954,20 @@ footer li:first-child::before {
 #viewer .block-items.animate .block-item {
   transition:
     transform 1100ms ease-in-out,
+    translate 1100ms ease-in-out,
     background-color 250ms,
     border-color 250ms;
+}
+/* A row being dragged by its label follows the pointer directly, above the other rows;
+   on release its boxes glide from there to their new place (translate and transform together) */
+#viewer .block-items .block-item.row-dragged {
+  transition: none !important;
+  z-index: 3;
+}
+#viewer .row-items .row.row-dragged {
+  background-color: #e3ecf8;
+  position: relative;
+  z-index: 1;
 }
 #viewer .block-items.zooming .block-item {
   transition: none !important;
@@ -1099,6 +1210,26 @@ footer li:first-child::before {
 .dropdown label:hover,
 .dropdown label:focus-within {
   background-color: var(--lightgray);
+}
+.dropdown label.disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.dropdown label.disabled:hover {
+  background-color: transparent;
+}
+/* A labeled select inside a menu, such as a list column's separator */
+.dropdown .dropdown-field {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  line-height: 28px;
+  padding: 2px 15px 2px 36px;
+  white-space: nowrap;
+}
+.dropdown .dropdown-field select {
+  font-size: 14px;
+  padding: 2px 4px;
 }
 .dropdown label::after {
   clear: both;
@@ -1374,7 +1505,8 @@ footer li:first-child::before {
   min-width: 0;
   position: relative;
 }
-/* The last toolbar control: an outlined pill, which becomes a tab joined to the open panel */
+/* The last toolbar controls: outlined pills, which become a tab joined to the open panel */
+#tool-bar #tags-toggle,
 #tool-bar #ai-toggle {
   background-color: var(--white);
   background-image: url('../assets/images/ai-dark.svg');
@@ -1386,10 +1518,12 @@ footer li:first-child::before {
   padding: 0 13px 0 30px;
   white-space: nowrap;
 }
+#tool-bar #tags-toggle:hover,
 #tool-bar #ai-toggle:hover {
   background-color: var(--lightgray);
   border-color: var(--lightgray);
 }
+#tool-bar #tags-toggle[aria-expanded='true'],
 #tool-bar #ai-toggle[aria-expanded='true'] {
   background-color: var(--lightgray);
   border-color: var(--lightgray);
@@ -1399,6 +1533,7 @@ footer li:first-child::before {
   z-index: 1;
 }
 /* Fill the gap between the tab and the panel header, so they read as one */
+#tool-bar #tags-toggle[aria-expanded='true']::after,
 #tool-bar #ai-toggle[aria-expanded='true']::after {
   background: var(--lightgray);
   bottom: -2px;
@@ -1408,6 +1543,10 @@ footer li:first-child::before {
   position: absolute;
   right: -1px;
 }
+#tool-bar #tags-toggle {
+  background-image: url('../assets/images/tag-dark.svg');
+  margin-right: 8px;
+}
 .ai-dock {
   flex: 0 0 auto;
   display: flex;
@@ -1416,7 +1555,8 @@ footer li:first-child::before {
 .ai-dock[hidden] {
   display: none;
 }
-#ai-panel {
+#ai-panel,
+#tags-panel {
   border-left: 1px solid #d8dadf;
   border-top: 1px solid var(--lightgray);
   box-sizing: border-box;
@@ -1429,7 +1569,8 @@ footer li:first-child::before {
   width: 400px;
   max-width: 100vw;
 }
-#ai-panel .ai-header {
+#ai-panel .ai-header,
+#tags-panel .ai-header {
   align-items: center;
   background-color: var(--lightgray);
   border-bottom: 1px solid #d8dadf;
@@ -1439,10 +1580,12 @@ footer li:first-child::before {
   font-size: 16px;
   padding: 10px 15px;
 }
-#ai-panel .ai-header strong {
+#ai-panel .ai-header strong,
+#tags-panel .ai-header strong {
   flex: 1 1 auto;
 }
-#ai-panel .ai-close {
+#ai-panel .ai-close,
+#tags-panel .ai-close {
   appearance: none;
   background: none;
   border: none;
@@ -1554,7 +1697,8 @@ footer li:first-child::before {
 #ai-panel .btn:disabled {
   opacity: 0.4;
 }
-#ai-panel .ai-link {
+#ai-panel .ai-link,
+#tags-panel .ai-link {
   appearance: none;
   background: none;
   border: none;
@@ -1756,6 +1900,68 @@ footer li:first-child::before {
   font-size: 13px;
   gap: 12px;
   padding: 6px 15px 4px;
+}
+/* Under the toolbar while a search has matches: tag them all at once */
+#viewer .search-tag-bar {
+  align-items: center;
+  background: #eef6fd;
+  border-bottom: 1px solid #d6e8f8;
+  color: #0a3bb1;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 4px 14px;
+  min-height: 30px;
+  padding: 3px 15px;
+}
+/* Actions are small separate buttons, so two of them never read as one link */
+#viewer .search-tag-bar button {
+  appearance: none;
+  background: #ffffff;
+  border: 1px solid #9cc7ee;
+  border-radius: 11px;
+  color: #0a3bb1;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 1px 10px;
+  white-space: nowrap;
+}
+#viewer .search-tag-bar button:hover {
+  background: #dcecfb;
+}
+#viewer .search-tag-bar button.dismiss {
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+  margin-left: auto;
+  padding: 0 2px;
+}
+#viewer .search-tag-bar button:disabled {
+  opacity: 0.5;
+}
+#viewer .search-tag-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#viewer .search-tag-form input {
+  border: 1px solid #9cc7ee;
+  border-radius: 11px;
+  font-size: 13px;
+  padding: 2px 9px;
+  width: 160px;
+}
+#viewer .search-tag-form button.primary {
+  background: #3396e4;
+  border-radius: 11px;
+  color: #ffffff;
+  padding: 2px 10px;
+  text-decoration: none;
 }
 #viewer .ai-highlight-bar button {
   appearance: none;
@@ -2077,13 +2283,29 @@ footer li:first-child::before {
 #legend .legend-items.reorderable .legend-item:focus-visible .grip {
   opacity: 1;
 }
+/* Dragging an entry: its label (with grip and count) lifts and follows the pointer, like a dragged
+   row; the swatch stays, because colors belong to positions and are reassigned on drop */
 #legend .legend-item.being-dragged {
-  opacity: 0.35;
+  z-index: 3;
+}
+#legend .legend-item.being-dragged > :not(.swatch) {
+  translate: 0 var(--drag-dy, 0);
+}
+#legend .legend-item.being-dragged .grip {
+  opacity: 1;
+}
+#legend .legend-item.being-dragged .label {
+  background-color: #ffffff;
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  color: #0a3bb1;
+  margin: -3px -6px;
+  padding: 3px 6px;
 }
 /* Where the entry will land */
 #legend .legend-item.drop-before::before,
 #legend .legend-item.drop-after::after {
-  background: var(--trout);
+  background: #3396e4;
   content: '';
   height: 2px;
   left: 8px;
@@ -2175,7 +2397,7 @@ footer li:first-child::before {
 
 /* ---------- Compact toolbar when the viewer is narrow ---------- */
 
-@container viewer (max-width: 940px) {
+@container viewer (max-width: 1080px) {
   /* Icons only; each button keeps its name in a tooltip and for screen readers */
   #tool-bar .tool-label {
     display: none;
@@ -2198,6 +2420,7 @@ footer li:first-child::before {
   #tool-bar #viewer-columns.dropdown-arrow::after {
     padding-left: 0.2em;
   }
+  #tool-bar #tags-toggle,
   #tool-bar #ai-toggle {
     background-position: center;
     padding: 0;
@@ -2212,4 +2435,254 @@ footer li:first-child::before {
     margin-right: 12px;
     padding-right: 12px;
   }
+}
+
+/* Very narrow: tighter spacing, and the buttons wrap onto a second line rather than being cut off */
+@container viewer (max-width: 560px) {
+  #tool-bar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 40px;
+  }
+  #tool-bar > * {
+    min-height: 40px;
+  }
+  #tool-bar #search {
+    min-width: 56px;
+  }
+  #tool-bar #search-in,
+  #tool-bar #toggle-view,
+  #tool-bar #toggle-counts,
+  #tool-bar #viewer-columns {
+    margin-right: 8px;
+  }
+  #tool-bar #search-in {
+    padding-right: 8px;
+  }
+  #tool-bar #tags-toggle {
+    margin-right: 4px;
+  }
+}
+
+/* ---------- Manage tags ---------- */
+
+#tags-panel .tags-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 12px 15px;
+}
+#tags-panel .tags-column {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-bottom: 12px;
+}
+#tags-panel .tags-column span {
+  color: var(--trout);
+  font-weight: 600;
+  white-space: nowrap;
+}
+#tags-panel .tags-column select {
+  flex: 1 1 140px;
+  max-width: 100%;
+  min-width: 0;
+}
+#tags-panel select,
+#tags-panel input[type='text'],
+#tags-panel input[type='search'] {
+  border: 1px solid #d8dadf;
+  border-radius: 3px;
+  font-size: 13px;
+  padding: 4px 6px;
+}
+#tags-panel .tags-message {
+  align-items: center;
+  background: #eef6fd;
+  border-radius: 4px;
+  color: #0a3bb1;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+  padding: 7px 10px;
+}
+#tags-panel .tags-message {
+  display: block;
+}
+#tags-panel .tags-message button {
+  appearance: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font-weight: 600;
+  margin-left: 6px;
+  padding: 0;
+  text-decoration: underline;
+}
+#tags-panel .tags-confirm {
+  background: #f5f6f8;
+  border-left: 3px solid var(--trout);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+}
+#tags-panel .tags-confirm p {
+  margin: 0;
+}
+#tags-panel .tags-confirm label {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+#tags-panel .tags-keep {
+  font-size: 13px;
+}
+#tags-panel .tags-keep-note {
+  color: var(--gray);
+}
+#tags-panel .tags-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+#tags-panel .btn-danger {
+  background: #b3261e;
+  color: #ffffff;
+}
+#tags-panel .tags-tools {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+#tags-panel .tags-tools input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#tags-panel .tags-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#tags-panel .tags-list li {
+  align-items: center;
+  touch-action: none;
+  border-radius: 4px;
+  display: flex;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 4px;
+  position: relative;
+}
+#tags-panel .tags-list li:hover {
+  background: #f5f6f8;
+}
+#tags-panel .tags-list.dragging li {
+  cursor: grabbing;
+}
+#tags-panel .tags-list li.being-dragged {
+  opacity: 0.45;
+}
+#tags-panel .tags-list li.drop-target {
+  background: #eef6fd;
+  box-shadow: inset 0 0 0 2px #3396e4;
+}
+#tags-panel .tags-list .grip {
+  align-self: stretch;
+  background-image: radial-gradient(circle, #a7adb4 1px, transparent 1.2px);
+  background-size: 4px 4px;
+  cursor: grab;
+  flex: none;
+  width: 8px;
+}
+#tags-panel .tags-name {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--black);
+  cursor: text;
+  flex: 1 1 auto;
+  font: inherit;
+  overflow: hidden;
+  padding: 4px 0;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#tags-panel .tags-name:hover {
+  text-decoration: underline dotted;
+}
+#tags-panel .tags-rename {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#tags-panel .tags-count {
+  color: var(--gray);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+#tags-panel .tags-more {
+  appearance: none;
+  background: none;
+  border: none;
+  border-radius: 3px;
+  color: var(--trout);
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+}
+#tags-panel .tags-more:hover,
+#tags-panel .tags-more[aria-expanded='true'] {
+  background: var(--lightgray);
+}
+#tags-panel .tags-menu {
+  background: #ffffff;
+  border: 1px solid #d8dadf;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  position: absolute;
+  right: 4px;
+  top: 28px;
+  z-index: 3;
+}
+#tags-panel .tags-menu button {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--black);
+  font: inherit;
+  padding: 6px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+#tags-panel .tags-menu button:hover {
+  background: var(--lightgray);
+}
+#tags-panel .tags-menu button:disabled {
+  color: var(--gray);
+}
+#tags-panel .tags-menu .danger {
+  color: #b3261e;
+}
+#tags-panel .tags-empty,
+#tags-panel .tags-hint {
+  color: var(--gray);
+  font-size: 13px;
+}
+#tags-panel .tags-hint {
+  margin: 10px 0 0;
+}
+#tags-panel .tags-footer {
+  border-top: 1px solid var(--lightgray);
+  flex: 0 0 auto;
+  padding: 10px 15px;
 }

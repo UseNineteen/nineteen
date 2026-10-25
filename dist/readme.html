@@ -54,6 +54,10 @@ Each row of your data file becomes a data item, shown as a square in Nineteen&#3
 <p>Nineteen never changes your data, so feel free to explore the interface. Additional features include:</p>
 <ul>
 <li><strong>Sorting:</strong> Sort the rows alphabetically (3) or by the number of items in each group (4). Click a sort button again to reverse it</li>
+<li><strong>Reordering rows:</strong> Drag a row&#39;s label up or down (a grip appears when you point at it; the whole row moves with you), or focus
+it and press Alt + ↑/↓, to put rows in your own order, such as
+<em>Not at all satisfied → Extremely satisfied</em>. The alphabetical sort button (3) then shows a ★, and cycles A–Z → Z–A → ★ (your
+order). Each field keeps its own order until you open another file</li>
 <li><strong>Counting:</strong> The &quot;Show counts&quot; button (5) shows how many items are in each group</li>
 <li><strong>Splitting:</strong> Once you&#39;ve chosen a &quot;color by&quot; column, the &quot;Split&quot; button (6) separates each row into color bands
 (see &quot;Split View and the Legend&quot; below)</li>
@@ -66,6 +70,7 @@ Each row of your data file becomes a data item, shown as a square in Nineteen&#3
 </li>
 <li><strong>Text search:</strong> The search bar (8) is directly above the visualization:<ul>
 <li>Items that match your search stay in color. Everything else turns gray. Matching text is highlighted in the viewers</li>
+<li>The search box shows how many data items match (&quot;23 of 234&quot;), with <strong>Tag these…</strong> to tag them all at once (see &quot;Tagging Your Data&quot;)</li>
 <li>Search in one or more columns (also called &quot;fields&quot;) (9). By default search looks in all of them, but you can limit it</li>
 <li>Multi-word searches:<ul>
 <li>Searching for <em>dog food</em> finds items containing &#39;dog&#39; <em>or</em> &#39;food&#39; (either word is enough)</li>
@@ -82,20 +87,49 @@ Each row of your data file becomes a data item, shown as a square in Nineteen&#3
 (see &quot;Fitting the View&quot; below), or zoom in and out</li>
 <li><strong>Save (11):</strong> Save a standalone HTML file or a PNG image of the visualization, or download the data itself
 (see &quot;Saving and Downloading&quot; below)</li>
-<li><strong>Settings (13)</strong> and <strong>Analyze with AI (14)</strong> are described below</li>
+<li><strong>Settings (13)</strong>, <strong>Analyze with AI (14)</strong> and <strong>Manage tags (17)</strong> are described below</li>
 </ul>
 <h3>Tagging Your Data</h3>
 <p>Pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
-or click × to remove one. Tags are kept in a &quot;Tags&quot; column, created the first time you tag a data item and sorted alphabetically, so they
-are saved with your spreadsheet, CSV and HTML downloads.</p>
+or click × to remove one. The tag field stays at the top of the viewer while you scroll through a long entry, so you can tag as you
+read. Tags are kept in a &quot;Tags&quot; column, created the first time you tag a data item and sorted alphabetically, so they are saved with
+your spreadsheet, CSV and HTML downloads.</p>
 <img src="docs/screenshots/tags.png" alt="Tagging data items and coloring by tags" title="Tags in a pinned viewer, with the visualization color-coded by tags"><ul>
-<li><strong>Grouping and coloring by tags:</strong> Group or color by Tags (B) and data items are grouped by their <em>combination</em> of tags (&quot;gift + price&quot;),
-ignoring order and capitalization. Every data item still gets exactly one box</li>
-<li><strong>Tag options…</strong> (in the Group by and Color by menus) lets you leave some tags out of the combinations, or show only one tag.
-Your data keeps every tag; only the grouping changes</li>
-<li><strong>Finding tags:</strong> Click a tag in a viewer to find every data item with that tag. In tag columns, search matches whole tags, so
-&quot;price&quot; doesn&#39;t find &quot;pricey&quot;</li>
-<li><strong>Your own tag columns:</strong> Any column can be treated as tags by choosing &quot;holds comma-separated tags&quot; in the Group by or Color by menus</li>
+<li><p><strong>Tagging search results:</strong> Search, and the search box shows how many data items match. Choose <strong>Tag these…</strong> there to add a tag
+to every match at once.
+If your search is itself a tag, you can also remove it from the matches. <strong>Undo</strong> reverses the change, and <strong>Color by this tag</strong>
+shows the tagged data items against the rest</p>
+</li>
+<li><p><strong>Manage tags (17)</strong> in the toolbar lists every tag with how many data items have it. Click a name to rename
+it. Drag one tag onto another, or use <strong>Combine into…</strong>, to merge them (renaming onto an existing tag does the same). <strong>Delete</strong>
+removes a tag from every data item, after asking, and <strong>Color by this tag</strong> shows its data items against the rest. Every change
+can be undone</p>
+<img src="docs/screenshots/whats-new/manage-tags.png" alt="The Manage tags panel" title="Manage tags" width="400">
+</li>
+<li><p><strong>Convert a tag into a data field:</strong> In Manage tags, <strong>Convert this tag into a data field</strong> replaces the tag with a field (a column
+in your downloads) that is True for the data items that had the tag and False for the rest, ready for Excel, R or SPSS. Tick
+<strong>Keep the tag too</strong> to keep both; the field then won&#39;t follow later tag changes. Undo reverses the whole conversion</p>
+</li>
+<li><p><strong>Grouping and coloring by tags:</strong> Group or color by Tags (B) and data items are grouped by their <em>combination</em> of tags (&quot;gift + price&quot;),
+ignoring order and capitalization. Every data item still gets exactly one box</p>
+</li>
+<li><p><strong>List display options…</strong> (in the Group by and Color by menus, and in Manage tags) lets you leave some tags out of the
+combinations, or show only one tag. Your data keeps every tag; only the grouping changes</p>
+</li>
+<li><p><strong>Finding tags:</strong> Click a tag in a viewer to find every data item with that tag. In tag columns, search matches whole tags, so
+&quot;price&quot; doesn&#39;t find &quot;pricey&quot;</p>
+</li>
+</ul>
+<h3>Columns that Hold Lists</h3>
+<p>Tags are one kind of list. Any column whose cells hold several values, like &quot;Target, Walmart&quot;, can be treated the same way: choose
+<strong>&quot;[column]&quot; holds lists of values</strong> in the Group by or Color by menu. Data items are then grouped by their combination of values,
+search matches whole values, and the viewer shows each value separately.</p>
+<ul>
+<li><strong>Split values on:</strong> values are split on commas or semicolons by default. If your values contain commas themselves (like
+&quot;Younger Women, No Kids&quot;), choose semicolons or new lines instead</li>
+<li><strong>Use &quot;[column]&quot; for tags:</strong> tags are stored in a column named &quot;Tags&quot; unless you choose another one, for example a &quot;Codes&quot; column
+from an earlier round of coding. You can also choose it at the top of Manage tags. The viewer&#39;s tag field, <strong>Tag these…</strong> and
+Manage tags all write to that column</li>
 </ul>
 <h3>Split View and the Legend</h3>
 <p>With Split on, each value of the &quot;color by&quot; column gets its own band, and a label row above the bands (A) shows each value and,
@@ -103,8 +137,8 @@ with counts on, its total. Long labels wrap onto up to 3 lines. If only a few ba
 get a little wider. If many are, all the labels turn 90° together.</p>
 <img src="docs/screenshots/split-view.png" alt="Split view with labeled bands" title="Split view, with the satisfaction scale in a meaningful order"><ul>
 <li><strong>Reordering the legend:</strong> Drag legend entries up or down by their grip (B), or focus one and press Alt + ↑/↓, to put values in a
-meaningful order, such as <em>Not at all satisfied → Extremely satisfied</em>. Colors are reassigned in the new order, split bands
-follow it, and rows grouped by the same column follow it when sorted A–Z. &quot;Reset order&quot; (C) puts it back</li>
+meaningful order (the label moves with you; colors stay with their positions), such as <em>Not at all satisfied → Extremely satisfied</em>. Colors are reassigned in the new order, split bands
+follow it, and rows grouped by the same column take on that order too. &quot;Reset order&quot; (C) puts it back</li>
 <li><strong>Legend title:</strong> The name above the legend (16, in the main screenshot) is the column the colors stand for. Click it to change it</li>
 </ul>
 <h3>Fitting the View: Square or Stretched Boxes</h3>

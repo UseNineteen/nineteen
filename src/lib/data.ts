@@ -96,18 +96,40 @@ export const NO_TAGS_LABEL = '(no tags)';
 
 const tagCollator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
 
-/** Splits a cell into tags (on commas or semicolons), trimmed, without duplicates (ignoring case). */
-export function splitTags(value: string | undefined): string[] {
+/**
+ * How a list column's cells are split into values. "auto" (commas or semicolons) is the
+ * default; values that themselves contain commas, like "Younger Women, No Kids", need
+ * a different separator.
+ */
+export type ListSeparator = 'auto' | 'comma' | 'semicolon' | 'newline';
+
+export const LIST_SEPARATORS: { value: ListSeparator; label: string }[] = [
+  { value: 'auto', label: 'Commas or semicolons' },
+  { value: 'comma', label: 'Commas' },
+  { value: 'semicolon', label: 'Semicolons' },
+  { value: 'newline', label: 'New lines' },
+];
+
+const SPLIT: Record<ListSeparator, RegExp> = { auto: /[,;]/, comma: /,/, semicolon: /;/, newline: /\r?\n/ };
+const JOIN: Record<ListSeparator, string> = { auto: ', ', comma: ', ', semicolon: '; ', newline: '\n' };
+
+/** Trimmed, single-spaced values without duplicates (ignoring case), in their original order. */
+function unique(values: string[]): string[] {
   const seen = new Set<string>();
-  const tags: string[] = [];
-  for (const part of (value ?? '').split(/[,;]/)) {
-    const tag = part.trim().replace(/\s+/g, ' ');
+  const kept: string[] = [];
+  for (const value of values) {
+    const tag = value.trim().replace(/\s+/g, ' ');
     const key = tag.toLowerCase();
     if (!tag || seen.has(key)) continue;
     seen.add(key);
-    tags.push(tag);
+    kept.push(tag);
   }
-  return tags;
+  return kept;
+}
+
+/** Splits a cell into tags (on commas or semicolons, unless another separator is given), trimmed, without duplicates (ignoring case). */
+export function splitTags(value: string | undefined, separator: ListSeparator = 'auto'): string[] {
+  return unique((value ?? '').split(SPLIT[separator]));
 }
 
 /** Tags in alphabetical order, so the same set always looks (and groups) the same. */
@@ -115,8 +137,8 @@ export function sortTags(tags: string[]): string[] {
   return [...tags].sort(tagCollator.compare);
 }
 
-export function joinTags(tags: string[]): string {
-  return sortTags(splitTags(tags.join(','))).join(', ');
+export function joinTags(tags: string[], separator: ListSeparator = 'auto'): string {
+  return sortTags(unique(tags.flatMap((tag) => tag.split(SPLIT[separator])))).join(JOIN[separator]);
 }
 
 /** Returns a copy of the dataset with one cell changed, adding the column if it doesn't exist yet. */
@@ -129,6 +151,22 @@ export function withCell(dataset: Dataset, id: number, column: string, value: st
     const parsed: Record<string, Parsed> = Object.assign(Object.create(null), item.parsed);
     raw[column] = item.id === id ? value : (raw[column] ?? '');
     parsed[column] = parseValue(raw[column]);
+    return { id: item.id, raw, parsed };
+  });
+  return { name: dataset.name, columns, items };
+}
+
+/** Returns a copy of the dataset with every cell of one column recomputed, adding the column if it doesn't exist yet. */
+export function withColumn(dataset: Dataset, column: string, value: (item: DataItem) => string): Dataset {
+  const isNew = !dataset.columns.includes(column);
+  const columns = isNew ? [...dataset.columns, column] : dataset.columns;
+  const items = dataset.items.map((item) => {
+    const next = value(item);
+    if (!isNew && next === (item.raw[column] ?? '')) return item;
+    const raw: Row = Object.assign(Object.create(null), item.raw);
+    const parsed: Record<string, Parsed> = Object.assign(Object.create(null), item.parsed);
+    raw[column] = next;
+    parsed[column] = parseValue(next);
     return { id: item.id, raw, parsed };
   });
   return { name: dataset.name, columns, items };

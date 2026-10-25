@@ -1,4 +1,4 @@
-import { buildDataset, type Dataset } from './data';
+import { buildDataset, type Dataset, type ListSeparator } from './data';
 import type { SortBy, SortDirection } from './layout';
 
 /**
@@ -28,6 +28,10 @@ export interface ViewState {
   legendCollapsed: boolean;
   /** Columns treated as comma-separated tags */
   tagColumns?: string[];
+  /** Per list column, how its cells are split (absent: commas or semicolons) */
+  listSeparators?: Record<string, ListSeparator>;
+  /** The column the viewer's tag field and Manage tags write to (absent: a column named "Tags") */
+  tagsColumn?: string;
   /** Per tag column, tags (lower-case) left out of grouping */
   tagIgnored?: Record<string, string[]>;
   /** Per column, the value order dragged in the legend */

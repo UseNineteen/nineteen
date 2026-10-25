@@ -351,11 +351,11 @@ describe('custom value order', () => {
     expect(layout.legend.map((g) => g.label)).toEqual(['Satisfied', 'Extremely satisfied', 'Not at all satisfied', 'Not satisfied']);
   });
 
-  it('sorts rows by the custom order, reversible, but leaves count sorting alone', () => {
-    expect(computeLayout(dataset.items, { ...base, groupOrder: scale }).groups.map((g) => g.label)).toEqual(scale);
-    expect(computeLayout(dataset.items, { ...base, groupOrder: scale, sortDirection: 'descending' }).groups.map((g) => g.label)).toEqual(
-      [...scale].reverse(),
-    );
+  it('sorts rows by the custom order only in the custom sort; A–Z, Z–A and count ignore it', () => {
+    const rows = (options: Partial<Parameters<typeof computeLayout>[1]>) => computeLayout(dataset.items, { ...base, ...options }).groups.map((g) => g.label);
+    expect(rows({ groupOrder: scale, sortBy: 'custom' })).toEqual(scale);
+    expect(rows({ groupOrder: scale })).toEqual([...scale].sort());
+    expect(rows({ groupOrder: scale, sortDirection: 'descending' })).toEqual([...scale].sort().reverse());
     expect(computeLayout(dataset.items, { ...base, groupOrder: scale, sortBy: 'count', sortDirection: 'descending' }).groups[0].label).toBe(
       'Satisfied',
     );

@@ -10,6 +10,8 @@
   import type { Popups } from '../lib/popups.svelte';
   import { appSettings } from '../lib/settings.svelte';
   import { ZOOM, zoomRange, type Viz } from '../lib/viz.svelte';
+  import SearchTagBar from './SearchTagBar.svelte';
+  import { SearchTagging } from '../lib/search-tagging.svelte';
 
   interface Props {
     viz: Viz;
@@ -19,11 +21,74 @@
     /** "Analyze with AI": lives in the toolbar with the other ways of working with the data */
     aiOpen: boolean;
     ontoggleai: () => void;
+    /** "Manage tags": next to "Analyze with AI" (always shown, so tagging is easy to discover) */
+    tagsOpen: boolean;
+    ontoggletags: () => void;
     /** Shown to the right of the visualization, directly under the toolbar (the AI panel) */
     side?: Snippet;
   }
 
-  let { viz, popups, open, ontoggle, aiOpen, ontoggleai, side }: Props = $props();
+  let { viz, popups, open, ontoggle, aiOpen, ontoggleai, tagsOpen, ontoggletags, side }: Props = $props();
+
+  /** Tagging search matches: the count and "Tag these…" in the search box, the form and report under the toolbar */
+  const st = $derived(new SearchTagging(viz));
+  /** Width of the match count inside the search box, so typed text stops short of it */
+  let countWidth = $state(0);
+
+  // ---------- Reordering rows by dragging their labels ----------
+
+  let labelsEl = $state<HTMLElement>();
+  let rowPressed: { index: number; y: number; id: number } | null = null;
+  /** The row being dragged, the gap (0…n) it would drop into, and how far it has moved (px) */
+  let rowDrag = $state<{ from: number; to: number; dy: number } | null>(null);
+
+  /** The gap between rows closest to the pointer */
+  function rowGapAt(clientY: number): number {
+    const rows = [...(labelsEl?.querySelectorAll<HTMLElement>('.row-label') ?? [])];
+    const index = rows.findIndex((el) => {
+      const r = el.getBoundingClientRect();
+      return clientY < r.top + r.height / 2;
+    });
+    return index === -1 ? rows.length : index;
+  }
+
+  function rowPointerDown(index: number, event: PointerEvent) {
+    if (event.button !== 0 || layout.groups.length < 2) return;
+    rowPressed = { index, y: event.clientY, id: event.pointerId };
+  }
+
+  function rowPointerMove(event: PointerEvent) {
+    if (!rowPressed || event.pointerId !== rowPressed.id) return;
+    // A few pixels of movement before it counts as a drag
+    if (rowDrag === null && Math.abs(event.clientY - rowPressed.y) < 4) return;
+    if (rowDrag === null) {
+      try {
+        labelsEl?.setPointerCapture(event.pointerId);
+      } catch {
+        // The pointer is already gone; the drag still works while it stays over the labels
+      }
+    }
+    rowDrag = { from: rowPressed.index, to: rowGapAt(event.clientY), dy: event.clientY - rowPressed.y };
+  }
+
+  function rowPointerUp() {
+    if (rowDrag) {
+      const { from, to } = rowDrag;
+      // Dropping into a gap after the dragged row shifts by one once it is removed
+      viz.moveRow(from, to > from ? to - 1 : to);
+    }
+    rowPressed = null;
+    rowDrag = null;
+  }
+
+  function rowKeydown(index: number, event: KeyboardEvent) {
+    if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+    event.preventDefault();
+    const to = Math.max(0, Math.min(index + (event.key === 'ArrowUp' ? -1 : 1), layout.groups.length - 1));
+    viz.moveRow(index, to);
+    // Keep focus on the moved row
+    tick().then(() => labelsEl?.querySelectorAll<HTMLElement>('.row-label')[to]?.focus());
+  }
 
   /** Vertical sizes use em (they follow the row font size); horizontal sizes use px (they follow scale.x). */
   const em = (px: number) => `${px / GEOMETRY.font}em`;
@@ -42,6 +107,13 @@
   let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 
   const layout = $derived(viz.layout);
+
+  /** The dragged row's group, and its data items (the whole row follows the pointer) */
+  const draggedLabel = $derived(rowDrag ? (layout.groups[rowDrag.from]?.label ?? null) : null);
+  const draggedIds = $derived(new Set(rowDrag ? (layout.groups[rowDrag.from]?.items.map((i) => i.id) ?? []) : []));
+  const dragOffset = $derived(rowDrag ? `0 ${rowDrag.dy}px` : null);
+  /** A count label belongs to a row: keyed by the group, or "band\0group" in split view */
+  const inDraggedRow = (key: string) => draggedLabel !== null && (key === draggedLabel || key.endsWith(`\u0000${draggedLabel}`));
   const fitMode = $derived(viz.fit);
   const range = $derived(zoomRange());
   const sizing = $derived({
@@ -70,12 +142,14 @@
   /** Screen x for a layout position: box space follows box width, count space follows text size */
   const sx = (x: number, cx: number) => px(x * scale.x + cx * scale.y);
 
-  // Boxes animate when regrouping, but not while they are being resized
-  let lastScale = { x: 1, y: 1 };
+  // Boxes animate when the layout changes (regrouping, tagging, a fit that rescales them), but
+  // not while the window or pane is being resized, where they should follow the edge directly
+  let lastView = { width: 0, height: 0 };
   $effect.pre(() => {
-    const { x, y } = scale;
-    if (x === lastScale.x && y === lastScale.y) return;
-    lastScale = { x, y };
+    const width = viewWidth;
+    const height = viewHeight;
+    if (width === lastView.width && height === lastView.height) return;
+    lastView = { width, height };
     resizing = true;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => (resizing = false), 150);
@@ -189,6 +263,9 @@
     void scale.y;
     void headerMode.extra;
     void viz.aiHighlight;
+    // The tagging row under the toolbar comes and goes
+    void st.current;
+    void st.tagging;
     tick().then(() => {
       const first = rowItemsEl?.querySelector('.row:not(.row-header)');
       if (!first || !wrapperEl) return;
@@ -249,11 +326,16 @@
     <button
       type="button"
       class="block-sort sort-value"
-      class:sort-active={viz.sortBy === 'value'}
-      class:sort-reverse={viz.buttonDirections.value === 'descending'}
-      title="Sort rows alphabetically"
-      aria-label="Sort rows alphabetically ({viz.buttonDirections.value})"
-      aria-pressed={viz.sortBy === 'value'}
+      class:sort-active={viz.sortBy !== 'count'}
+      class:sort-reverse={viz.valueSortShown === 'descending'}
+      class:sort-custom={viz.valueSortShown === 'custom'}
+      title={viz.valueSortShown === 'custom'
+        ? 'Rows in your custom order (click for A–Z)'
+        : viz.hasRowOrder
+          ? `Sort rows ${viz.valueSortShown === 'ascending' ? 'A–Z (click for Z–A)' : 'Z–A (click for your custom order)'}`
+          : 'Sort rows alphabetically. Drag a row label to put rows in your own order.'}
+      aria-label="Sort rows: {viz.valueSortShown === 'custom' ? 'custom order' : viz.valueSortShown === 'ascending' ? 'A to Z' : 'Z to A'}"
+      aria-pressed={viz.sortBy !== 'count'}
       onclick={() => viz.sort('value')}
     ></button>
     <button
@@ -284,8 +366,22 @@
         autocomplete="off"
         spellcheck="false"
         bind:value={viz.searchTerm}
+        style:padding-right={viz.searchTerm ? `${countWidth + 30}px` : null}
         onkeydown={(e) => e.key === 'Enter' && e.preventDefault()}
       />
+      {#if viz.searchTerm}
+        <span class="search-count" bind:clientWidth={countWidth}>
+          <span class="search-count-text">{st.count} of {st.total}</span>
+          {#if st.count > 0 && !st.tagging}
+            <button
+              type="button"
+              aria-label="Tag these {st.count} matches"
+              title="Add a tag to all {st.count} of {st.total} matches"
+              onclick={() => st.start()}><span class="search-count-label">Tag these…</span></button
+            >
+          {/if}
+        </span>
+      {/if}
     </div>
     <button type="button" id="search-in" class="dropdown-arrow" aria-expanded={open === 'searchIn'} onclick={toggle('searchIn')}>
       <span class="tool-word">within</span> <strong>{viz.scopeText}</strong>
@@ -320,6 +416,16 @@
     >
     <button
       type="button"
+      id="tags-toggle"
+      class="panel-toggle"
+      aria-expanded={tagsOpen}
+      aria-controls="tags-panel"
+      aria-label="Manage tags"
+      title={tagsOpen ? 'Close Manage tags' : 'Manage tags: rename, combine, delete, or convert a tag into a data field'}
+      onclick={ontoggletags}><span class="tool-label">Manage tags</span></button
+    >
+    <button
+      type="button"
       id="ai-toggle"
       aria-expanded={aiOpen}
       aria-controls="ai-panel"
@@ -331,6 +437,7 @@
 
   <div class="viewer-body">
     <div class="viewer-main">
+  <SearchTagBar {st} />
   {#if viz.aiHighlight}
     <div class="ai-highlight-bar" role="status">
       Highlighting {viz.aiHighlight.size} {viz.aiHighlight.size === 1 ? 'data item' : 'data items'} cited by AI
@@ -345,11 +452,38 @@
         <div class="label-item">{viz.label(group.label, viz.groupKey)}</div>
       {/each}
     </div>
-    <div class="labels" style:font-size={fontSize} style:width={px(labelWidth * scale.y)} aria-hidden="true">
+    <div
+      class="labels"
+      class:row-dragging={rowDrag !== null}
+      bind:this={labelsEl}
+      style:font-size={fontSize}
+      style:width={px(labelWidth * scale.y)}
+      role="list"
+      aria-label="Rows. Drag a row label, or press Alt and the arrow keys, to put rows in your own order."
+      onpointermove={rowPointerMove}
+      onpointerup={rowPointerUp}
+      onpointercancel={rowPointerUp}
+    >
       <!-- Empty: the legend's title names the color column -->
-      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)}></div>{/if}
-      {#each layout.groups as group (group.label)}
-        <div class="label-item" title={viz.label(group.label, viz.groupKey)}>{viz.label(group.label, viz.groupKey)}</div>
+      {#if layout.rowOffset}<div class="label-item label-header" aria-hidden="true" style:height={em(20 + headerMode.extra)}></div>{/if}
+      {#each layout.groups as group, i (group.label)}
+        {@const text = viz.label(group.label, viz.groupKey)}
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions (rows reorder with Alt+arrows) -->
+        <div
+          class="label-item row-label"
+          class:being-dragged={rowDrag?.from === i}
+          style:translate={rowDrag?.from === i ? dragOffset : null}
+          class:drop-before={rowDrag && rowDrag.to === i && rowDrag.to !== rowDrag.from && rowDrag.to !== rowDrag.from + 1}
+          class:drop-after={rowDrag && rowDrag.to === layout.groups.length && i === layout.groups.length - 1 && rowDrag.from !== i}
+          role="listitem"
+          aria-roledescription="reorderable row"
+          tabindex="0"
+          title="{text} (drag to reorder)"
+          onpointerdown={(e) => rowPointerDown(i, e)}
+          onkeydown={(e) => rowKeydown(i, e)}
+        >
+          {text}
+        </div>
       {/each}
     </div>
 
@@ -370,7 +504,9 @@
             class="block-item"
             class:filtered={viz.isFiltered(item)}
             class:floating={popups.isFloating(item.id)}
+            class:row-dragged={draggedIds.has(item.id)}
             style:transform="translate({sx(p.x, p.cx)}, {em(p.y)})"
+            style:translate={draggedIds.has(item.id) ? dragOffset : null}
             style:width={px(GEOMETRY.size * scale.x)}
             style:border-width={px(5 * edge)}
             style:border-radius={px(2 * edge)}
@@ -387,7 +523,14 @@
           ></div>
         {/each}
         {#each layout.counts as count (count.key)}
-          <div class="block-item block-item-label" style:transform="translate({sx(count.x, count.cx)}, {em(count.y)})">{count.text}</div>
+          <div
+            class="block-item block-item-label"
+            class:row-dragged={inDraggedRow(count.key)}
+            style:transform="translate({sx(count.x, count.cx)}, {em(count.y)})"
+            style:translate={inDraggedRow(count.key) ? dragOffset : null}
+          >
+            {count.text}
+          </div>
         {/each}
         {#each layout.headers as header (header.key)}
           {@const swatch = viz.colors.get(header.key)}
@@ -418,7 +561,12 @@
               style:height={em(20 + headerMode.extra)}
             ></div>{/if}
           {#each layout.groups as group (group.label)}
-            <div class="row" style:width={sx(layout.rowWidth, layout.countWidth)}></div>
+            <div
+              class="row"
+              class:row-dragged={group.label === draggedLabel}
+              style:width={sx(layout.rowWidth, layout.countWidth)}
+              style:translate={group.label === draggedLabel ? dragOffset : null}
+            ></div>
           {/each}
         </div>
       </div>

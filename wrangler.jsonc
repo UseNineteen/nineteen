@@ -6,6 +6,6 @@
   "assets": {
     "directory": "./dist",
     // Unknown paths (such as the old app's /visualize) open the app instead of a 404
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+  },
 }

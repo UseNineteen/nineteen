@@ -78,7 +78,8 @@ function anthropicOptions(model: string, effort: 'low' | 'medium' | 'high') {
 
 function anthropicError(error: unknown): AIError {
   if (error instanceof Anthropic.APIUserAbortError) return new AIError(STOPPED, true);
-  if (error instanceof Anthropic.AuthenticationError) return new AIError('Anthropic rejected the API key. Check that it is correct and active.');
+  if (error instanceof Anthropic.AuthenticationError)
+    return new AIError('Anthropic rejected the API key. Check that it is correct and active.');
   if (error instanceof Anthropic.PermissionDeniedError) return new AIError('This API key isn’t allowed to use that model.');
   if (error instanceof Anthropic.NotFoundError) return new AIError('Anthropic doesn’t recognize that model name.');
   if (error instanceof Anthropic.RateLimitError) return new AIError('Anthropic rate limit reached. Wait a moment and try again.');
@@ -251,7 +252,8 @@ export const openai: Provider = {
             text += delta;
             onText(delta);
           }
-          if (choice?.finish_reason === 'length') throw new AIError('The response was too long and got cut off. Try sharing fewer data items or columns.');
+          if (choice?.finish_reason === 'length')
+            throw new AIError('The response was too long and got cut off. Try sharing fewer data items or columns.');
         }
       }
     } catch (error) {

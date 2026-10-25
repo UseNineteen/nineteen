@@ -84,7 +84,9 @@
     const to = index + (event.key === 'ArrowUp' ? -1 : 1);
     viz.moveLegendEntry(index, to);
     // Keep focus on the moved entry
-    requestAnimationFrame(() => listEl.querySelectorAll<HTMLElement>('.legend-item')[Math.max(0, Math.min(to, viz.layout.legend.length - 1))]?.focus());
+    requestAnimationFrame(() =>
+      listEl.querySelectorAll<HTMLElement>('.legend-item')[Math.max(0, Math.min(to, viz.layout.legend.length - 1))]?.focus(),
+    );
   }
 </script>
 

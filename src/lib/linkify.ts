@@ -10,9 +10,7 @@ export interface Piece {
 }
 
 export type Segment =
-  | { kind: 'text'; pieces: Piece[] }
-  | { kind: 'link'; href: string; pieces: Piece[] }
-  | { kind: 'image'; src: string; alt: string };
+  { kind: 'text'; pieces: Piece[] } | { kind: 'link'; href: string; pieces: Piece[] } | { kind: 'image'; src: string; alt: string };
 
 const LINK = /\b(?:https?:\/\/|www\.)[^\s<>"']+[^\s<>"'.,;:!?)\]}]|\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b/gi;
 const IMAGE = /\.(?:png|jpe?g|gif|webp|svg|avif)(?:[?#].*)?$/i;

@@ -177,7 +177,6 @@
     report(keep ? `Added data field “${created}”: ${counts}.` : `Converted “${tag.label}” into data field “${created}”: ${counts}.`);
   }
 
-
   function undo() {
     viz.undoTags();
     message = null;
@@ -264,7 +263,9 @@
       <div class="tags-confirm" role="alertdialog" aria-label="Delete tag">
         <p>Remove <strong>“{pending.tag.label}”</strong> from {items(pending.tag.count)}?</p>
         <div class="tags-confirm-actions">
-          <button type="button" class="btn btn-danger" onclick={() => pending?.kind === 'delete' && confirmDelete(pending.tag)}>Delete</button>
+          <button type="button" class="btn btn-danger" onclick={() => pending?.kind === 'delete' && confirmDelete(pending.tag)}
+            >Delete</button
+          >
           <button type="button" class="btn" onclick={() => (pending = null)}>Cancel</button>
         </div>
       </div>
@@ -286,7 +287,9 @@
           Keep the tag too <span class="tags-keep-note">(the field won’t follow later tag changes)</span>
         </label>
         <div class="tags-confirm-actions">
-          <button type="submit" class="btn btn-primary" disabled={!pending.name.trim()}>{pending.keep ? 'Add data field' : 'Convert'}</button>
+          <button type="submit" class="btn btn-primary" disabled={!pending.name.trim()}
+            >{pending.keep ? 'Add data field' : 'Convert'}</button
+          >
           <button type="button" class="btn" onclick={() => (pending = null)}>Cancel</button>
         </div>
       </form>
@@ -332,7 +335,9 @@
                 onblur={() => renaming === tag.key && finishRename(tag)}
               />
             {:else}
-              <button type="button" class="tags-name" title="Rename “{tag.label}”" onclick={() => !justDragged && startRename(tag)}>{tag.label}</button>
+              <button type="button" class="tags-name" title="Rename “{tag.label}”" onclick={() => !justDragged && startRename(tag)}
+                >{tag.label}</button
+              >
             {/if}
             <span class="tags-count">{tag.count}</span>
             <button
@@ -345,7 +350,9 @@
             {#if menuFor === tag.key}
               <div class="tags-menu" role="menu">
                 <button type="button" role="menuitem" onclick={() => act('rename', tag)}>Rename</button>
-                <button type="button" role="menuitem" disabled={catalog.length < 2} onclick={() => act('combine', tag)}>Combine into…</button>
+                <button type="button" role="menuitem" disabled={catalog.length < 2} onclick={() => act('combine', tag)}
+                  >Combine into…</button
+                >
                 <button type="button" role="menuitem" onclick={() => act('column', tag)}>Convert this tag into a data field…</button>
                 <button type="button" role="menuitem" onclick={() => viz.colorByTag(tag.label)}>Color by this tag</button>
                 <button type="button" role="menuitem" class="danger" onclick={() => act('delete', tag)}>Delete…</button>

@@ -182,7 +182,11 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
       const lastWidth = ctx.measureText(lines[lines.length - 1]).width;
       ctx.font = `400 ${font}px ${FONT}`;
       ctx.fillStyle = '#a3a8ae';
-      ctx.fillText(header.total, 16 + (mode === 'wrap' ? Math.max(...lines.map((l) => ctx.measureText(l).width)) : lastWidth) + 9, lastY + size / 2);
+      ctx.fillText(
+        header.total,
+        16 + (mode === 'wrap' ? Math.max(...lines.map((l) => ctx.measureText(l).width)) : lastWidth) + 9,
+        lastY + size / 2,
+      );
     }
     ctx.restore();
   }

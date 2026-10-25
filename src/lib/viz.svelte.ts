@@ -87,9 +87,7 @@ export class Viz {
   /** Tags in each tag column, most used first */
   /** List columns with how each one is split, for search */
   listColumns = $derived.by(() => new Map([...this.tagSet].map((c) => [c, this.separatorOf(c)])));
-  tagCatalogs = $derived.by(
-    () => new Map([...this.tagSet].map((c) => [c, tagCatalog(this.dataset.items, c, this.separatorOf(c))])),
-  );
+  tagCatalogs = $derived.by(() => new Map([...this.tagSet].map((c) => [c, tagCatalog(this.dataset.items, c, this.separatorOf(c))])));
   /** Items as the layout sees them: tag columns used for grouping/coloring hold the row's tag combination */
   layoutItems = $derived.by(() =>
     groupingItems(
@@ -400,11 +398,7 @@ export class Viz {
   /** Removes a tag from every data item. */
   deleteTag(tag: string): number {
     const key = tagKey(tag);
-    return this.#editTags(
-      `Deleted “${this.#canonicalTag(tag)}”`,
-      (tags) => tags.filter((t) => tagKey(t) !== key),
-      new Map([[key, null]]),
-    );
+    return this.#editTags(`Deleted “${this.#canonicalTag(tag)}”`, (tags) => tags.filter((t) => tagKey(t) !== key), new Map([[key, null]]));
   }
 
   /** Colors the view by one tag: data items with it versus everything else (the "Only this" display option). */
@@ -412,7 +406,12 @@ export class Viz {
     const column = this.tagEditColumn;
     const key = tagKey(tag);
     this.setColorKey(column);
-    this.setIgnoredTags(column, this.catalog(column).map((t) => t.key).filter((k) => k !== key));
+    this.setIgnoredTags(
+      column,
+      this.catalog(column)
+        .map((t) => t.key)
+        .filter((k) => k !== key),
+    );
   }
 
   /** A column name not used yet: `name`, or `name (2)`, `name (3)`, … */

@@ -18,7 +18,8 @@
       models[id] = list;
       const model = aiSettings.models[id].trim();
       if (!model) {
-        aiSettings.models[id] = id === 'openai' ? preferredOpenAIModel(list) : list.includes(provider.defaultModel) ? provider.defaultModel : (list[0] ?? '');
+        aiSettings.models[id] =
+          id === 'openai' ? preferredOpenAIModel(list) : list.includes(provider.defaultModel) ? provider.defaultModel : (list[0] ?? '');
         status = { text: 'Key works.', error: false };
       } else if (!list.includes(model)) {
         // A typed model is kept: aliases such as "claude-opus-5-5" work for requests without appearing in the list
@@ -69,8 +70,8 @@
     />
   </label>
   <p class="ai-hint">
-    <a href={provider.keyUrl} target="_blank" rel="noopener noreferrer">Get a key from {provider.company}</a>. Usage is
-    billed to your {provider.company} account.
+    <a href={provider.keyUrl} target="_blank" rel="noopener noreferrer">Get a key from {provider.company}</a>. Usage is billed to your {provider.company}
+    account.
   </p>
 
   <label class="ai-field">
@@ -100,11 +101,7 @@
   </div>
 
   <label class="ai-check">
-    <input
-      type="checkbox"
-      bind:checked={aiSettings.remember}
-      onchange={() => aiSettings.persist()}
-    />
+    <input type="checkbox" bind:checked={aiSettings.remember} onchange={() => aiSettings.persist()} />
     <span>Remember key on this device (stored in this browser only)</span>
   </label>
   <p class="ai-hint">

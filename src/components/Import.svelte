@@ -108,8 +108,8 @@
       </li>
     </ul>
     <p class="privacy-note">
-      Everything happens in your browser. No cookies, no uploads, just anonymous visit counts. Data goes to an AI service
-      only if you choose to send it there.
+      Everything happens in your browser. No cookies, no uploads, just anonymous visit counts. Data goes to an AI service only if you choose
+      to send it there.
     </p>
   </footer>
 </div>

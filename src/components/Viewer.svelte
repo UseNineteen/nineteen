@@ -440,169 +440,174 @@
 
   <div class="viewer-body">
     <div class="viewer-main">
-  <SearchTagBar {st} />
-  {#if viz.aiHighlight}
-    <div class="ai-highlight-bar" role="status">
-      Highlighting {viz.aiHighlight.size} {viz.aiHighlight.size === 1 ? 'data item' : 'data items'} cited by AI
-      <button type="button" onclick={() => (viz.aiHighlight = null)}>Clear</button>
-    </div>
-  {/if}
-
-  <div class="visualizer" bind:this={visualizerEl} bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
-    <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
-      {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)}></div>{/if}
-      {#each layout.groups as group (group.label)}
-        <div class="label-item">{viz.label(group.label, viz.groupKey)}</div>
-      {/each}
-    </div>
-    <div
-      class="labels"
-      class:row-dragging={rowDrag !== null}
-      bind:this={labelsEl}
-      style:font-size={fontSize}
-      style:width={px(labelWidth * scale.y)}
-      role="list"
-      aria-label="Rows. Drag a row label, or press Alt and the arrow keys, to put rows in your own order."
-      onpointermove={rowPointerMove}
-      onpointerup={rowPointerUp}
-      onpointercancel={rowPointerUp}
-    >
-      <!-- Empty: the legend's title names the color column -->
-      {#if layout.rowOffset}<div class="label-item label-header" aria-hidden="true" style:height={em(20 + headerMode.extra)}></div>{/if}
-      {#each layout.groups as group, i (group.label)}
-        {@const text = viz.label(group.label, viz.groupKey)}
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions (rows reorder with Alt+arrows) -->
-        <div
-          class="label-item row-label"
-          class:being-dragged={rowDrag?.from === i}
-          style:translate={rowDrag?.from === i ? dragOffset : null}
-          class:drop-before={rowDrag && rowDrag.to === i && rowDrag.to !== rowDrag.from && rowDrag.to !== rowDrag.from + 1}
-          class:drop-after={rowDrag && rowDrag.to === layout.groups.length && i === layout.groups.length - 1 && rowDrag.from !== i}
-          role="listitem"
-          aria-roledescription="reorderable row"
-          tabindex="0"
-          title="{text} (drag to reorder)"
-          onpointerdown={(e) => rowPointerDown(i, e)}
-          onkeydown={(e) => rowKeydown(i, e)}
-        >
-          {text}
+      <SearchTagBar {st} />
+      {#if viz.aiHighlight}
+        <div class="ai-highlight-bar" role="status">
+          Highlighting {viz.aiHighlight.size}
+          {viz.aiHighlight.size === 1 ? 'data item' : 'data items'} cited by AI
+          <button type="button" onclick={() => (viz.aiHighlight = null)}>Clear</button>
         </div>
-      {/each}
-    </div>
+      {/if}
 
-    <div class="blocks">
-      <div
-        class="block-items"
-        class:animate
-        class:zooming={viz.zooming || resizing}
-        style:font-size={fontSize}
-        style:padding-left={px(labelWidth * scale.y)}
-        role="group"
-        aria-label="{viz.dataset.items.length} items grouped by {viz.groupKey}"
-      >
-        {#each viz.dataset.items as item (item.id)}
-          {@const p = layout.positions.get(item.id)!}
-          {@const color = viz.colorOf(item)}
-          <div
-            class="block-item"
-            class:filtered={viz.isFiltered(item)}
-            class:floating={popups.isFloating(item.id)}
-            class:row-dragged={draggedIds.has(item.id)}
-            style:transform="translate({sx(p.x, p.cx)}, {em(p.y)})"
-            style:translate={draggedIds.has(item.id) ? dragOffset : null}
-            style:width={px(GEOMETRY.size * scale.x)}
-            style:border-width={px(5 * edge)}
-            style:border-radius={px(2 * edge)}
-            style:background-color={color.fill}
-            style:border-color={color.stroke}
-            data-item-id={item.id}
-            role="button"
-            tabindex="-1"
-            aria-label="File row {item.id}: {displayLabel(item.raw[viz.groupKey])}"
-            onpointerenter={(e) => enter(item, e)}
-            onpointerleave={() => leave(item)}
-            onclick={(e) => click(item, e)}
-            onkeydown={(e) => keydown(item, e)}
-          ></div>
-        {/each}
-        {#each layout.counts as count (count.key)}
-          <div
-            class="block-item block-item-label"
-            class:row-dragged={inDraggedRow(count.key)}
-            style:transform="translate({sx(count.x, count.cx)}, {em(count.y)})"
-            style:translate={inDraggedRow(count.key) ? dragOffset : null}
-          >
-            {count.text}
-          </div>
-        {/each}
-        {#each layout.headers as header (header.key)}
-          {@const swatch = viz.colors.get(header.key)}
-          {@const text = viz.label(header.label, viz.colorKey)}
-          <div
-            class="band-header"
-            class:turned={headerMode.mode === 'turn'}
-            class:wrapped={headerMode.mode === 'wrap'}
-            style:transform="translate({sx(header.x, header.cx)}, {em(headerMode.mode === 'line' ? header.y : 0)})"
-            style:width={sx(header.width, header.cwidth)}
-            style:height={headerMode.mode === 'line' ? undefined : em(20 + headerMode.extra)}
-            title={header.total ? `${text}: ${header.total} in total` : text}
-          >
-            <div class="band-label" style:width={headerMode.mode === 'turn' ? em(headerMode.length) : undefined}>
-              <span class="band-swatch" style:background-color={swatch?.fill} style:border-color={swatch?.stroke}></span><span
-                class="band-text"
-                style:-webkit-line-clamp={headerMode.mode === 'wrap' ? headerMode.lines : undefined}>{text}</span
-              >{#if header.total}<span class="band-total">{header.total}</span>{/if}
-            </div>
-          </div>
-        {/each}
-      </div>
-      <div class="rows">
-        <div class="row-items" bind:this={rowItemsEl} style:font-size={fontSize} style:padding-left={px(labelWidth * scale.y)}>
-          {#if layout.rowOffset}<div
-              class="row row-header"
-              style:width={sx(layout.rowWidth, layout.countWidth)}
-              style:height={em(20 + headerMode.extra)}
-            ></div>{/if}
+      <div class="visualizer" bind:this={visualizerEl} bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
+        <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
+          {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)}></div>{/if}
           {#each layout.groups as group (group.label)}
-            <div
-              class="row"
-              class:row-dragged={group.label === draggedLabel}
-              style:width={sx(layout.rowWidth, layout.countWidth)}
-              style:translate={group.label === draggedLabel ? dragOffset : null}
-            ></div>
+            <div class="label-item">{viz.label(group.label, viz.groupKey)}</div>
           {/each}
         </div>
-      </div>
-    </div>
-  </div>
+        <div
+          class="labels"
+          class:row-dragging={rowDrag !== null}
+          bind:this={labelsEl}
+          style:font-size={fontSize}
+          style:width={px(labelWidth * scale.y)}
+          role="list"
+          aria-label="Rows. Drag a row label, or press Alt and the arrow keys, to put rows in your own order."
+          onpointermove={rowPointerMove}
+          onpointerup={rowPointerUp}
+          onpointercancel={rowPointerUp}
+        >
+          <!-- Empty: the legend's title names the color column -->
+          {#if layout.rowOffset}<div class="label-item label-header" aria-hidden="true" style:height={em(20 + headerMode.extra)}></div>{/if}
+          {#each layout.groups as group, i (group.label)}
+            {@const text = viz.label(group.label, viz.groupKey)}
+            <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions (rows reorder with Alt+arrows) -->
+            <div
+              class="label-item row-label"
+              class:being-dragged={rowDrag?.from === i}
+              style:translate={rowDrag?.from === i ? dragOffset : null}
+              class:drop-before={rowDrag && rowDrag.to === i && rowDrag.to !== rowDrag.from && rowDrag.to !== rowDrag.from + 1}
+              class:drop-after={rowDrag && rowDrag.to === layout.groups.length && i === layout.groups.length - 1 && rowDrag.from !== i}
+              role="listitem"
+              aria-roledescription="reorderable row"
+              tabindex="0"
+              title="{text} (drag to reorder)"
+              onpointerdown={(e) => rowPointerDown(i, e)}
+              onkeydown={(e) => rowKeydown(i, e)}
+            >
+              {text}
+            </div>
+          {/each}
+        </div>
 
-  <div id="zoom-controls">
-    <button
-      class="zoom-reset"
-      title="Actual Size"
-      aria-label="Actual size"
-      disabled={fitMode === 'none' && viz.zoom === 1}
-      onclick={() => viz.setZoom(1)}
-    ></button>
-    <button
-      class="zoom-fit"
-      class:active={fitMode === 'square'}
-      title={fitMode === 'square' ? 'Best Fit (on: keeps fitting until you zoom)' : 'Best Fit'}
-      aria-label="Best fit"
-      aria-pressed={fitMode === 'square'}
-      onclick={toggleBestFit}
-    ></button>
-    <button
-      class="zoom-stretch"
-      class:active={fitMode === 'stretch'}
-      title={fitMode === 'stretch' ? 'Stretch to Fit (on: boxes reshape to fill the window)' : 'Stretch to Fit (boxes may become rectangles)'}
-      aria-label="Stretch to fit"
-      aria-pressed={fitMode === 'stretch'}
-      onclick={() => viz.setStretch(fitMode !== 'stretch')}
-    ></button>
-    <button class="zoom-in" title="Zoom In" aria-label="Zoom in" disabled={scale.y >= range.max} onclick={() => zoomBy(ZOOM.step)}></button>
-    <button class="zoom-out" title="Zoom Out" aria-label="Zoom out" disabled={scale.y <= range.min} onclick={() => zoomBy(-ZOOM.step)}></button>
-  </div>
+        <div class="blocks">
+          <div
+            class="block-items"
+            class:animate
+            class:zooming={viz.zooming || resizing}
+            style:font-size={fontSize}
+            style:padding-left={px(labelWidth * scale.y)}
+            role="group"
+            aria-label="{viz.dataset.items.length} items grouped by {viz.groupKey}"
+          >
+            {#each viz.dataset.items as item (item.id)}
+              {@const p = layout.positions.get(item.id)!}
+              {@const color = viz.colorOf(item)}
+              <div
+                class="block-item"
+                class:filtered={viz.isFiltered(item)}
+                class:floating={popups.isFloating(item.id)}
+                class:row-dragged={draggedIds.has(item.id)}
+                style:transform="translate({sx(p.x, p.cx)}, {em(p.y)})"
+                style:translate={draggedIds.has(item.id) ? dragOffset : null}
+                style:width={px(GEOMETRY.size * scale.x)}
+                style:border-width={px(5 * edge)}
+                style:border-radius={px(2 * edge)}
+                style:background-color={color.fill}
+                style:border-color={color.stroke}
+                data-item-id={item.id}
+                role="button"
+                tabindex="-1"
+                aria-label="File row {item.id}: {displayLabel(item.raw[viz.groupKey])}"
+                onpointerenter={(e) => enter(item, e)}
+                onpointerleave={() => leave(item)}
+                onclick={(e) => click(item, e)}
+                onkeydown={(e) => keydown(item, e)}
+              ></div>
+            {/each}
+            {#each layout.counts as count (count.key)}
+              <div
+                class="block-item block-item-label"
+                class:row-dragged={inDraggedRow(count.key)}
+                style:transform="translate({sx(count.x, count.cx)}, {em(count.y)})"
+                style:translate={inDraggedRow(count.key) ? dragOffset : null}
+              >
+                {count.text}
+              </div>
+            {/each}
+            {#each layout.headers as header (header.key)}
+              {@const swatch = viz.colors.get(header.key)}
+              {@const text = viz.label(header.label, viz.colorKey)}
+              <div
+                class="band-header"
+                class:turned={headerMode.mode === 'turn'}
+                class:wrapped={headerMode.mode === 'wrap'}
+                style:transform="translate({sx(header.x, header.cx)}, {em(headerMode.mode === 'line' ? header.y : 0)})"
+                style:width={sx(header.width, header.cwidth)}
+                style:height={headerMode.mode === 'line' ? undefined : em(20 + headerMode.extra)}
+                title={header.total ? `${text}: ${header.total} in total` : text}
+              >
+                <div class="band-label" style:width={headerMode.mode === 'turn' ? em(headerMode.length) : undefined}>
+                  <span class="band-swatch" style:background-color={swatch?.fill} style:border-color={swatch?.stroke}></span><span
+                    class="band-text"
+                    style:-webkit-line-clamp={headerMode.mode === 'wrap' ? headerMode.lines : undefined}>{text}</span
+                  >{#if header.total}<span class="band-total">{header.total}</span>{/if}
+                </div>
+              </div>
+            {/each}
+          </div>
+          <div class="rows">
+            <div class="row-items" bind:this={rowItemsEl} style:font-size={fontSize} style:padding-left={px(labelWidth * scale.y)}>
+              {#if layout.rowOffset}<div
+                  class="row row-header"
+                  style:width={sx(layout.rowWidth, layout.countWidth)}
+                  style:height={em(20 + headerMode.extra)}
+                ></div>{/if}
+              {#each layout.groups as group (group.label)}
+                <div
+                  class="row"
+                  class:row-dragged={group.label === draggedLabel}
+                  style:width={sx(layout.rowWidth, layout.countWidth)}
+                  style:translate={group.label === draggedLabel ? dragOffset : null}
+                ></div>
+              {/each}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="zoom-controls">
+        <button
+          class="zoom-reset"
+          title="Actual Size"
+          aria-label="Actual size"
+          disabled={fitMode === 'none' && viz.zoom === 1}
+          onclick={() => viz.setZoom(1)}
+        ></button>
+        <button
+          class="zoom-fit"
+          class:active={fitMode === 'square'}
+          title={fitMode === 'square' ? 'Best Fit (on: keeps fitting until you zoom)' : 'Best Fit'}
+          aria-label="Best fit"
+          aria-pressed={fitMode === 'square'}
+          onclick={toggleBestFit}
+        ></button>
+        <button
+          class="zoom-stretch"
+          class:active={fitMode === 'stretch'}
+          title={fitMode === 'stretch'
+            ? 'Stretch to Fit (on: boxes reshape to fill the window)'
+            : 'Stretch to Fit (boxes may become rectangles)'}
+          aria-label="Stretch to fit"
+          aria-pressed={fitMode === 'stretch'}
+          onclick={() => viz.setStretch(fitMode !== 'stretch')}
+        ></button>
+        <button class="zoom-in" title="Zoom In" aria-label="Zoom in" disabled={scale.y >= range.max} onclick={() => zoomBy(ZOOM.step)}
+        ></button>
+        <button class="zoom-out" title="Zoom Out" aria-label="Zoom out" disabled={scale.y <= range.min} onclick={() => zoomBy(-ZOOM.step)}
+        ></button>
+      </div>
     </div>
     {@render side?.()}
   </div>

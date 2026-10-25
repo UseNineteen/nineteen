@@ -60,7 +60,10 @@ describe('parsers', () => {
   // Items are numbered by their row in the file, as a spreadsheet shows it (header = row 1)
   it('numbers CSV rows as the file has them, counting blank lines', () => {
     const csv = new TextEncoder().encode('Name\na\n\n  \nb\n');
-    expect(parseBytes('x.csv', csv).items.map((i) => [i.id, i.raw.Name])).toEqual([[2, 'a'], [5, 'b']]);
+    expect(parseBytes('x.csv', csv).items.map((i) => [i.id, i.raw.Name])).toEqual([
+      [2, 'a'],
+      [5, 'b'],
+    ]);
   });
 
   it('numbers sheet rows as the spreadsheet shows them', () => {
@@ -71,11 +74,17 @@ describe('parsers', () => {
     };
     const ids = (sheet: XLSX.WorkSheet) => parseBytes('x.xlsx', bytes(sheet)).items.map((i) => [i.id, i.raw.Name]);
     // Blank rows above the header and inside the data
-    expect(ids(XLSX.utils.aoa_to_sheet([[], [], ['Name'], ['a'], [], ['b']]))).toEqual([[4, 'a'], [6, 'b']]);
+    expect(ids(XLSX.utils.aoa_to_sheet([[], [], ['Name'], ['a'], [], ['b']]))).toEqual([
+      [4, 'a'],
+      [6, 'b'],
+    ]);
     // A used range that starts below row 1
     const offset = XLSX.utils.sheet_add_aoa(XLSX.utils.aoa_to_sheet([]), [['Name'], ['a'], [], ['b']], { origin: 'A3' });
     offset['!ref'] = 'A3:A6'; // as Excel writes a sheet whose first used cell is A3
-    expect(ids(offset)).toEqual([[4, 'a'], [6, 'b']]);
+    expect(ids(offset)).toEqual([
+      [4, 'a'],
+      [6, 'b'],
+    ]);
   });
 });
 
@@ -140,7 +149,10 @@ describe('search (ported from the original test suite)', () => {
   });
 
   it('merges overlapping highlights', () => {
-    expect(highlightRanges('kombucha umami', 'kom kombucha AND umami')).toEqual([[0, 8], [9, 14]]);
+    expect(highlightRanges('kombucha umami', 'kom kombucha AND umami')).toEqual([
+      [0, 8],
+      [9, 14],
+    ]);
   });
 
   it('adds terms with AND on shift', () => {
@@ -276,7 +288,15 @@ describe('linkify', () => {
     const link = segments(text).find((s) => s.kind === 'link');
     expect(link).toMatchObject({ href: 'https://www.y.org' });
     const marked = segments('dog food', [[4, 8]]);
-    expect(marked).toEqual([{ kind: 'text', pieces: [{ text: 'dog ', mark: false }, { text: 'food', mark: true }] }]);
+    expect(marked).toEqual([
+      {
+        kind: 'text',
+        pieces: [
+          { text: 'dog ', mark: false },
+          { text: 'food', mark: true },
+        ],
+      },
+    ]);
   });
 });
 
@@ -284,8 +304,18 @@ describe('persistence', () => {
   it('keeps the fit mode in saved views', () => {
     const dataset = buildDataset('t.csv', [{ A: '1' }]);
     const view = {
-      groupKey: 'A', colorKey: 'A', automatic: true, counts: false, split: false, zoom: 1, fit: 'stretch' as const,
-      sortBy: 'value' as const, sortDirection: 'ascending' as const, viewerColumns: ['A'], searchTerm: '', searchScope: ['A'],
+      groupKey: 'A',
+      colorKey: 'A',
+      automatic: true,
+      counts: false,
+      split: false,
+      zoom: 1,
+      fit: 'stretch' as const,
+      sortBy: 'value' as const,
+      sortDirection: 'ascending' as const,
+      viewerColumns: ['A'],
+      searchTerm: '',
+      searchScope: ['A'],
       legendCollapsed: false,
     };
     expect(deserialize(JSON.parse(scriptSafeJson(serialize(dataset, view)))).view?.fit).toBe('stretch');
@@ -311,8 +341,19 @@ describe('persistence', () => {
 
 describe('box scaling', () => {
   const base = {
-    fit: true, square: true, minWidth: 4, maxWidth: 40, minHeight: 4, maxHeight: 40, zoom: 1,
-    viewWidth: 1000, viewHeight: 540, labelWidth: 100, rowWidth: 400, countWidth: 0, rows: 20,
+    fit: true,
+    square: true,
+    minWidth: 4,
+    maxWidth: 40,
+    minHeight: 4,
+    maxHeight: 40,
+    zoom: 1,
+    viewWidth: 1000,
+    viewHeight: 540,
+    labelWidth: 100,
+    rowWidth: 400,
+    countWidth: 0,
+    rows: 20,
   };
 
   it('uses the zoom, within the box limits, when not fitting', () => {
@@ -391,7 +432,8 @@ describe('custom value order', () => {
   });
 
   it('sorts rows by the custom order only in the custom sort; A–Z, Z–A and count ignore it', () => {
-    const rows = (options: Partial<Parameters<typeof computeLayout>[1]>) => computeLayout(dataset.items, { ...base, ...options }).groups.map((g) => g.label);
+    const rows = (options: Partial<Parameters<typeof computeLayout>[1]>) =>
+      computeLayout(dataset.items, { ...base, ...options }).groups.map((g) => g.label);
     expect(rows({ groupOrder: scale, sortBy: 'custom' })).toEqual(scale);
     expect(rows({ groupOrder: scale })).toEqual([...scale].sort());
     expect(rows({ groupOrder: scale, sortDirection: 'descending' })).toEqual([...scale].sort().reverse());

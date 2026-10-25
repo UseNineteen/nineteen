@@ -94,11 +94,11 @@
           />
         </div>
       {:else}
-      <p>
-        <strong>{column}</strong><br />
-        <!-- prettier-ignore -->
-        <span class="value">{#each segments(text, highlight ? highlightRanges(text, viz.searchTerm) : []) as segment, i (i)}{#if segment.kind === 'image'}<img src={segment.src} alt={segment.alt} referrerpolicy="no-referrer" loading="lazy" />{:else if segment.kind === 'link'}<a href={segment.href} target="_blank" rel="noopener noreferrer">{@render pieces(segment.pieces)}</a>{:else}{@render pieces(segment.pieces)}{/if}{/each}</span>
-      </p>
+        <p>
+          <strong>{column}</strong><br />
+          <!-- prettier-ignore -->
+          <span class="value">{#each segments(text, highlight ? highlightRanges(text, viz.searchTerm) : []) as segment, i (i)}{#if segment.kind === 'image'}<img src={segment.src} alt={segment.alt} referrerpolicy="no-referrer" loading="lazy" />{:else if segment.kind === 'link'}<a href={segment.href} target="_blank" rel="noopener noreferrer">{@render pieces(segment.pieces)}</a>{:else}{@render pieces(segment.pieces)}{/if}{/each}</span>
+        </p>
       {/if}
     {:else}
       {#if !popup.floating && !tags.length}<p class="empty">Please select some columns</p>{/if}

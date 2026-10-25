@@ -72,9 +72,7 @@ export function datasetDetails(dataset: Dataset): string {
 /** Sort comparator for items: group value, then color value, then file order. */
 export function itemComparator(groupKey: string, colorKey: string) {
   return (a: DataItem, b: DataItem): number =>
-    compareValues(a.parsed[groupKey], b.parsed[groupKey]) ||
-    compareValues(a.parsed[colorKey], b.parsed[colorKey]) ||
-    a.id - b.id;
+    compareValues(a.parsed[groupKey], b.parsed[groupKey]) || compareValues(a.parsed[colorKey], b.parsed[colorKey]) || a.id - b.id;
 }
 
 /**

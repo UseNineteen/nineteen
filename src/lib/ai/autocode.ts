@@ -94,7 +94,13 @@ export function parseCategories(text: string): Category[] {
     if (!cleaned) continue;
     const split = cleaned.search(/\s[-–—]\s|:\s/);
     const name = (split === -1 ? cleaned : cleaned.slice(0, split)).trim();
-    const description = split === -1 ? '' : cleaned.slice(split).replace(/^\s*[-–—:]\s*/, '').trim();
+    const description =
+      split === -1
+        ? ''
+        : cleaned
+            .slice(split)
+            .replace(/^\s*[-–—:]\s*/, '')
+            .trim();
     if (!name || name === UNCODED || seen.has(name.toLowerCase())) continue;
     seen.add(name.toLowerCase());
     categories.push({ name, description });

@@ -31,7 +31,11 @@
 
   /** Group by this tag alone: ignore every other tag */
   function only(key: string) {
-    if (column) viz.setIgnoredTags(column, catalog.map((t) => t.key).filter((k) => k !== key));
+    if (column)
+      viz.setIgnoredTags(
+        column,
+        catalog.map((t) => t.key).filter((k) => k !== key),
+      );
   }
 
   function includeAll() {
@@ -70,8 +74,8 @@
 
   <div class="settings-body">
     <p class="settings-hint">
-      Data items are grouped and colored by their combination of values. Untick a value to leave it out of the
-      combinations; data items keep it, and it still shows in the viewer and in search.
+      Data items are grouped and colored by their combination of values. Untick a value to leave it out of the combinations; data items keep
+      it, and it still shows in the viewer and in search.
     </p>
     {#if catalog.length}
       <ul class="tag-options">
@@ -82,7 +86,9 @@
               <span class="tag-option-name">{tag.label}</span>
               <span class="tag-option-count">{tag.count} {tag.count === 1 ? 'data item' : 'data items'}</span>
             </label>
-            <button type="button" class="ai-link tag-only" onclick={() => only(tag.key)} title="Leave out every other value">Only this</button>
+            <button type="button" class="ai-link tag-only" onclick={() => only(tag.key)} title="Leave out every other value"
+              >Only this</button
+            >
           </li>
         {/each}
       </ul>

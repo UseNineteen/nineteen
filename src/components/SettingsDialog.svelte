@@ -90,8 +90,8 @@
         <span>
           <strong>Stretch to fit</strong>
           <small>
-            Reshape boxes into rectangles so the visualization fills the window. Same as the Stretch to fit button
-            (bottom right): turning on one turns on the other.
+            Reshape boxes into rectangles so the visualization fills the window. Same as the Stretch to fit button (bottom right): turning
+            on one turns on the other.
           </small>
         </span>
       </label>
@@ -128,8 +128,8 @@
         </tbody>
       </table>
       <p class="settings-hint">
-        Limits box sizes when fitting and zooming. Stretch to fit uses the width and height limits separately; square boxes
-        stay within both. Defaults: {DEFAULTS.minWidth}–{DEFAULTS.maxWidth} px (boxes are 18 px at actual size).
+        Limits box sizes when fitting and zooming. Stretch to fit uses the width and height limits separately; square boxes stay within
+        both. Defaults: {DEFAULTS.minWidth}–{DEFAULTS.maxWidth} px (boxes are 18 px at actual size).
       </p>
     </fieldset>
 

@@ -36,7 +36,9 @@ export function search(
   tagColumns: ReadonlySet<string> | ReadonlyMap<string, ListSeparator> = new Set(),
 ): Set<number> | null {
   // Groups without a term don't filter (a blank search, or "dog AND " before its second term is typed)
-  const termGroups = groups(term).map(tokens).filter((toks) => toks.length > 0);
+  const termGroups = groups(term)
+    .map(tokens)
+    .filter((toks) => toks.length > 0);
   if (termGroups.length === 0) return null;
   const matches = termGroups.map((toks) => {
     const patterns = toks.map((t) => termPattern(t));

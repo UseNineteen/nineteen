@@ -203,12 +203,17 @@ mark {
   font-size: 15px;
   font-weight: 600;
   padding: 4px 6px 4px 12px;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 #import footer a.whats-new-link::before {
   background: #3396e4;
   border-radius: 2px;
-  box-shadow: 10px 0 0 #02de99, 20px 0 0 #ffd100, 30px 0 0 #ea9333;
+  box-shadow:
+    10px 0 0 #02de99,
+    20px 0 0 #ffd100,
+    30px 0 0 #ea9333;
   content: '';
   display: inline-block;
   height: 7px;

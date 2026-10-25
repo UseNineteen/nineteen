@@ -188,7 +188,13 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
       }
     } else {
       for (const group of groups) {
-        countLabels.push({ key: group.label, text: String(group.count), x: columnX(group.count), cx: 0, y: groupY(rowIndex.get(group.label)!) });
+        countLabels.push({
+          key: group.label,
+          text: String(group.count),
+          x: columnX(group.count),
+          cx: 0,
+          y: groupY(rowIndex.get(group.label)!),
+        });
       }
     }
   }
@@ -206,7 +212,6 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
         pad: pads[band],
       }))
     : [];
-
 
   const maxCount = Math.max(0, ...groups.map((g) => g.count));
   const columns = split ? totalSplitColumns : maxCount;

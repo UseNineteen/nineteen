@@ -70,10 +70,7 @@ export function formatTokens(tokens: number): string {
  * values. Rows the model didn't code get a blank cell.
  */
 export function withColumns(dataset: Dataset, added: Record<string, Map<number, string>>): Dataset {
-  return Object.entries(added).reduce(
-    (current, [name, values]) => withColumn(current, name, (item) => values.get(item.id) ?? ''),
-    dataset,
-  );
+  return Object.entries(added).reduce((current, [name, values]) => withColumn(current, name, (item) => values.get(item.id) ?? ''), dataset);
 }
 
 export function groupValues(items: DataItem[], key: string): string[] {

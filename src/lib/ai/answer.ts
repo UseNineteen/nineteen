@@ -4,14 +4,10 @@
  * never interpreted as HTML.
  */
 
-export type Inline =
-  | { kind: 'text'; text: string; bold?: boolean; italic?: boolean }
-  | { kind: 'cite'; rows: number[]; label: string };
+export type Inline = { kind: 'text'; text: string; bold?: boolean; italic?: boolean } | { kind: 'cite'; rows: number[]; label: string };
 
 export type Block =
-  | { kind: 'heading'; parts: Inline[] }
-  | { kind: 'paragraph'; parts: Inline[] }
-  | { kind: 'list'; ordered: boolean; items: Inline[][] };
+  { kind: 'heading'; parts: Inline[] } | { kind: 'paragraph'; parts: Inline[] } | { kind: 'list'; ordered: boolean; items: Inline[][] };
 
 // [Row 12], [Rows 3, 7], [Row 12, Row 40], [Rows 4-6]
 const CITATION = /\[(?:rows?|file rows?)\s*[\d][^\]]*\]/gi;

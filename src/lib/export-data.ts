@@ -25,7 +25,10 @@ export function tableOf(dataset: Dataset): (string | number)[][] {
 
 /** Excel sheet names: at most 31 characters, none of : \ / ? * [ ] */
 export function sheetName(fileName: string): string {
-  const stem = fileName.replace(/\.[^.]+$/, '').replace(/[:\\/?*[\]]/g, ' ').trim();
+  const stem = fileName
+    .replace(/\.[^.]+$/, '')
+    .replace(/[:\\/?*[\]]/g, ' ')
+    .trim();
   return (stem || 'Data').slice(0, 31);
 }
 

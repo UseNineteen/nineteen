@@ -17,11 +17,8 @@
   let { anchor, align = 'left', offset = 0, className = '', label, onclose, header, children }: Props = $props();
 
   let element: HTMLElement;
-  let rect = $state(new DOMRect());
-
-  $effect.pre(() => {
-    rect = anchor.getBoundingClientRect();
-  });
+  /** Where the anchor is; measured again on resize (a writable derived: assignments override it until the anchor changes) */
+  let rect = $derived(anchor.getBoundingClientRect());
 
   const left = $derived((align === 'right' ? rect.right : rect.left) + offset);
 
@@ -36,8 +33,10 @@
 
   function keydown(event: KeyboardEvent) {
     if (event.key === 'Escape') {
+      // Closing unmounts this dropdown, and with it the `anchor` prop, so keep the element first
+      const opener = anchor;
       onclose();
-      anchor.focus();
+      opener.focus();
     }
   }
 </script>

@@ -226,7 +226,16 @@
   <figure id="visualization">
     <Legend {viz} oncolormenu={(anchor) => toggle('color', anchor)} colorMenuOpen={open?.name === 'color'} />
     <div id="viewer">
-      <Viewer {viz} {popups} open={open?.name ?? null} ontoggle={toggle} {aiOpen} ontoggleai={toggleAI} {tagsOpen} ontoggletags={toggleTags}>
+      <Viewer
+        {viz}
+        {popups}
+        open={open?.name ?? null}
+        ontoggle={toggle}
+        {aiOpen}
+        ontoggleai={toggleAI}
+        {tagsOpen}
+        ontoggletags={toggleTags}
+      >
         {#snippet side()}
           {#if tagsMounted}
             <div class="ai-dock" hidden={!tagsOpen}>
@@ -302,7 +311,9 @@
     <Dropdown anchor={open.anchor} align="right" className="dropdown-save" label="Save" onclose={close}>
       <button type="button" class="save-html" disabled={!standalone} onclick={saveHtml}>
         <strong>Download HTML file</strong><br />
-        <span class="description">{standalone ? 'Save an interactive version of this view' : 'Available in the built app (npm run build)'}</span>
+        <span class="description"
+          >{standalone ? 'Save an interactive version of this view' : 'Available in the built app (npm run build)'}</span
+        >
       </button>
       <button type="button" class="save-png" disabled={rendering} aria-busy={rendering} onclick={savePng}>
         <strong>Download PNG image</strong><br />

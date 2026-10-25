@@ -17,15 +17,7 @@
     type Coding,
   } from '../../lib/ai/autocode';
   import { citedRows } from '../../lib/ai/answer';
-  import {
-    estimateTokens,
-    formatTokens,
-    renderData,
-    renderRows,
-    selectItems,
-    withColumns,
-    type RowScope,
-  } from '../../lib/ai/context';
+  import { estimateTokens, formatTokens, renderData, renderRows, selectItems, withColumns, type RowScope } from '../../lib/ai/context';
   import { clipboardPrompt, SYSTEM_PROMPT, TEMPLATES } from '../../lib/ai/prompts';
   import { AIError, PROVIDERS, type ChatMessage } from '../../lib/ai/providers';
   import { aiSettings } from '../../lib/ai/settings.svelte';
@@ -107,7 +99,9 @@
   const template = $derived(TEMPLATES.find((t) => t.id === templateId)!);
   const instructions = $derived([template.build(view), extra.trim()].filter(Boolean).join('\n\n'));
   const fullPrompt = $derived(clipboardPrompt(instructions || 'Answer my questions about this data.', data));
-  const preview = $derived(fullPrompt.length > 6000 ? `${fullPrompt.slice(0, 6000)}\n\n… (${fullPrompt.length - 6000} more characters)` : fullPrompt);
+  const preview = $derived(
+    fullPrompt.length > 6000 ? `${fullPrompt.slice(0, 6000)}\n\n… (${fullPrompt.length - 6000} more characters)` : fullPrompt,
+  );
 
   let downloadUrl = $state<string | null>(null);
   $effect(() => {
@@ -217,6 +211,7 @@
 
   let goal = $state('');
   let categoryText = $state('');
+  const CATEGORY_PLACEHOLDER = 'Price: cost was the deciding factor\nQuality\nConvenience';
   let columnName = $state('AI theme');
   let includeReasons = $state(true);
   let coding = $state<{ done: number; total: number; label: string } | null>(null);
@@ -359,14 +354,14 @@
         </p>
       {:else if tab === 'ask'}
         <p>
-          Ask Claude or ChatGPT questions about your data, using your own API key. Answers cite the data items they draw on;
-          click a citation to see them in the visualization.
+          Ask Claude or ChatGPT questions about your data, using your own API key. Answers cite the data items they draw on; click a
+          citation to see them in the visualization.
         </p>
         <p class="ai-hint">Your browser sends the shared data straight to the provider, never through a Nineteen server.</p>
       {:else}
         <p>
-          Have the AI assign every data item to one of your categories (or let it suggest some). The result is added as a new
-          column you can group, color, and search by.
+          Have the AI assign every data item to one of your categories (or let it suggest some). The result is added as a new column you can
+          group, color, and search by.
         </p>
         <p class="ai-hint">Uses your own API key. Your browser sends the shared data straight to the provider.</p>
       {/if}
@@ -423,8 +418,8 @@
         <p class="ai-hint">
           Then open
           <a href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Claude</a> or
-          <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a> and paste it in. Check your
-          organization’s rules before pasting confidential data into an AI service.
+          <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a> and paste it in. Check your organization’s rules
+          before pasting confidential data into an AI service.
         </p>
         <details class="ai-preview">
           <summary>Preview prompt</summary>
@@ -513,8 +508,8 @@
               {/if}
             </div>
             <p class="ai-hint">
-              Each question sends the shared data ({formatTokens(tokens)}) to {provider.company}. Answers can be wrong, so check
-              them against the cited rows.
+              Each question sends the shared data ({formatTokens(tokens)}) to {provider.company}. Answers can be wrong, so check them
+              against the cited rows.
             </p>
           </form>
         </section>
@@ -526,7 +521,7 @@
           </label>
           <label class="ai-field">
             <span class="ai-label">Categories (one per line, optionally “Name: definition”)</span>
-            <textarea rows="6" bind:value={categoryText} placeholder={'Price: cost was the deciding factor\nQuality\nConvenience'}></textarea>
+            <textarea rows="6" bind:value={categoryText} placeholder={CATEGORY_PLACEHOLDER}></textarea>
           </label>
           <div class="ai-row">
             <button type="button" class="btn" disabled={!aiSettings.ready || busy} onclick={suggest}>Suggest categories</button>
@@ -596,9 +591,9 @@
       <div class="ai-consent-box">
         <h3 id="ai-consent-title">Send your data to {provider.company}?</h3>
         <p>
-          Until now, everything in Nineteen has stayed in your browser. This action sends the shared data
-          (<strong>{items.length} data items × {columns.length} columns</strong>, {formatTokens(tokens)}) to {provider.company} using
-          your API key, and {provider.company}’s
+          Until now, everything in Nineteen has stayed in your browser. This action sends the shared data (<strong
+            >{items.length} data items × {columns.length} columns</strong
+          >, {formatTokens(tokens)}) to {provider.company} using your API key, and {provider.company}’s
           <a href={provider.privacyUrl} target="_blank" rel="noopener noreferrer">terms and privacy policy</a> apply to it.
         </p>
         <p>Only continue if you’re allowed to share this data with {provider.company}. Untick sensitive columns first if needed.</p>

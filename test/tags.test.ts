@@ -60,7 +60,14 @@ describe('grouping by tags', () => {
 
   it('keeps exactly one box per row in the layout', () => {
     const items = groupingItems(dataset.items, [{ column: 'Tags', catalog, ignored: new Set(['follow-up']) }]);
-    const layout = computeLayout(items, { groupKey: 'Tags', colorKey: 'Tags', split: false, counts: false, sortBy: 'value', sortDirection: 'ascending' });
+    const layout = computeLayout(items, {
+      groupKey: 'Tags',
+      colorKey: 'Tags',
+      split: false,
+      counts: false,
+      sortBy: 'value',
+      sortDirection: 'ascending',
+    });
     expect(layout.positions.size).toBe(dataset.items.length);
     expect(layout.groups.map((g) => [g.label, g.count])).toEqual([
       ['gift + Price', 2],

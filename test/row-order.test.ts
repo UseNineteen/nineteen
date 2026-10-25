@@ -40,7 +40,13 @@ describe('custom row order', () => {
   });
 
   it('keeps the custom order per field and restores it after sorting by count', () => {
-    const viz = new Viz(buildDataset('t.csv', [{ A: 'x', B: '1' }, { A: 'y', B: '2' }, { A: 'z', B: '2' }]));
+    const viz = new Viz(
+      buildDataset('t.csv', [
+        { A: 'x', B: '1' },
+        { A: 'y', B: '2' },
+        { A: 'z', B: '2' },
+      ]),
+    );
     viz.moveRow(2, 0);
     expect(rows(viz)).toEqual(['z', 'x', 'y']);
     viz.sort('count');

@@ -33,11 +33,7 @@
   <section>
     {#each columns as column (column)}
       <label>
-        <input
-          type="checkbox"
-          checked={selected.includes(column)}
-          onchange={(e) => toggle(column, e.currentTarget.checked)}
-        />
+        <input type="checkbox" checked={selected.includes(column)} onchange={(e) => toggle(column, e.currentTarget.checked)} />
         <span>{column}</span>
       </label>
     {/each}

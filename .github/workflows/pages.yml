@@ -1,10 +1,11 @@
-# Publishes the committed build in dist/ to GitHub Pages on every push to main.
+# Checks the source, then publishes the committed build in dist/ to GitHub Pages on every push to main.
 # dist/ is rebuilt by the pre-commit hook, so no build step is needed here.
 name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -17,7 +18,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+
   deploy:
+    if: github.event_name != 'pull_request'
+    needs: check
     runs-on: ubuntu-latest
     environment:
       name: github-pages

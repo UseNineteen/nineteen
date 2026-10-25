@@ -58,7 +58,10 @@ export function resolveHostedUrl(input: string): HostedSource {
   // Google Drive file links → direct download
   const driveFile = /^\/file\/d\/([^/]+)/.exec(url.pathname)?.[1] ?? (url.pathname === '/open' ? url.searchParams.get('id') : null);
   if (host === 'drive.google.com' && driveFile) {
-    return { url: `https://drive.usercontent.google.com/download?id=${encodeURIComponent(driveFile)}&export=download`, name: 'Google Drive file' };
+    return {
+      url: `https://drive.usercontent.google.com/download?id=${encodeURIComponent(driveFile)}&export=download`,
+      name: 'Google Drive file',
+    };
   }
 
   // GitHub file pages → raw file
@@ -71,10 +74,7 @@ export function resolveHostedUrl(input: string): HostedSource {
   return { url: url.toString(), name: basename(url) };
 }
 
-export async function fetchHosted(
-  source: HostedSource,
-  onProgress?: (fraction: number | null) => void,
-): Promise<Uint8Array> {
+export async function fetchHosted(source: HostedSource, onProgress?: (fraction: number | null) => void): Promise<Uint8Array> {
   let response: Response;
   try {
     response = await fetch(source.url, { credentials: 'omit', referrerPolicy: 'no-referrer' });

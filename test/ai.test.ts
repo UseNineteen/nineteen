@@ -42,19 +42,41 @@ describe('data packaging', () => {
   });
 
   it('adds AI columns without disturbing existing data', () => {
-    const next = withColumns(dataset, { Theme: new Map([[1, 'Shopping'], [3, 'Skipping']]) });
+    const next = withColumns(dataset, {
+      Theme: new Map([
+        [1, 'Shopping'],
+        [3, 'Skipping'],
+      ]),
+    });
     expect(next.columns).toEqual(['Name', 'Segment', 'Note', 'Theme']);
-    expect(next.items.map((i) => [i.id, i.raw.Theme])).toEqual([[1, 'Shopping'], [2, ''], [3, 'Skipping']]);
+    expect(next.items.map((i) => [i.id, i.raw.Theme])).toEqual([
+      [1, 'Shopping'],
+      [2, ''],
+      [3, 'Skipping'],
+    ]);
     const again = withColumns(next, { Theme: new Map([[2, 'X']]) });
     expect(again.columns).toEqual(['Name', 'Segment', 'Note', 'Theme']);
     expect(again.items[1].raw.Theme).toBe('X');
   });
 
   it('keeps every row and its id when replacing a column that held a row’s only content', () => {
-    const sparse = buildDataset('x.csv', [{ Name: 'Ada', Note: 'hello' }, { Name: '', Note: 'only note' }, { Name: 'Cy', Note: 'bye' }]);
-    const replaced = withColumns(sparse, { Note: new Map([[1, 'A'], [3, 'C']]) });
+    const sparse = buildDataset('x.csv', [
+      { Name: 'Ada', Note: 'hello' },
+      { Name: '', Note: 'only note' },
+      { Name: 'Cy', Note: 'bye' },
+    ]);
+    const replaced = withColumns(sparse, {
+      Note: new Map([
+        [1, 'A'],
+        [3, 'C'],
+      ]),
+    });
     expect(replaced.columns).toEqual(['Name', 'Note']);
-    expect(replaced.items.map((i) => [i.id, i.raw.Name, i.raw.Note])).toEqual([[1, 'Ada', 'A'], [2, '', ''], [3, 'Cy', 'C']]);
+    expect(replaced.items.map((i) => [i.id, i.raw.Name, i.raw.Note])).toEqual([
+      [1, 'Ada', 'A'],
+      [2, '', ''],
+      [3, 'Cy', 'C'],
+    ]);
   });
 });
 
@@ -145,7 +167,12 @@ describe('data export', () => {
   it('round-trips through .xlsx and .csv, keeping added columns', async () => {
     const { parseBytes } = await import('../src/lib/parse');
     const { toCsv, toXlsx, tableOf, sheetName } = await import('../src/lib/export-data');
-    const coded = withColumns(dataset, { 'AI theme': new Map([[1, 'Shopping'], [3, 'Skipping']]) });
+    const coded = withColumns(dataset, {
+      'AI theme': new Map([
+        [1, 'Shopping'],
+        [3, 'Skipping'],
+      ]),
+    });
     for (const bytes of [toXlsx(coded), new TextEncoder().encode(toCsv(coded))]) {
       const back = parseBytes('x', bytes);
       expect(back.columns).toEqual(['Name', 'Segment', 'Note', 'AI theme']);

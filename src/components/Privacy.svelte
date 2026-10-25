@@ -41,9 +41,10 @@
 
   <h2>What is stored on your device</h2>
   <p>
-    While a file is open, a copy of its contents is kept in your browser’s <em>session storage</em> so the
-    visualization survives a page reload. Only this browser tab can read it, and your browser deletes it when
-    you close the tab. Nothing is sent anywhere.
+    While a file is open, a copy of its contents, along with how you are viewing it (grouping, colors, sort
+    order and tag settings), is kept in your browser’s <em>session storage</em> so the visualization survives a
+    page reload. Only this browser tab can read it, and your browser deletes it when you close the tab. Nothing
+    is sent anywhere.
   </p>
 
   <p>

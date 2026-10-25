@@ -10,7 +10,7 @@
   import TagOptions from './TagOptions.svelte';
   import TagsPanel from './TagsPanel.svelte';
   import { datasetDetails, LIST_SEPARATORS, type ListSeparator } from '../lib/data';
-  import { serialize } from '../lib/persist';
+  import { saveView, serialize } from '../lib/persist';
   import { Popups } from '../lib/popups.svelte';
   import { addTerm } from '../lib/search';
   import { toCsv, toXlsx } from '../lib/export-data';
@@ -29,6 +29,10 @@
 
   const popups = new Popups();
   const itemsById = $derived(new Map(viz.dataset.items.map((item) => [item.id, item])));
+
+  // Every change to the view is remembered for this tab, so a reload comes back to the same view
+  // (the data itself is saved by whatever changes it). toViewState reads all of the view's state.
+  $effect(() => saveView(viz.toViewState()));
 
   let open = $state<{ name: DropdownName; anchor: HTMLElement } | null>(null);
   let aiOpen = $state(false);

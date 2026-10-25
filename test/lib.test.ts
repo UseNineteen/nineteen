@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import * as XLSX from 'xlsx';
 import { buildDataset, rollup } from '../src/lib/data';
 import { compareValues, parseValue } from '../src/lib/values';
 import { addTerm, highlightRanges, search } from '../src/lib/search';
@@ -54,6 +55,27 @@ describe('parsers', () => {
   it('falls back to windows-1252 for non-UTF-8 CSVs', () => {
     const bytes = new Uint8Array([...new TextEncoder().encode('Name\nCaf'), 0xe9, 0x0a]);
     expect(parseBytes('x.csv', bytes).items[0].raw.Name).toBe('Café');
+  });
+
+  // Items are numbered by their row in the file, as a spreadsheet shows it (header = row 1)
+  it('numbers CSV rows as the file has them, counting blank lines', () => {
+    const csv = new TextEncoder().encode('Name\na\n\n  \nb\n');
+    expect(parseBytes('x.csv', csv).items.map((i) => [i.id, i.raw.Name])).toEqual([[2, 'a'], [5, 'b']]);
+  });
+
+  it('numbers sheet rows as the spreadsheet shows them', () => {
+    const bytes = (sheet: XLSX.WorkSheet) => {
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheet, 'Data');
+      return new Uint8Array(XLSX.write(workbook, { type: 'array', bookType: 'xlsx' }));
+    };
+    const ids = (sheet: XLSX.WorkSheet) => parseBytes('x.xlsx', bytes(sheet)).items.map((i) => [i.id, i.raw.Name]);
+    // Blank rows above the header and inside the data
+    expect(ids(XLSX.utils.aoa_to_sheet([[], [], ['Name'], ['a'], [], ['b']]))).toEqual([[4, 'a'], [6, 'b']]);
+    // A used range that starts below row 1
+    const offset = XLSX.utils.sheet_add_aoa(XLSX.utils.aoa_to_sheet([]), [['Name'], ['a'], [], ['b']], { origin: 'A3' });
+    offset['!ref'] = 'A3:A6'; // as Excel writes a sheet whose first used cell is A3
+    expect(ids(offset)).toEqual([[4, 'a'], [6, 'b']]);
   });
 });
 
@@ -275,6 +297,15 @@ describe('persistence', () => {
     expect(text).not.toContain('</script>');
     const restored = deserialize(JSON.parse(text)).dataset;
     expect(plain(restored.items[0].raw)).toEqual({ A: '1', B: '</script><b>' });
+  });
+
+  it('keeps file row numbers, and counts from 1 for files saved without them', () => {
+    const dataset = buildDataset('t.csv', [{ A: 'x' }, { A: 'y' }], ['A'], [2, 7]);
+    const saved = serialize(dataset);
+    expect(saved.ids).toEqual([2, 7]);
+    expect(deserialize(JSON.parse(JSON.stringify(saved))).dataset.items.map((i) => i.id)).toEqual([2, 7]);
+    const { ids: _ids, ...legacy } = saved;
+    expect(deserialize(legacy as typeof saved).dataset.items.map((i) => i.id)).toEqual([1, 2]);
   });
 });
 

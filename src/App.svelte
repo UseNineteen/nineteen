@@ -45,8 +45,8 @@
   function syncFromHash() {
     const next = pageFromHash();
     if (next === 'visualize' && !viz) {
-      const dataset = loadSession();
-      if (dataset) show(dataset);
+      const session = loadSession();
+      if (session) show(session.dataset, session.view);
     }
     page = next === 'visualize' && !viz ? 'import' : next;
   }

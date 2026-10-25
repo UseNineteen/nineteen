@@ -10,8 +10,16 @@
 
   let { onfile, onurl, onsample, onprivacy }: Props = $props();
 
-  const HELP_URL = 'https://github.com/UseNineteen/nineteen/blob/main/README.md';
   const GITHUB_URL = 'https://github.com/UseNineteen/nineteen';
+  /**
+   * The guide is README.md, which the build renders as readme.html next to the app. A saved HTML
+   * file sits on its own on disk, so it links to the live copy; the dev server has no built copy.
+   */
+  const HELP_URL = import.meta.env.DEV
+    ? `${GITHUB_URL}/blob/main/README.md`
+    : location.protocol === 'file:'
+      ? 'https://usenineteen.com/readme.html'
+      : './readme.html';
   const SAMPLE_URL = './shopping_decision_diary.xlsx';
   const WHATS_NEW_URL = './whats-new.html';
   /** When this release came out; the "New" badge shows until NEW_UNTIL so it never looks stale */

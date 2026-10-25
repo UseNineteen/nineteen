@@ -175,7 +175,7 @@ You can use Nineteen with confidential data.
   straight from your browser to Anthropic or OpenAI
 - **Remembered settings and keys are opt-in.** Display settings and AI keys are stored in this browser's local storage only
   if you tick "Remember … on this device"
-- **Session storage only.** While a file is open, a copy is kept in your browser's session storage so the view survives a reload.
+- **Session storage only.** While a file is open, a copy of it and of your view settings is kept in your browser's session storage so both survive a reload.
   Your browser deletes it when you close the tab
 - **Hosted files** are downloaded directly by your browser from the site you link to. Some sites (often Google Drive) don't allow this,
   and Nineteen will tell you so. In that case, download the file and use "Choose a file" instead

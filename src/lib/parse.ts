@@ -22,9 +22,24 @@ function decodeText(bytes: Uint8Array): string {
   }
 }
 
-/** Turns a grid (header row + data rows) into records with unique, non-empty column names. */
-export function recordsFromMatrix(matrix: unknown[][]): { columns: string[]; rows: Record<string, string>[] } {
-  const [header = [], ...body] = matrix;
+function isBlankRow(row: unknown[] | undefined): boolean {
+  return !row || row.every((value) => String(value ?? '').trim() === '');
+}
+
+/**
+ * Turns a grid into records with unique, non-empty column names. The header is the first row
+ * with anything in it; every row after it becomes a record, blank ones included, so that
+ * `rowNumbers` (parallel to `rows`) are the rows' numbers in the file. `firstRow` is the
+ * file row number of `matrix[0]` (a sheet's used range may not start at row 1).
+ */
+export function recordsFromMatrix(
+  matrix: unknown[][],
+  firstRow = 1,
+): { columns: string[]; rows: Record<string, string>[]; rowNumbers: number[] } {
+  let headerIndex = 0;
+  while (headerIndex < matrix.length && isBlankRow(matrix[headerIndex])) headerIndex++;
+  const header = matrix[headerIndex] ?? [];
+  const body = matrix.slice(headerIndex + 1);
   const width = body.reduce((max, r) => Math.max(max, r.length), header.length);
   const used = new Set<string>();
   const names: string[] = [];
@@ -47,28 +62,39 @@ export function recordsFromMatrix(matrix: unknown[][]): { columns: string[]; row
     for (const { name, i } of keep) row[name] = r[i] === undefined || r[i] === null ? '' : String(r[i]);
     return row;
   });
-  return { columns: keep.map((k) => k.name), rows };
+  const rowNumbers = body.map((_, i) => firstRow + headerIndex + 1 + i);
+  return { columns: keep.map((k) => k.name), rows, rowNumbers };
 }
 
-function readWorkbook(bytes: Uint8Array): unknown[][] {
+/** A file as a grid, with the file row number of its first row. */
+interface Grid {
+  matrix: unknown[][];
+  firstRow: number;
+}
+
+function readWorkbook(bytes: Uint8Array): Grid {
   const workbook = XLSX.read(bytes, { type: 'array', dense: true });
   // As before, only the first worksheet is used
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  if (!sheet) return [];
-  // raw: false keeps cells as they are displayed in Excel (e.g. dates as "2/1/10")
-  return XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, raw: false, defval: '', blankrows: false });
+  if (!sheet?.['!ref']) return { matrix: [], firstRow: 1 };
+  // raw: false keeps cells as they are displayed in Excel (e.g. dates as "2/1/10");
+  // blankrows: true keeps every row in place, so indexes map onto the sheet's row numbers
+  const matrix = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, raw: false, defval: '', blankrows: true });
+  return { matrix, firstRow: XLSX.utils.decode_range(sheet['!ref']).s.r + 1 };
 }
 
-function readDelimited(bytes: Uint8Array): unknown[][] {
-  const result = Papa.parse<string[]>(decodeText(bytes), { skipEmptyLines: 'greedy' });
-  return result.data;
+function readDelimited(bytes: Uint8Array): Grid {
+  // Empty lines are kept (and dropped later) so that each record's index is its line in the file
+  const result = Papa.parse<string[]>(decodeText(bytes), { skipEmptyLines: false });
+  return { matrix: result.data, firstRow: 1 };
 }
 
 export function parseBytes(name: string, bytes: Uint8Array): Dataset {
-  const matrix = detectFormat(bytes) === 'csv' ? readDelimited(bytes) : readWorkbook(bytes);
-  const { columns, rows } = recordsFromMatrix(matrix);
-  if (columns.length === 0 || rows.length === 0) {
+  const { matrix, firstRow } = detectFormat(bytes) === 'csv' ? readDelimited(bytes) : readWorkbook(bytes);
+  const { columns, rows, rowNumbers } = recordsFromMatrix(matrix, firstRow);
+  const dataset = buildDataset(name, rows, columns, rowNumbers);
+  if (columns.length === 0 || dataset.items.length === 0) {
     throw new Error('No data found. The first row should hold column names, and each row after it becomes one item.');
   }
-  return buildDataset(name, rows, columns);
+  return dataset;
 }

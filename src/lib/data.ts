@@ -4,7 +4,11 @@ import { compareValues, parseValue, type Parsed } from './values';
 export type Row = Record<string, string>;
 
 export interface DataItem {
-  /** 1-based file row number (excluding the header), shown as "File row N" */
+  /**
+   * The row's number in the original file, as a spreadsheet program shows it (the header is
+   * row 1 and blank rows count), shown as "File row N" and cited by AI answers as "Row N".
+   * Unique, but not consecutive.
+   */
   id: number;
   raw: Row;
   parsed: Record<string, Parsed>;
@@ -38,8 +42,12 @@ function cleanRow(row: Record<string, unknown>, columns: string[]): Row {
   return clean;
 }
 
-/** Builds the dataset from parsed rows; columns are the union of keys in first-seen order. */
-export function buildDataset(name: string, rows: Record<string, unknown>[], columns?: string[]): Dataset {
+/**
+ * Builds the dataset from parsed rows, leaving out rows with nothing in them. Columns default
+ * to the union of keys in first-seen order; `rowNumbers` (parallel to `rows`) are the rows'
+ * numbers in the file, defaulting to 1, 2, 3… when the rows didn't come from a file.
+ */
+export function buildDataset(name: string, rows: Record<string, unknown>[], columns?: string[], rowNumbers?: number[]): Dataset {
   let cols = columns;
   if (!cols) {
     const seen = new Set<string>();
@@ -47,12 +55,12 @@ export function buildDataset(name: string, rows: Record<string, unknown>[], colu
     cols = [...seen];
   }
   const items = rows
-    .map((row) => cleanRow(row, cols!))
-    .filter((row) => cols!.some((c) => row[c].trim() !== ''))
-    .map((raw, index) => {
+    .map((row, index) => ({ id: rowNumbers?.[index] ?? index + 1, raw: cleanRow(row, cols) }))
+    .filter(({ raw }) => cols.some((c) => raw[c].trim() !== ''))
+    .map(({ id, raw }) => {
       const parsed: Record<string, Parsed> = Object.create(null);
-      for (const column of cols!) parsed[column] = parseValue(raw[column]);
-      return { id: index + 1, raw, parsed };
+      for (const column of cols) parsed[column] = parseValue(raw[column]);
+      return { id, raw, parsed };
     });
   return { name, columns: cols, items };
 }

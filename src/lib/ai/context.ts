@@ -2,9 +2,9 @@ import { displayLabel, withColumn, type DataItem, type Dataset } from '../data';
 
 /**
  * Packages the user's data for an AI model: which rows, which columns, and a
- * plain-text rendering in which every row keeps its "Row N" number (the same
- * number the viewer shows as "File row N"), so answers can cite rows and
- * Nineteen can highlight them.
+ * plain-text rendering in which every row keeps its "Row N" number (its row in
+ * the original spreadsheet, which the viewer shows as "File row N"), so answers
+ * can cite rows and Nineteen can highlight them.
  */
 
 export type RowScope = 'all' | 'matches';

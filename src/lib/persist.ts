@@ -3,9 +3,10 @@ import type { SortBy, SortDirection } from './layout';
 
 /**
  * Data persistence, all on the user's own device:
- * - sessionStorage keeps the open file across a page reload (cleared when the tab closes),
- *   exactly as the original app did. No cookies are used.
- * - Saved HTML files carry their data in an inert JSON <script> block.
+ * - sessionStorage keeps the open file, and the view of it, across a page reload (cleared when
+ *   the tab closes). The two are stored separately: the file is written when it is opened or
+ *   its data changes, the much smaller view on every change to it. No cookies are used.
+ * - Saved HTML files carry their data and view in an inert JSON <script> block.
  */
 
 /** 'square': Best fit, 'stretch': Stretch to fit (boxes may become rectangles) */
@@ -43,10 +44,13 @@ export interface SavedFile {
   name: string;
   columns: string[];
   rows: string[][];
+  /** Each row's number in the original file (parallel to `rows`); files saved before this was kept count 1, 2, 3… */
+  ids?: number[];
   view?: ViewState;
 }
 
 const SESSION_KEY = 'nineteen:datafile';
+const VIEW_KEY = 'nineteen:view';
 export const EMBED_ID = 'nineteen-data';
 
 export function serialize(dataset: Dataset, view?: ViewState): SavedFile {
@@ -55,6 +59,7 @@ export function serialize(dataset: Dataset, view?: ViewState): SavedFile {
     name: dataset.name,
     columns: dataset.columns,
     rows: dataset.items.map((item) => dataset.columns.map((c) => item.raw[c])),
+    ids: dataset.items.map((item) => item.id),
     view,
   };
 }
@@ -69,7 +74,9 @@ export function deserialize(saved: SavedFile): { dataset: Dataset; view?: ViewSt
     columns.forEach((c, i) => (row[c] = String(values[i] ?? '')));
     return row;
   });
-  return { dataset: buildDataset(String(saved.name), rows, columns), view: saved.view };
+  const ids = saved.ids;
+  const validIds = Array.isArray(ids) && ids.length === rows.length && ids.every((id) => Number.isInteger(id) && id > 0);
+  return { dataset: buildDataset(String(saved.name), rows, columns, validIds ? ids : undefined), view: saved.view };
 }
 
 export function saveSession(dataset: Dataset): void {
@@ -81,18 +88,39 @@ export function saveSession(dataset: Dataset): void {
   }
 }
 
-export function loadSession(): Dataset | null {
+/** Remembers how the open file is being viewed, so a reload brings the same view back. */
+export function saveView(view: ViewState): void {
+  try {
+    sessionStorage.setItem(VIEW_KEY, JSON.stringify(view));
+  } catch {
+    // ignore: the file itself may still be restored, with a default view
+  }
+}
+
+export function loadSession(): { dataset: Dataset; view?: ViewState } | null {
+  let dataset: Dataset;
   try {
     const text = sessionStorage.getItem(SESSION_KEY);
-    return text ? deserialize(JSON.parse(text)).dataset : null;
+    if (!text) return null;
+    dataset = deserialize(JSON.parse(text)).dataset;
   } catch {
     return null;
   }
+  // A view that can't be read is no reason to lose the file
+  let view: ViewState | undefined;
+  try {
+    const text = sessionStorage.getItem(VIEW_KEY);
+    if (text) view = JSON.parse(text);
+  } catch {
+    view = undefined;
+  }
+  return { dataset, view };
 }
 
 export function clearSession(): void {
   try {
     sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(VIEW_KEY);
   } catch {
     // ignore
   }

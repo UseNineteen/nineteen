@@ -135,7 +135,8 @@
   let question = $state('');
   let streaming = $state('');
   let asking = $state(false);
-  let controller: AbortController | null = null;
+  /** The question in flight; Ask and Auto-code each have their own so Stop aborts the right request */
+  let askController: AbortController | null = null;
   let conversationEl = $state<HTMLElement>();
 
   async function scrollDown() {
@@ -154,7 +155,7 @@
     question = '';
     asking = true;
     streaming = '';
-    controller = new AbortController();
+    askController = new AbortController();
     const history: ChatMessage[] = turns.filter((t) => !t.error).map(({ role, content }) => ({ role, content }));
     scrollDown();
     try {
@@ -163,7 +164,7 @@
         system: SYSTEM_PROMPT,
         data,
         messages: history,
-        signal: controller.signal,
+        signal: askController.signal,
         onText: (delta) => {
           streaming += delta;
           scrollDown();
@@ -179,13 +180,17 @@
     } finally {
       asking = false;
       streaming = '';
-      controller = null;
+      askController = null;
       scrollDown();
     }
   }
 
+  function stopAsk() {
+    askController?.abort();
+  }
+
   function clearConversation() {
-    controller?.abort();
+    stopAsk();
     turns = [];
     viz.aiHighlight = null;
   }
@@ -211,6 +216,8 @@
   let columnName = $state('AI theme');
   let includeReasons = $state(true);
   let coding = $state<{ done: number; total: number; label: string } | null>(null);
+  /** The suggestion or coding request in flight */
+  let codeController: AbortController | null = null;
   let codeError = $state('');
   let codeResult = $state<{ column: string; counts: [string, number][]; coded: number; total: number; partial: boolean } | null>(null);
 
@@ -229,7 +236,7 @@
   async function runSuggest() {
     codeError = '';
     coding = { done: 0, total: 1, label: 'Reading the data…' };
-    controller = new AbortController();
+    codeController = new AbortController();
     try {
       // Very large files: suggest from an even sample of rows
       const maxChars = 600_000;
@@ -245,14 +252,14 @@
         prompt: `${suggestPrompt(goal)}\n\n${renderData(sample, codeColumns, view, scope)}`,
         schemaName: 'coding_scheme',
         schema: categoriesSchema as unknown as Record<string, unknown>,
-        signal: controller.signal,
+        signal: codeController.signal,
       });
       categoryText = formatCategories(result.categories ?? []);
     } catch (error) {
       if (!(error as AIError).aborted) codeError = (error as Error).message;
     } finally {
       coding = null;
-      controller = null;
+      codeController = null;
     }
   }
 
@@ -269,7 +276,7 @@
     codeError = '';
     codeResult = null;
     coding = { done: 0, total: groups.length, label: 'Coding data items…' };
-    controller = new AbortController();
+    const controller = (codeController = new AbortController());
     let partial = false;
 
     const request = async (rows: string[]) => {
@@ -280,7 +287,7 @@
         prompt: codingPrompt(categories, goal, rows.join('\n\n')),
         schemaName: 'coding_results',
         schema: codingSchema(names),
-        signal: controller!.signal,
+        signal: controller.signal,
       });
       for (const r of acceptCodings(response.results ?? [], sent, names)) results.set(r.row, r);
       return [...sent].filter((id) => !results.has(id));
@@ -298,7 +305,7 @@
       if (!(error as AIError).aborted) codeError = (error as Error).message;
     } finally {
       coding = null;
-      controller = null;
+      codeController = null;
     }
 
     if (results.size === 0) return;
@@ -319,8 +326,8 @@
     };
   }
 
-  function stop() {
-    controller?.abort();
+  function stopCoding() {
+    codeController?.abort();
   }
 
   const busy = $derived(asking || coding !== null);
@@ -493,7 +500,7 @@
             ></textarea>
             <div class="ai-row">
               {#if asking}
-                <button type="button" class="btn" onclick={stop}>Stop</button>
+                <button type="button" class="btn" onclick={stopAsk}>Stop</button>
               {:else}
                 <button type="submit" class="btn btn-primary" disabled={!aiSettings.ready || !question.trim()}>Send</button>
               {/if}
@@ -538,7 +545,7 @@
           {/if}
           <div class="ai-row">
             {#if coding}
-              <button type="button" class="btn" onclick={stop}>Stop</button>
+              <button type="button" class="btn" onclick={stopCoding}>Stop</button>
             {:else}
               <button
                 type="button"

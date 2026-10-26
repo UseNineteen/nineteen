@@ -360,7 +360,7 @@
       title={viz.rowKey === null
         ? 'Choose rows under “Grouped by” to stack the columns'
         : !viz.canSplit
-          ? 'Choose a “color-coded by” column to split rows by color'
+          ? 'Choose a “color-coded by” field to split rows by color'
           : viz.split
             ? `Stack: take away the “${viz.columnKey}” columns`
             : `Split the rows into columns by “${viz.splitColumn}”`}

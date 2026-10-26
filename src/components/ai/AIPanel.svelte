@@ -363,7 +363,7 @@
         <p class="ai-hint">Your browser sends the shared data straight to the provider, never through a Nineteen server.</p>
       {:else}
         <p>
-          Have the AI assign every data item to one of your categories (or let it suggest some). The result is added as a new column you can
+          Have the AI assign every data item to one of your categories (or let it suggest some). The result is added as a new field you can
           group, color, and search by.
         </p>
         <p class="ai-hint">Uses your own API key. Your browser sends the shared data straight to the provider.</p>
@@ -387,8 +387,8 @@
         >
       </div>
       <details class="ai-columns">
-        <summary>{columns.length} of {viz.dataset.columns.length} columns</summary>
-        <p class="ai-hint">Untick columns you don’t want to share, such as names or other personal details.</p>
+        <summary>{columns.length} of {viz.dataset.columns.length} fields</summary>
+        <p class="ai-hint">Untick fields you don’t want to share, such as names or other personal details.</p>
         {#each viz.dataset.columns as column (column)}
           <label class="ai-check">
             <input type="checkbox" checked={columns.includes(column)} onchange={(e) => toggleColumn(column, e.currentTarget.checked)} />
@@ -396,7 +396,7 @@
           </label>
         {/each}
       </details>
-      <p class="ai-hint">{items.length} data items × {columns.length} columns · {formatTokens(tokens)}</p>
+      <p class="ai-hint">{items.length} data items × {columns.length} fields · {formatTokens(tokens)}</p>
     </section>
 
     {#if tab === 'copy'}
@@ -531,17 +531,17 @@
             <span class="ai-hint">{categories.length} categories + “{UNCODED}”</span>
           </div>
           <label class="ai-field">
-            <span class="ai-label">New column name</span>
+            <span class="ai-label">New field name</span>
             <input type="text" bind:value={columnName} />
           </label>
           <label class="ai-check">
             <input type="checkbox" bind:checked={includeReasons} />
-            <span>Also add a column with the AI’s reason for each data item</span>
+            <span>Also add a field with the AI’s reason for each data item</span>
           </label>
           {#if replaces.length}
             <p class="ai-hint ai-warning" role="status">
               <strong>Replaces {replaces.map((c) => `“${c}”`).join(' and ')}.</strong>
-              Every value now in {replaces.length === 1 ? 'that column' : 'those columns'} will be overwritten. Choose another name to keep
+              Every value now in {replaces.length === 1 ? 'that field' : 'those fields'} will be overwritten. Choose another name to keep
               {replaces.length === 1 ? 'it' : 'them'}.
             </p>
           {/if}
@@ -582,7 +582,7 @@
             </div>
           {/if}
           <p class="ai-hint">
-            Sends the shared columns of every data item ({formatTokens(tokens)} in total, split into batches) to {provider.company}.
+            Sends the shared fields of every data item ({formatTokens(tokens)} in total, split into batches) to {provider.company}.
           </p>
         </section>
       {/if}
@@ -595,11 +595,11 @@
         <h3 id="ai-consent-title">Send your data to {provider.company}?</h3>
         <p>
           Until now, everything in Nineteen has stayed in your browser. This action sends the shared data (<strong
-            >{items.length} data items × {columns.length} columns</strong
+            >{items.length} data items × {columns.length} fields</strong
           >, {formatTokens(tokens)}) to {provider.company} using your API key, and {provider.company}’s
           <a href={provider.privacyUrl} target="_blank" rel="noopener noreferrer">terms and privacy policy</a> apply to it.
         </p>
-        <p>Only continue if you’re allowed to share this data with {provider.company}. Untick sensitive columns first if needed.</p>
+        <p>Only continue if you’re allowed to share this data with {provider.company}. Untick sensitive fields first if needed.</p>
         <div class="ai-row">
           <button type="button" class="btn btn-primary" onclick={accept}>Send to {provider.company}</button>
           <button type="button" class="btn" onclick={() => (pending = null)}>Cancel</button>

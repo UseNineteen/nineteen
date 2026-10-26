@@ -35,16 +35,17 @@ Each row of your data file becomes a data item, shown as a square in Nineteen&#3
 <ul>
 <li>For Excel workbooks (.xlsx and .xls files), Nineteen only reads the <em>first</em> worksheet/tab</li>
 <li>Comma- or tab-separated files (.csv, .tsv) work too</li>
-<li>Put column headers/names in the first row (e.g. &quot;Participant&quot;, &quot;Segment&quot;, &quot;Date&quot;, &quot;Description&quot;)</li>
+<li>Put the field names in the first row, one per spreadsheet column (e.g. &quot;Participant&quot;, &quot;Segment&quot;, &quot;Date&quot;, &quot;Description&quot;).
+Nineteen calls these <em>fields</em>; &quot;rows&quot; and &quot;columns&quot; below mean the rows and columns of the visualization</li>
 <li>After the first row, each line becomes an individual data item, shown as a square in Nineteen&#39;s visualization</li>
 <li>See &quot;A Usable Example&quot; below for an actual data file and the visualization it produces</li>
 </ul>
 <p><strong>You can control how data is displayed using two primary controls: grouping and color-coding</strong></p>
 <ul>
-<li>Use the &quot;group by&quot; option (1) to organize your data into rows by a column, such as participant, and, if you like, into columns
+<li>Use the &quot;group by&quot; option (1) to organize your data into rows by a field, such as participant, and, if you like, into columns
 by another (see &quot;Rows, Columns and Color&quot; below)</li>
-<li>Use the &quot;color by&quot; option (2) to show, through color-coding, how the values in another column are spread across your groups</li>
-<li>For example, you can group your data by participant (column 1), then color-code it by segment (column 2)</li>
+<li>Use the &quot;color by&quot; option (2) to show, through color-coding, how the values in another field are spread across your groups</li>
+<li>For example, you can group your data by participant (field 1), then color-code it by segment (field 2)</li>
 </ul>
 <img src="docs/screenshots/visualization.png" alt="Visualization view" title="Nineteen's visualization view"><h3>A Usable Example</h3>
 <ul>
@@ -60,19 +61,19 @@ it and press Alt + ↑/↓, to put rows in your own order, such as
 <em>Not at all satisfied → Extremely satisfied</em>. The alphabetical sort button (3) then shows a ★, and cycles A–Z → Z–A → ★ (your
 order). Each field keeps its own order until you open another file</li>
 <li><strong>Counting:</strong> The &quot;Show counts&quot; button (5) shows how many items are in each group</li>
-<li><strong>Splitting:</strong> Once you&#39;ve chosen a &quot;color by&quot; column, the &quot;Split&quot; button (6) separates each row into color bands
+<li><strong>Splitting:</strong> Once you&#39;ve chosen a &quot;color by&quot; field, the &quot;Split&quot; button (6) separates each row into color bands
 (see &quot;Split View and the Legend&quot; below)</li>
 <li><strong>Detailed viewer:</strong> Hover over any item in the visualization to see all of the data from that row of your file (7):<ul>
 <li>Click the item to pin its viewer open (click it again to un-pin it)</li>
 <li>You can have several viewers open at once. Drag them by their title bar to arrange them, and drag the corner to resize them</li>
-<li>The &quot;Show in viewer&quot; menu (12) controls which columns the viewer shows</li>
+<li>The &quot;Show in viewer&quot; menu (12) controls which fields the viewer shows</li>
 <li>Links in your data become clickable, and links to images are shown as images</li>
 </ul>
 </li>
 <li><strong>Text search:</strong> The search bar (8) is directly above the visualization:<ul>
 <li>Items that match your search stay in color. Everything else turns gray. Matching text is highlighted in the viewers</li>
 <li>The search box shows how many data items match (&quot;23 of 234&quot;), with <strong>Tag these…</strong> to tag them all at once (see &quot;Tagging Your Data&quot;)</li>
-<li>Search in one or more columns (also called &quot;fields&quot;) (9). By default search looks in all of them, but you can limit it</li>
+<li>Search in one or more fields (9). By default search looks in all of them, but you can limit it</li>
 <li>Multi-word searches:<ul>
 <li>Searching for <em>dog food</em> finds items containing &#39;dog&#39; <em>or</em> &#39;food&#39; (either word is enough)</li>
 <li><em>Hint:</em> to find <em>only</em> the word &#39;food&#39; and not longer words like &#39;foodie&#39;, search for &quot; food &quot; (with quotes and spaces)</li>
@@ -92,8 +93,8 @@ order). Each field keeps its own order until you open another file</li>
 </ul>
 <h3>Tagging Your Data</h3>
 <p>Pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
-or click × to remove one. The tag field stays at the top of the viewer while you scroll through a long entry, so you can tag as you
-read. Tags are kept in a &quot;Tags&quot; column, created the first time you tag a data item and sorted alphabetically, so they are saved with
+or click × to remove one. The tag box stays at the top of the viewer while you scroll through a long entry, so you can tag as you
+read. Tags are kept in a &quot;Tags&quot; field, created the first time you tag a data item and sorted alphabetically, so they are saved with
 your spreadsheet, CSV and HTML downloads.</p>
 <img src="docs/screenshots/tags.png" alt="Tagging data items and coloring by tags" title="Tags in a pinned viewer, with the visualization color-coded by tags"><ul>
 <li><p><strong>Tagging search results:</strong> Search, and the search box shows how many data items match. Choose <strong>Tag these…</strong> there to add a tag
@@ -107,8 +108,9 @@ removes a tag from every data item, after asking, and <strong>Color by this tag<
 can be undone</p>
 <img src="docs/screenshots/whats-new/manage-tags.png" alt="The Manage tags panel" title="Manage tags" width="400">
 </li>
-<li><p><strong>Convert a tag into a data field:</strong> In Manage tags, <strong>Convert this tag into a data field</strong> replaces the tag with a field (a column
-in your downloads) that is True for the data items that had the tag and False for the rest, ready for Excel, R or SPSS. Tick
+<li><p><strong>Convert a tag into a data field:</strong> In Manage tags, <strong>Convert this tag into a data field</strong> replaces the tag with a field (a
+column in your downloaded spreadsheet) that is True for the data items that had the tag and False for the rest, ready for Excel, R
+or SPSS. Tick
 <strong>Keep the tag too</strong> to keep both; the field then won&#39;t follow later tag changes. Undo reverses the whole conversion</p>
 </li>
 <li><p><strong>Grouping and coloring by tags:</strong> Group or color by Tags (B) and data items are grouped by their <em>combination</em> of tags (&quot;gift + price&quot;),
@@ -117,35 +119,37 @@ ignoring order and capitalization. Every data item still gets exactly one box</p
 <li><p><strong>List display options…</strong> (in the Group by and Color by menus, and in Manage tags) lets you leave some tags out of the
 combinations, or show only one tag. Your data keeps every tag; only the grouping changes</p>
 </li>
-<li><p><strong>Finding tags:</strong> Click a tag in a viewer to find every data item with that tag. In tag columns, search matches whole tags, so
+<li><p><strong>Finding tags:</strong> Click a tag in a viewer to find every data item with that tag. In tag fields, search matches whole tags, so
 &quot;price&quot; doesn&#39;t find &quot;pricey&quot;</p>
 </li>
 </ul>
-<h3>Columns that Hold Lists</h3>
-<p>Tags are one kind of list. Any column whose cells hold several values, like &quot;Target, Walmart&quot;, can be treated the same way: choose
-<strong>&quot;[column]&quot; holds lists of values</strong> in the Group by or Color by menu. Data items are then grouped by their combination of values,
+<h3>Fields that Hold Lists</h3>
+<p>Tags are one kind of list. Any field whose cells hold several values, like &quot;Target, Walmart&quot;, can be treated the same way: choose
+<strong>&quot;[field]&quot; holds lists of values</strong> in the Group by or Color by menu. Data items are then grouped by their combination of values,
 search matches whole values, and the viewer shows each value separately.</p>
 <ul>
 <li><strong>Split values on:</strong> values are split on commas or semicolons by default. If your values contain commas themselves (like
 &quot;Younger Women, No Kids&quot;), choose semicolons or new lines instead</li>
-<li><strong>Use &quot;[column]&quot; for tags:</strong> tags are stored in a column named &quot;Tags&quot; unless you choose another one, for example a &quot;Codes&quot; column
-from an earlier round of coding. You can also choose it at the top of Manage tags. The viewer&#39;s tag field, <strong>Tag these…</strong> and
-Manage tags all write to that column</li>
+<li><strong>Use &quot;[field]&quot; for tags:</strong> tags are stored in a field named &quot;Tags&quot; unless you choose another one, for example a &quot;Codes&quot; field
+from an earlier round of coding. You can also choose it at the top of Manage tags. The viewer&#39;s tag box, <strong>Tag these…</strong> and
+Manage tags all write to that field</li>
 </ul>
 <h3>Rows, Columns and Color</h3>
-<p>&quot;Grouped by&quot; (1) sets the rows and, if you like, the columns: pick a column under <strong>Rows</strong>, under <strong>Columns</strong>, or one under each.
-With both, every row is split into a band per column value, and a label row above the bands (A) shows each value and, with
+<p>&quot;Grouped by&quot; (1) sets the rows and, if you like, the columns: pick a field under <strong>Rows</strong>, under <strong>Columns</strong>, or one under each.
+With both, every row is split into a column per value of the second field, and a label row above the columns (A) shows each value
+and, with
 counts on, its total. The title reads &quot;Grouped by Participant and Date Shopped&quot;. With columns only (Rows set to <em>None</em>), each
-band collects its data items in a compact grid. Color is a third, independent choice (2), so a view can show each participant&#39;s
+column collects its data items in a compact grid. Color is a third, independent choice (2), so a view can show each participant&#39;s
 entries by date, colored by satisfaction.</p>
 <p><strong>Stack</strong> in the toolbar (6) takes the columns away and <strong>Split</strong> brings them back. With no columns chosen yet, Split uses the
-&quot;color-coded by&quot; column, which is what Split always did. While stacked, the Columns choice reads <em>None</em>. Band labels carry a color swatch when the columns are the color column. Long labels wrap
-onto up to 3 lines. If only a few bands are too narrow even for that, just those bands get a little wider. If many are, all the
+&quot;color-coded by&quot; field, which is what Split always did. While stacked, the Columns choice reads <em>None</em>. Column labels carry a color
+swatch when the columns are the color field&#39;s values. Long labels wrap onto up to 3 lines. If only a few columns are too narrow
+even for that, just those get a little wider. If many are, all the
 labels turn 90° together.</p>
 <img src="docs/screenshots/split-view.png" alt="Split view with labeled bands" title="Split view, with the satisfaction scale in a meaningful order"><ul>
 <li><strong>Reordering the legend:</strong> Drag legend entries up or down by their grip (B), or focus one and press Alt + ↑/↓, to put values in a
 meaningful order (the label moves with you; colors stay with their positions), such as <em>Not at all satisfied → Extremely satisfied</em>. Colors are reassigned in the new order, split bands
-follow it, and rows grouped by the same column take on that order too. &quot;Reset order&quot; (C) puts it back</li>
+follow it, and rows grouped by the same field take on that order too. &quot;Reset order&quot; (C) puts it back</li>
 </ul>
 <h3>Fitting the View: Square or Stretched Boxes</h3>
 <p>Boxes don&#39;t have to be square. <strong>Stretch to fit</strong> (in the zoom controls, 15) reshapes them into wider or taller rectangles so the
@@ -172,12 +176,12 @@ width and height limits separately; square boxes stay within both</li>
 <li><strong>Download HTML file:</strong> a single standalone file with your data and current view built in. It opens in any browser, works offline,
 and stays fully interactive</li>
 <li><strong>Download PNG image:</strong> a picture of the full visualization, including the parts scrolled out of view</li>
-<li><strong>Download spreadsheet (.xlsx)</strong> and <strong>Download CSV:</strong> your data, including any columns added in Nineteen, such as tags or
+<li><strong>Download spreadsheet (.xlsx)</strong> and <strong>Download CSV:</strong> your data, including any fields added in Nineteen, such as tags or
 AI auto-coding</li>
 </ul>
 <h3>Analyze with AI (optional)</h3>
 <p>The <strong>Analyze with AI</strong> button (14) opens a panel with three tools. At the top, <strong>Data to share</strong> sets exactly what any of them
-can see: all data items or only your current search matches, and which columns. Untick names or other personal details there.</p>
+can see: all data items or only your current search matches, and which fields. Untick names or other personal details there.</p>
 <img src="docs/screenshots/ai-panel.png" alt="Analyze with AI panel" title="The Analyze with AI panel"><ul>
 <li><strong>Copy prompt:</strong> Pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
 an executive summary, or your own question). Then copy the prompt, with your data, to paste into Claude, ChatGPT or any
@@ -185,7 +189,7 @@ assistant you already use, or download it as a file. <strong>Nineteen sends noth
 <li><strong>Ask:</strong> Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite data items by
 their row in your file, like [Row 12]. Click a citation to highlight those items in the visualization and open their viewer</li>
 <li><strong>Auto-code:</strong> Have the AI assign every data item to one of your categories, or let it suggest categories first. The result
-is added as a new column (with an optional &quot;reason&quot; column), so you can group, color, split and search by it like any other.
+is added as a new field (with an optional &quot;reason&quot; field), so you can group, color, split and search by it like any other.
 AI coding can be wrong, so spot-check it in the viewer</li>
 </ul>
 <p>Ask and Auto-code send the shared data directly from your browser to the provider you chose, with your key. Nothing goes

@@ -201,7 +201,7 @@
       <span>Tags are stored in</span>
       <select value={viz.tagsColumnChoice ?? (viz.hasTags ? column : NEW_TAGS)} onchange={(e) => chooseColumn(e.currentTarget.value)}>
         {#each columnChoices as choice (choice)}
-          <option value={choice}>{choice === NEW_TAGS ? 'Tags (a new column)' : choice}</option>
+          <option value={choice}>{choice === NEW_TAGS ? 'Tags (a new field)' : choice}</option>
         {/each}
       </select>
     </label>

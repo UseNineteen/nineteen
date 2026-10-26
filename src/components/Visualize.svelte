@@ -161,8 +161,8 @@
   <label
     class:disabled={isTags && !viz.tagsColumnChoice}
     title={isTags && !viz.tagsColumnChoice
-      ? 'Tags are stored in a column named “Tags” unless you choose another one'
-      : 'The viewer’s tag field, “Tag matches” and Manage tags write to this column'}
+      ? 'Tags are stored in a field named “Tags” unless you choose another one'
+      : 'The viewer’s tag box, “Tag these…” and Manage tags write to this field'}
   >
     <input
       type="checkbox"
@@ -395,7 +395,7 @@
       </button>
       <button type="button" class="save-xlsx" onclick={saveXlsx}>
         <strong>Download spreadsheet (.xlsx)</strong><br />
-        <span class="description">All rows and columns, including ones added in Nineteen</span>
+        <span class="description">All data items and fields, including fields added in Nineteen</span>
       </button>
       <button type="button" class="save-csv" onclick={saveCsv}>
         <strong>Download CSV</strong><br />
@@ -419,7 +419,7 @@
             <span class="count text-muted">{term.frequency}</span>
           </button>
         {:else}
-          <em class="message text-muted">No terms found. May need to select some columns to search within?</em>
+          <em class="message text-muted">No terms found. May need to select some fields to search within?</em>
         {/each}
         {#if viz.terms.length}
           <span class="term-hint">Shift-click to require both words (AND)</span>

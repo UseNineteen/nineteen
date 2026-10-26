@@ -104,7 +104,7 @@
         </p>
       {/if}
     {:else}
-      {#if !popup.floating && !tags.length}<p class="empty">Please select some columns</p>{/if}
+      {#if !popup.floating && !tags.length}<p class="empty">Please select some fields</p>{/if}
     {/each}
   </section>
 </article>

@@ -71,7 +71,7 @@
     </li>
     <li>
       <strong>Ask</strong> and <strong>Auto-code</strong> use your own API key from Anthropic (Claude) or OpenAI (ChatGPT). When you use them,
-      your browser sends the data items and columns you chose under “Data to share” directly to that company. It never passes through a Nineteen
+      your browser sends the data items and fields you chose under “Data to share” directly to that company. It never passes through a Nineteen
       server. The first time in each session, Nineteen asks you to confirm before sending anything. That provider’s terms and privacy policy apply
       to data you send it.
     </li>

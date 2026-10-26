@@ -16,9 +16,22 @@ export interface ShareSelection {
 
 export interface ViewContext {
   fileName: string;
+  /** The main grouping (the rows, or the columns when there are no rows) */
   groupKey: string;
+  /** Rows and column bands; absent: rows by `groupKey` */
+  rowKey?: string | null;
+  columnKey?: string | null;
   colorKey: string;
   searchTerm: string;
+}
+
+/** "grouping rows by X and columns by Y", as the view is set up */
+function describeGrouping(view: ViewContext): string {
+  const rows = view.rowKey === undefined ? view.groupKey : view.rowKey;
+  const columns = view.columnKey ?? null;
+  if (rows && columns) return `grouping rows by "${rows}" and columns by "${columns}"`;
+  if (columns) return `grouping columns by "${columns}"`;
+  return `grouping rows by "${rows}"`;
 }
 
 export function selectItems(dataset: Dataset, scope: RowScope, matches: Set<number> | null): DataItem[] {
@@ -45,7 +58,7 @@ export function describeData(items: DataItem[], columns: string[], view: ViewCon
     `Data file: ${view.fileName}`,
     `Rows included: ${items.length}${scope === 'matches' && view.searchTerm ? ` (only rows matching the search "${view.searchTerm}")` : ''}`,
     `Columns included: ${columns.join(', ')}`,
-    `The researcher is currently grouping rows by "${view.groupKey}" and color-coding them by "${view.colorKey}".`,
+    `The researcher is currently ${describeGrouping(view)} and color-coding them by "${view.colorKey}".`,
   ];
   return lines.join('\n');
 }

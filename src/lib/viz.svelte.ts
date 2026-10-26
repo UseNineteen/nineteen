@@ -22,12 +22,14 @@ export class Viz {
   /** Replaced (not mutated) when AI auto-coding adds a column */
   dataset = $state.raw<Dataset>(null!);
 
-  groupKey = $state('');
+  /** Rows: one per value of this column; null for column bands only */
+  rowKey = $state<string | null>('');
+  /** Column bands: one per value of this column; null for rows only. At least one of the two is set. */
+  columnKey = $state<string | null>(null);
   colorKey = $state('');
-  /** When true the color column follows the group column ("Automatic") */
+  /** When true the color column follows the grouping ("Automatic") */
   automatic = $state(true);
   counts = $state(false);
-  split = $state(false);
   zoom = $state(1);
   /** Fitting stays on (through resizes and regrouping) until the user zooms by hand */
   fit = $state<FitMode>('none');
@@ -56,7 +58,7 @@ export class Viz {
   headerLines = $state(1);
   /** Extra height of the label row, at scale 1 */
   headerExtra = $state(0);
-  /** Split view: extra label width for a few too-narrow bands (scale-1 px, by legend position; set by the viewer) */
+  /** Extra label width for a few too-narrow bands (scale-1 px, by band position; set by the viewer) */
   bandPads = $state.raw<number[]>([]);
   /** Top of the first data row, measured by the viewer, so the legend can line up with it */
   firstRowTop = $state(0);
@@ -82,8 +84,8 @@ export class Viz {
   layoutItems = $derived.by(() =>
     groupingItems(
       this.dataset.items,
-      [...new Set([this.groupKey, this.colorKey])]
-        .filter((c) => this.tagSet.has(c))
+      [...new Set([this.rowKey, this.columnKey, this.colorKey])]
+        .filter((c): c is string => c !== null && this.tagSet.has(c))
         .map((c) => ({
           column: c,
           catalog: this.tagCatalogs.get(c) ?? [],
@@ -96,16 +98,17 @@ export class Viz {
 
   layout = $derived.by(() =>
     computeLayout(this.layoutItems, {
-      groupKey: this.groupKey,
+      rowKey: this.rowKey,
+      columnKey: this.columnKey,
       colorKey: this.colorKey,
-      split: this.split,
       counts: this.counts,
       sortBy: this.sortBy,
       sortDirection: this.sortDirection,
       headerExtra: this.headerExtra,
       bandPads: this.bandPads,
       legendOrder: this.valueOrders[this.colorKey],
-      groupOrder: this.valueOrders[this.groupKey],
+      rowOrder: this.rowKey !== null ? this.valueOrders[this.rowKey] : undefined,
+      columnOrder: this.columnKey !== null ? this.valueOrders[this.columnKey] : undefined,
     }),
   );
   colors = $derived.by(() => colorScale(this.layout.legend.map((g) => g.label)));
@@ -118,12 +121,21 @@ export class Viz {
   constructor(dataset: Dataset, view?: ViewState) {
     this.dataset = dataset;
     const columns = dataset.columns;
-    const has = (c: string | undefined): c is string => !!c && columns.includes(c);
-    this.groupKey = has(view?.groupKey) ? view.groupKey : columns[0];
+    const has = (c: string | null | undefined): c is string => !!c && columns.includes(c);
+    const legacyRows = has(view?.groupKey) ? view.groupKey : columns[0];
+    if (view && 'columnKey' in view) {
+      // Saved with rows, columns or both
+      this.rowKey = has(view.rowKey) ? view.rowKey : null;
+      this.columnKey = has(view.columnKey) ? view.columnKey : null;
+      if (this.rowKey === null && this.columnKey === null) this.rowKey = legacyRows;
+    } else {
+      this.rowKey = legacyRows;
+    }
     this.automatic = view?.automatic ?? true;
     this.colorKey = !this.automatic && has(view?.colorKey) ? view.colorKey : this.groupKey;
+    // Saved before columns were their own choice: "split" meant columns by the color column
+    if (view && !('columnKey' in view) && !this.automatic && view.split) this.columnKey = this.colorKey;
     this.counts = view?.counts ?? false;
-    this.split = !this.automatic && (view?.split ?? false);
     this.zoom = view?.zoom ?? 1;
     this.fit = view?.fit ?? (appSettings.stretchByDefault ? 'stretch' : 'none');
     this.sortBy = view?.sortBy ?? 'value';
@@ -139,6 +151,86 @@ export class Viz {
     this.tagsColumnChoice = has(view?.tagsColumn) ? view.tagsColumn : null;
     this.tagIgnored = view?.tagIgnored ?? {};
     this.valueOrders = view?.valueOrders ?? {};
+  }
+
+  // ---------- Rows, columns and color ----------
+
+  /** The main grouping: the row column, or the column column when there are no rows */
+  get groupKey(): string {
+    return this.rowKey ?? this.columnKey ?? this.dataset.columns[0];
+  }
+
+  /** Whether the boxes are split into column bands */
+  get split(): boolean {
+    return this.columnKey !== null;
+  }
+
+  /** Rows by a column, or `null` for column bands only (ignored while there are no bands). */
+  setRowKey(key: string | null): void {
+    if (key === null && this.columnKey === null) return;
+    this.rowKey = key;
+    this.#followGrouping();
+  }
+
+  /** The column column last shown, so Stack and Split can take the bands away and bring them back */
+  #lastColumnKey: string | null = null;
+
+  /** Column bands by a column, or `null` for rows only (ignored while there are no rows). */
+  setColumnKey(key: string | null): void {
+    if (key === null && this.rowKey === null) return;
+    if (key !== null) this.#lastColumnKey = key;
+    else if (this.columnKey !== null) this.#lastColumnKey = this.columnKey;
+    this.columnKey = key;
+    this.#followGrouping();
+  }
+
+  /** "Stack" takes the column bands away; "Split" brings the last ones back, or bands by the color column. */
+  setSplit(on: boolean): void {
+    this.setColumnKey(on ? (this.#lastColumnKey ?? this.colorKey) : null);
+  }
+
+  /** Whether the Split/Stack button has anything to do: rows to split, and a column to split them by */
+  get canSplit(): boolean {
+    if (this.rowKey === null) return false;
+    return this.columnKey !== null || this.#lastColumnKey !== null || this.colorKey !== this.rowKey;
+  }
+
+  /** What Split would split the rows by */
+  get splitColumn(): string {
+    return this.#lastColumnKey ?? this.colorKey;
+  }
+
+  #followGrouping(): void {
+    if (this.automatic) this.colorKey = this.groupKey;
+  }
+
+  /** The grouping Classic Nineteen folded away, and what it left, so leaving Classic can put it back */
+  #foldedByClassic: { rowKey: string | null; columnKey: string | null; left: { rowKey: string | null; columnKey: string | null } } | null =
+    null;
+
+  /** Classic Nineteen: rows, split by the color column at most. */
+  applyClassic(): void {
+    const before = { rowKey: this.rowKey, columnKey: this.columnKey };
+    if (this.rowKey === null) {
+      this.rowKey = this.columnKey;
+      this.columnKey = null;
+    } else if (this.columnKey !== null && this.columnKey !== this.colorKey) {
+      this.columnKey = null;
+    }
+    this.#followGrouping();
+    if (before.rowKey !== this.rowKey || before.columnKey !== this.columnKey) {
+      this.#foldedByClassic = { ...before, left: { rowKey: this.rowKey, columnKey: this.columnKey } };
+    }
+  }
+
+  /** Leaving Classic: the grouping it folded away comes back, unless the grouping was changed meanwhile. */
+  leaveClassic(): void {
+    const folded = this.#foldedByClassic;
+    this.#foldedByClassic = null;
+    if (!folded || folded.left.rowKey !== this.rowKey || folded.left.columnKey !== this.columnKey) return;
+    this.rowKey = folded.rowKey;
+    this.columnKey = folded.columnKey;
+    this.#followGrouping();
   }
 
   // ---------- Legend order ----------
@@ -320,17 +412,11 @@ export class Viz {
     return (this.#layoutById.get(item.id) ?? item).raw[this.colorKey];
   }
 
-  setGroupKey(key: string): void {
-    this.groupKey = key;
-    if (this.automatic) this.colorKey = key;
-  }
-
-  /** `null` selects "Automatic" (color follows grouping, which also turns off split view). */
+  /** `null` selects "Automatic" (color follows the grouping). */
   setColorKey(key: string | null): void {
     if (key === null) {
       this.automatic = true;
       this.colorKey = this.groupKey;
-      this.split = false;
     } else {
       this.automatic = false;
       this.colorKey = key;
@@ -428,11 +514,14 @@ export class Viz {
 
   toViewState(): ViewState {
     return {
+      rowKey: this.rowKey,
+      columnKey: this.columnKey,
+      // For files opened by earlier versions, which know one grouping and a split by color
       groupKey: this.groupKey,
+      split: this.split,
       colorKey: this.colorKey,
       automatic: this.automatic,
       counts: this.counts,
-      split: this.split,
       zoom: this.zoom,
       fit: this.fit,
       sortBy: this.sortBy,

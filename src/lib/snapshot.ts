@@ -89,12 +89,11 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
 
   let x = 40;
   const y = 62;
-  const words: [string, boolean][] = [
-    ['Grouped by ', false],
-    [viz.groupKey, true],
-    ['  color-coded by ', false],
-    [viz.colorKey, true],
-  ];
+  const words: [string, boolean][] = [['Grouped by ', false]];
+  if (viz.rowKey !== null) words.push([viz.rowKey, true]);
+  if (viz.rowKey !== null && viz.columnKey !== null) words.push([' and ', false]);
+  if (viz.columnKey !== null) words.push([viz.columnKey, true]);
+  words.push(['  color-coded by ', false], [viz.colorKey, true]);
   for (const [text, key] of words) {
     ctx.font = `${key ? 500 : 400} 24px ${FONT}`;
     ctx.fillStyle = key ? '#ffffff' : 'rgba(255,255,255,0.5)';
@@ -143,25 +142,43 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     ctx.fillText(ellipsize(ctx, text, maxLabel - 20), blocksLeft - 10, top + 10);
     ctx.textAlign = 'left';
   };
-  layout.groups.forEach((group, i) => {
-    const top = plotTop + rowTop(i + 1 + layout.rowOffset) + extra;
-    ctx.fillStyle = '#f5f5f5';
-    ctx.fillRect(plotLeft, top, maxLabel + rowWidth, 20);
-    drawRowLabel(viz.label(group.label, viz.groupKey), top, false);
-  });
+  // One stripe per row, with its label; without rows, each band gets the stripe instead
+  ctx.fillStyle = '#f5f5f5';
+  if (viz.rowKey !== null) {
+    layout.groups.forEach((group, i) => {
+      const top = plotTop + rowTop(i + 1 + layout.rowOffset) + extra;
+      ctx.fillStyle = '#f5f5f5';
+      ctx.fillRect(plotLeft, top, maxLabel + rowWidth, 20);
+      drawRowLabel(viz.label(group.label, viz.groupKey), top, false);
+    });
+  } else {
+    const top = plotTop + GEOMETRY.row + extra;
+    const { size: box, gutter } = GEOMETRY;
+    for (const header of layout.headers) {
+      ctx.fillRect(
+        blocksLeft + header.x + header.cx - gutter,
+        top,
+        header.boxes * (box + gutter) + gutter,
+        layout.stripes * GEOMETRY.row - 6,
+      );
+    }
+  }
 
-  // Split view: value labels above each band (on one line, wrapped, or turned, like the screen)
+  // Value labels above each band (on one line, wrapped, or turned, like the screen), with a
+  // swatch when the bands are the color column's values
+  const bandSwatches = viz.columnKey === viz.colorKey;
+  const swatchWidth = bandSwatches ? SWATCH : 0;
   for (const header of layout.headers) {
     const left = blocksLeft + header.x + header.cx;
-    const swatch = viz.colors.get(header.key);
-    const text = viz.label(header.label, viz.colorKey);
+    const swatch = bandSwatches ? viz.colors.get(header.key) : undefined;
+    const text = viz.label(header.label, viz.columnKey ?? viz.colorKey);
     ctx.font = `400 ${font}px ${FONT}`;
     const totalWidth = header.total ? ctx.measureText(header.total).width + TOTAL_GAP : 0;
     ctx.font = `500 ${font}px ${FONT}`;
-    const room = header.width + header.cwidth - SWATCH - totalWidth;
+    const room = header.width + header.cwidth - swatchWidth - totalWidth;
     // Lines of text, bottom line last; the row's bottom edge is where the boxes begin
     let lines: string[];
-    if (mode === 'turn') lines = [ellipsize(ctx, text, TURNED_MAX - SWATCH - totalWidth)];
+    if (mode === 'turn') lines = [ellipsize(ctx, text, TURNED_MAX - swatchWidth - totalWidth)];
     else if (mode === 'wrap') {
       const wrapped = wrapText(text, room, (t) => ctx.measureText(t).width, viz.headerLines);
       lines = wrapped.lines;
@@ -185,14 +202,14 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
       ctx.fillRect(3, lastY + 7, 5, 5);
     }
     ctx.fillStyle = '#47535e';
-    lines.forEach((line, n) => ctx.fillText(line, SWATCH, n * LINE_HEIGHT + size / 2));
+    lines.forEach((line, n) => ctx.fillText(line, swatchWidth, n * LINE_HEIGHT + size / 2));
     if (header.total) {
       const lastWidth = ctx.measureText(lines[lines.length - 1]).width;
       ctx.font = `400 ${font}px ${FONT}`;
       ctx.fillStyle = '#a3a8ae';
       ctx.fillText(
         header.total,
-        SWATCH + (mode === 'wrap' ? Math.max(...lines.map((l) => ctx.measureText(l).width)) : lastWidth) + TOTAL_GAP,
+        swatchWidth + (mode === 'wrap' ? Math.max(...lines.map((l) => ctx.measureText(l).width)) : lastWidth) + TOTAL_GAP,
         lastY + size / 2,
       );
     }

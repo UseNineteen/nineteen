@@ -69,10 +69,15 @@ export function datasetDetails(dataset: Dataset): string {
   return `${dataset.columns.length} columns, ${dataset.items.length} rows`;
 }
 
-/** Sort comparator for items: group value, then color value, then file order. */
-export function itemComparator(groupKey: string, colorKey: string) {
-  return (a: DataItem, b: DataItem): number =>
-    compareValues(a.parsed[groupKey], b.parsed[groupKey]) || compareValues(a.parsed[colorKey], b.parsed[colorKey]) || a.id - b.id;
+/** Sort comparator for items: by each key's value in turn (rows, columns, color), then file order. */
+export function itemComparator(...keys: string[]) {
+  return (a: DataItem, b: DataItem): number => {
+    for (const key of keys) {
+      const order = compareValues(a.parsed[key], b.parsed[key]);
+      if (order) return order;
+    }
+    return a.id - b.id;
+  };
 }
 
 /**

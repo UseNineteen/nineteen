@@ -6,7 +6,7 @@
   import { onMount, tick, untrack, type Snippet } from 'svelte';
   import { displayLabel, type DataItem } from '../lib/data';
   import { boxScale, GEOMETRY } from '../lib/layout';
-  import { BAND, decideBandLabels, HEADER_ROW, LABEL_FONT, ONE_LINE, type MeasureLabel } from '../lib/band-labels';
+  import { BAND, decideBandLabels, HEADER_FONT_MAX, HEADER_ROW, LABEL_FONT, ONE_LINE, type MeasureLabel } from '../lib/band-labels';
   import type { Popups } from '../lib/popups.svelte';
   import { appSettings } from '../lib/settings.svelte';
   import { ZOOM, zoomRange, type Viz } from '../lib/viz.svelte';
@@ -61,6 +61,11 @@
   let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 
   const layout = $derived(viz.layout);
+  /** What the sort buttons order: the rows, or the column bands when there are no rows */
+  const sorted = $derived(viz.rowKey !== null ? 'rows' : 'columns');
+  /** Band labels start with a swatch when the bands are the color column's values */
+  const bandSwatches = $derived(viz.columnKey === viz.colorKey);
+  const classic = $derived(appSettings.classic);
 
   // ---------- Reordering rows by dragging their labels ----------
 
@@ -105,6 +110,11 @@
   /** Horizontal / vertical scale relative to the original 18px boxes */
   const scale = $derived(boxScale({ ...sizing, fit: fitMode !== 'none', square: fitMode !== 'stretch' }));
   const fontSize = $derived(px(scale.y * GEOMETRY.font));
+  /** Band labels: the row font, capped; their row stays the height the box size gives it */
+  const headerScale = $derived(Math.min(scale.y, HEADER_FONT_MAX / GEOMETRY.font));
+  const headerFontSize = $derived(px(headerScale * GEOMETRY.font));
+  /** Vertical sizes that follow the box size, in px (for elements whose own font is capped) */
+  const rem = (n: number) => px(n * scale.y);
 
   $effect(() => {
     viz.displayScale = scale.y;
@@ -163,14 +173,21 @@
       fit: fitMode !== 'none',
       square: fitMode !== 'stretch',
     });
-    return base.y > 0 ? base.x / base.y : 1;
+    // Against the capped label font: text stays small while boxes grow, so more of it fits
+    return base.y > 0 ? base.x / Math.min(base.y, HEADER_FONT_MAX / GEOMETRY.font) : 1;
   });
 
   /** One line, wrapped, or turned, with any band widening; measured again once the web font has loaded */
   const headerMode = $derived.by(() => {
     void fontsReady;
     if (!measureCtx) return ONE_LINE;
-    return decideBandLabels(layout.headers, (header) => viz.label(header.label, viz.colorKey), boxAspect, measureLabel);
+    return decideBandLabels(
+      layout.headers,
+      (header) => viz.label(header.label, viz.columnKey ?? viz.colorKey),
+      boxAspect,
+      measureLabel,
+      bandSwatches,
+    );
   });
 
   $effect(() => {
@@ -262,14 +279,21 @@
       type="button"
       class="block-sort sort-value"
       class:sort-active={viz.sortBy !== 'count'}
+      class:sort-horizontal={sorted === 'columns'}
       class:sort-reverse={viz.valueSortShown === 'descending'}
       class:sort-custom={viz.valueSortShown === 'custom'}
       title={viz.valueSortShown === 'custom'
-        ? 'Rows in your custom order (click for A–Z)'
+        ? `${sorted === 'rows' ? 'Rows' : 'Columns'} in your custom order (click for A–Z)`
         : viz.hasRowOrder
-          ? `Sort rows ${viz.valueSortShown === 'ascending' ? 'A–Z (click for Z–A)' : 'Z–A (click for your custom order)'}`
-          : 'Sort rows alphabetically. Drag a row label to put rows in your own order.'}
-      aria-label="Sort rows: {viz.valueSortShown === 'custom' ? 'custom order' : viz.valueSortShown === 'ascending' ? 'A to Z' : 'Z to A'}"
+          ? `Sort ${sorted} ${viz.valueSortShown === 'ascending' ? 'A–Z (click for Z–A)' : 'Z–A (click for your custom order)'}`
+          : sorted === 'rows'
+            ? 'Sort rows alphabetically. Drag a row label to put rows in your own order.'
+            : 'Sort columns alphabetically'}
+      aria-label="Sort {sorted}: {viz.valueSortShown === 'custom'
+        ? 'custom order'
+        : viz.valueSortShown === 'ascending'
+          ? 'A to Z'
+          : 'Z to A'}"
       aria-pressed={viz.sortBy !== 'count'}
       onclick={() => viz.sort('value')}
     ></button>
@@ -277,9 +301,10 @@
       type="button"
       class="block-sort sort-count"
       class:sort-active={viz.sortBy === 'count'}
+      class:sort-horizontal={sorted === 'columns'}
       class:sort-reverse={viz.buttonDirections.count === 'descending'}
-      title="Sort rows by number of items"
-      aria-label="Sort rows by number of items ({viz.buttonDirections.count})"
+      title="Sort {sorted} by number of items"
+      aria-label="Sort {sorted} by number of items ({viz.buttonDirections.count})"
       aria-pressed={viz.sortBy === 'count'}
       onclick={() => viz.sort('count')}
     ></button>
@@ -308,7 +333,7 @@
       {#if viz.matches}
         <span class="search-count" bind:clientWidth={countWidth}>
           <span class="search-count-text">{st.count} of {st.total}</span>
-          {#if st.count > 0 && !st.tagging}
+          {#if st.count > 0 && !st.tagging && !classic}
             <button
               type="button"
               aria-label="Tag these {st.count} matches"
@@ -326,10 +351,16 @@
       type="button"
       id="toggle-view"
       class={viz.split ? 'view-stack' : 'view-split'}
-      disabled={viz.automatic}
+      disabled={!viz.canSplit}
       aria-label={viz.split ? 'Stack' : 'Split'}
-      title={viz.automatic ? 'Choose a “color-coded by” column to split rows by color' : viz.split ? 'Stack' : 'Split'}
-      onclick={() => (viz.split = !viz.split)}><span class="tool-label">{viz.split ? 'Stack' : 'Split'}</span></button
+      title={viz.rowKey === null
+        ? 'Choose rows under “Grouped by” to stack the columns'
+        : !viz.canSplit
+          ? 'Choose a “color-coded by” column to split rows by color'
+          : viz.split
+            ? `Stack: take away the “${viz.columnKey}” columns`
+            : `Split the rows into columns by “${viz.splitColumn}”`}
+      onclick={() => viz.setSplit(!viz.split)}><span class="tool-label">{viz.split ? 'Stack' : 'Split'}</span></button
     >
     <button
       type="button"
@@ -350,25 +381,27 @@
       title="Show in viewer"
       onclick={toggle('viewerColumns')}><span class="tool-label">Show in viewer</span></button
     >
-    <button
-      type="button"
-      id="tags-toggle"
-      class="panel-toggle"
-      aria-expanded={tagsOpen}
-      aria-controls="tags-panel"
-      aria-label="Manage tags"
-      title={tagsOpen ? 'Close Manage tags' : 'Manage tags: rename, combine, delete, or convert a tag into a data field'}
-      onclick={ontoggletags}><span class="tool-label">Manage tags</span></button
-    >
-    <button
-      type="button"
-      id="ai-toggle"
-      aria-expanded={aiOpen}
-      aria-controls="ai-panel"
-      aria-label="Analyze with AI"
-      title={aiOpen ? 'Close the AI panel' : 'Analyze with AI: summarize, ask questions about, or auto-code your data'}
-      onclick={ontoggleai}><span class="tool-label">Analyze with AI</span></button
-    >
+    {#if !classic}
+      <button
+        type="button"
+        id="tags-toggle"
+        class="panel-toggle"
+        aria-expanded={tagsOpen}
+        aria-controls="tags-panel"
+        aria-label="Manage tags"
+        title={tagsOpen ? 'Close Manage tags' : 'Manage tags: rename, combine, delete, or convert a tag into a data field'}
+        onclick={ontoggletags}><span class="tool-label">Manage tags</span></button
+      >
+      <button
+        type="button"
+        id="ai-toggle"
+        aria-expanded={aiOpen}
+        aria-controls="ai-panel"
+        aria-label="Analyze with AI"
+        title={aiOpen ? 'Close the AI panel' : 'Analyze with AI: summarize, ask questions about, or auto-code your data'}
+        onclick={ontoggleai}><span class="tool-label">Analyze with AI</span></button
+      >
+    {/if}
   </form>
 
   <div class="viewer-body">
@@ -472,20 +505,33 @@
                 {count.text}
               </div>
             {/each}
+            <!-- Without rows, the bands carry the background the rows normally have -->
+            {#if viz.rowKey === null}
+              {#each layout.headers as header (header.key)}
+                <div
+                  class="band-stripe"
+                  style:transform="translate({sx(header.x - GEOMETRY.gutter, header.cx)}, {rem(GEOMETRY.row + layout.headerExtra)})"
+                  style:width={px((header.boxes * (GEOMETRY.size + GEOMETRY.gutter) + GEOMETRY.gutter) * scale.x)}
+                  style:height={rem(layout.stripes * GEOMETRY.row - 6)}
+                ></div>
+              {/each}
+            {/if}
             {#each layout.headers as header (header.key)}
-              {@const swatch = viz.colors.get(header.key)}
-              {@const text = viz.label(header.label, viz.colorKey)}
+              {@const swatch = bandSwatches ? viz.colors.get(header.key) : undefined}
+              {@const text = viz.label(header.label, viz.columnKey ?? viz.colorKey)}
               <div
                 class="band-header"
                 class:turned={headerMode.mode === 'turn'}
                 class:wrapped={headerMode.mode === 'wrap'}
-                style:transform="translate({sx(header.x, header.cx)}, {em(headerMode.mode === 'line' ? header.y : 0)})"
+                style:font-size={headerFontSize}
+                style:transform="translate({sx(header.x, header.cx)}, {rem(headerMode.mode === 'line' ? header.y : 0)})"
                 style:width={sx(header.width, header.cwidth)}
-                style:height={headerMode.mode === 'line' ? undefined : em(HEADER_ROW + headerMode.extra)}
+                style:height={rem(headerMode.mode === 'line' ? GEOMETRY.size : HEADER_ROW + headerMode.extra)}
                 title={header.total ? `${text}: ${header.total} in total` : text}
               >
                 <div class="band-label" style:width={headerMode.mode === 'turn' ? em(headerMode.length) : undefined}>
-                  <span class="band-swatch" style:background-color={swatch?.fill} style:border-color={swatch?.stroke}></span><span
+                  {#if swatch}<span class="band-swatch" style:background-color={swatch.fill} style:border-color={swatch.stroke}
+                    ></span>{/if}<span
                     class="band-text"
                     style:-webkit-line-clamp={headerMode.mode === 'wrap' ? headerMode.lines : undefined}>{text}</span
                   >{#if header.total}<span class="band-total">{header.total}</span>{/if}
@@ -500,12 +546,15 @@
                   style:width={sx(layout.rowWidth, layout.countWidth)}
                   style:height={em(HEADER_ROW + headerMode.extra)}
                 ></div>{/if}
-              {#each layout.groups as group (group.label)}
+              <!-- One stripe per row of boxes: the groups, or the rows a column-only grid wraps onto -->
+              {#each { length: layout.stripes } as _, i (layout.groups[i]?.label ?? i)}
+                {@const group = layout.groups[i]}
                 <div
                   class="row"
-                  class:row-dragged={group.label === draggedLabel}
+                  class:row-plain={viz.rowKey === null}
+                  class:row-dragged={group !== undefined && group.label === draggedLabel}
                   style:width={sx(layout.rowWidth, layout.countWidth)}
-                  style:translate={group.label === draggedLabel ? dragOffset : null}
+                  style:translate={group !== undefined && group.label === draggedLabel ? dragOffset : null}
                 ></div>
               {/each}
             </div>

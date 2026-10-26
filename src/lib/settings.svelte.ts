@@ -11,6 +11,7 @@ const STORAGE_KEY = 'nineteen:settings';
 export const BOX_LIMITS = { min: 2, max: 100 } as const;
 
 export const DEFAULTS = {
+  classic: false,
   stretchByDefault: false,
   minWidth: 4,
   maxWidth: 40,
@@ -19,6 +20,8 @@ export const DEFAULTS = {
 } as const;
 
 export interface DisplaySettings extends BoxLimits {
+  /** Classic Nineteen: rows split by color at most, without the Columns choice, tagging or the AI tools */
+  classic: boolean;
   stretchByDefault: boolean;
 }
 
@@ -39,6 +42,8 @@ function sanitizeBox(value: unknown, fallback: number): number {
 class AppSettings implements BoxLimits {
   /** Newly opened files start in "Stretch to fit" (saved from the current view when Settings is saved) */
   stretchByDefault = $state<boolean>(DEFAULTS.stretchByDefault);
+  /** Classic Nineteen: rows (split by color at most), no tagging, no AI tools */
+  classic = $state<boolean>(DEFAULTS.classic);
   /** Box size limits in screen pixels (apply to fitting and zooming; square boxes respect both) */
   minWidth = $state<number>(DEFAULTS.minWidth);
   maxWidth = $state<number>(DEFAULTS.maxWidth);
@@ -52,6 +57,7 @@ class AppSettings implements BoxLimits {
       if (!text) return;
       const stored = JSON.parse(text) as Partial<DisplaySettings> & LegacyStored;
       this.stretchByDefault = stored.stretchByDefault === true;
+      this.classic = stored.classic === true;
       // Older saved settings had one smallest/largest size for both sides
       this.minWidth = sanitizeBox(stored.minWidth ?? stored.minBox, DEFAULTS.minWidth);
       this.maxWidth = sanitizeBox(stored.maxWidth ?? stored.maxBox, DEFAULTS.maxWidth);
@@ -83,6 +89,7 @@ class AppSettings implements BoxLimits {
 
   snapshot(): DisplaySettings & { remember: boolean } {
     return {
+      classic: this.classic,
       stretchByDefault: this.stretchByDefault,
       minWidth: this.minWidth,
       maxWidth: this.maxWidth,
@@ -93,6 +100,7 @@ class AppSettings implements BoxLimits {
   }
 
   restore(saved: DisplaySettings & { remember: boolean }): void {
+    this.classic = saved.classic;
     this.stretchByDefault = saved.stretchByDefault;
     this.minWidth = saved.minWidth;
     this.maxWidth = saved.maxWidth;
@@ -101,8 +109,9 @@ class AppSettings implements BoxLimits {
     this.remember = saved.remember;
   }
 
-  /** Display values back to their defaults (the "remember" choice is left as is). */
+  /** Settings back to their defaults (the "remember" choice is left as is). */
   resetDisplay(): void {
+    this.classic = DEFAULTS.classic;
     this.stretchByDefault = DEFAULTS.stretchByDefault;
     this.minWidth = DEFAULTS.minWidth;
     this.maxWidth = DEFAULTS.maxWidth;

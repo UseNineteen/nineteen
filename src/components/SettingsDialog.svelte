@@ -15,15 +15,32 @@
 
   /** Values when the dialog opened; restored when it is dismissed without saving */
   let saved = appSettings.snapshot();
-  /** The view's fit and zoom when the dialog opened, since "Stretch to fit" here is the same switch as the button */
-  let savedView: { fit: FitMode; zoom: number } = { fit: 'none', zoom: 1 };
+  /**
+   * The view when the dialog opened: fit and zoom ("Stretch to fit" here is the same switch as the
+   * button), and the grouping, which Classic Nineteen changes as soon as it is ticked
+   */
+  let savedView: { fit: FitMode; zoom: number; rowKey: string | null; columnKey: string | null; colorKey: string; automatic: boolean } = {
+    fit: 'none',
+    zoom: 1,
+    rowKey: null,
+    columnKey: null,
+    colorKey: '',
+    automatic: true,
+  };
 
   // Taken once per opening (untracked, or live edits would overwrite what Cancel restores)
   $effect(() => {
     if (!open) return;
     untrack(() => {
       saved = appSettings.snapshot();
-      savedView = { fit: viz.fit, zoom: viz.zoom };
+      savedView = {
+        fit: viz.fit,
+        zoom: viz.zoom,
+        rowKey: viz.rowKey,
+        columnKey: viz.columnKey,
+        colorKey: viz.colorKey,
+        automatic: viz.automatic,
+      };
     });
   });
 
@@ -40,6 +57,11 @@
     appSettings.restore(saved);
     viz.fit = savedView.fit;
     viz.zoom = savedView.zoom;
+    // Classic may have folded the columns away: put the grouping back (Classic is already off again if it was)
+    viz.rowKey = savedView.rowKey;
+    viz.columnKey = savedView.columnKey;
+    viz.colorKey = savedView.colorKey;
+    viz.automatic = savedView.automatic;
     onclose();
   }
 
@@ -105,6 +127,19 @@
         Limits box sizes when fitting and zooming. Stretch to fit uses the width and height limits separately; square boxes stay within
         both. Defaults: {DEFAULTS.minWidth}–{DEFAULTS.maxWidth} px (boxes are 18 px at actual size).
       </p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Features</legend>
+      <label class="settings-check">
+        <input type="checkbox" bind:checked={appSettings.classic} />
+        <span>
+          <strong>Classic Nineteen</strong>
+          <small>
+            Rows, split by color and a legend, as in the original. Hides the Columns choice under “Grouped by”, tagging and the AI tools.
+          </small>
+        </span>
+      </label>
     </fieldset>
 
     <label class="settings-check settings-remember">

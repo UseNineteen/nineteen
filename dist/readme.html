@@ -41,7 +41,8 @@ Each row of your data file becomes a data item, shown as a square in Nineteen&#3
 </ul>
 <p><strong>You can control how data is displayed using two primary controls: grouping and color-coding</strong></p>
 <ul>
-<li>Use the &quot;group by&quot; option (1) to organize your data by a single column, such as participant</li>
+<li>Use the &quot;group by&quot; option (1) to organize your data into rows by a column, such as participant, and, if you like, into columns
+by another (see &quot;Rows, Columns and Color&quot; below)</li>
 <li>Use the &quot;color by&quot; option (2) to show, through color-coding, how the values in another column are spread across your groups</li>
 <li>For example, you can group your data by participant (column 1), then color-code it by segment (column 2)</li>
 </ul>
@@ -131,10 +132,16 @@ search matches whole values, and the viewer shows each value separately.</p>
 from an earlier round of coding. You can also choose it at the top of Manage tags. The viewer&#39;s tag field, <strong>Tag these…</strong> and
 Manage tags all write to that column</li>
 </ul>
-<h3>Split View and the Legend</h3>
-<p>With Split on, each value of the &quot;color by&quot; column gets its own band, and a label row above the bands (A) shows each value and,
-with counts on, its total. Long labels wrap onto up to 3 lines. If only a few bands are too narrow even for that, just those bands
-get a little wider. If many are, all the labels turn 90° together.</p>
+<h3>Rows, Columns and Color</h3>
+<p>&quot;Grouped by&quot; (1) sets the rows and, if you like, the columns: pick a column under <strong>Rows</strong>, under <strong>Columns</strong>, or one under each.
+With both, every row is split into a band per column value, and a label row above the bands (A) shows each value and, with
+counts on, its total. The title reads &quot;Grouped by Participant and Date Shopped&quot;. With columns only (Rows set to <em>None</em>), each
+band collects its data items in a compact grid. Color is a third, independent choice (2), so a view can show each participant&#39;s
+entries by date, colored by satisfaction.</p>
+<p><strong>Stack</strong> in the toolbar (6) takes the columns away and <strong>Split</strong> brings them back. With no columns chosen yet, Split uses the
+&quot;color-coded by&quot; column, which is what Split always did. While stacked, the Columns choice reads <em>None</em>. Band labels carry a color swatch when the columns are the color column. Long labels wrap
+onto up to 3 lines. If only a few bands are too narrow even for that, just those bands get a little wider. If many are, all the
+labels turn 90° together.</p>
 <img src="docs/screenshots/split-view.png" alt="Split view with labeled bands" title="Split view, with the satisfaction scale in a meaningful order"><ul>
 <li><strong>Reordering the legend:</strong> Drag legend entries up or down by their grip (B), or focus one and press Alt + ↑/↓, to put values in a
 meaningful order (the label moves with you; colors stay with their positions), such as <em>Not at all satisfied → Extremely satisfied</em>. Colors are reassigned in the new order, split bands
@@ -154,6 +161,8 @@ or click the button again.</p>
 on, files you open later start stretched too</li>
 <li><em>Smallest</em> and <em>largest</em> width and height (4–40 px by default) limit box sizes when fitting and zooming. Stretch to fit uses the
 width and height limits separately; square boxes stay within both</li>
+<li><em>Classic Nineteen</em> (off by default) keeps to rows, Split by color and a legend, as in the original: the Columns choice under
+&quot;Grouped by&quot;, tagging and the AI tools are hidden</li>
 <li>Tick <em>Remember settings on this device</em> to keep your settings in this browser</li>
 <li>Changes preview as you make them. <em>Save</em> keeps them; <em>Cancel</em>, Esc or clicking outside the dialog discards them</li>
 </ul>

@@ -61,6 +61,8 @@
   const view = $derived({
     fileName: viz.dataset.name,
     groupKey: viz.groupKey,
+    rowKey: viz.rowKey,
+    columnKey: viz.columnKey,
     colorKey: viz.colorKey,
     searchTerm: viz.searchTerm,
   });

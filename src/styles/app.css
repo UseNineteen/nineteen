@@ -612,6 +612,22 @@ footer li:first-child::before {
 #tool-bar .block-sort.sort-count.sort-reverse {
   background-image: url('../assets/images/sort-count-desc.svg');
 }
+/* Without rows the buttons sort the column bands: the same icons pointing right */
+#tool-bar .block-sort.sort-value.sort-horizontal {
+  background-image: url('../assets/images/sort-value-asc-h.svg');
+}
+#tool-bar .block-sort.sort-value.sort-horizontal.sort-reverse {
+  background-image: url('../assets/images/sort-value-desc-h.svg');
+}
+#tool-bar .block-sort.sort-value.sort-horizontal.sort-custom {
+  background-image: url('../assets/images/sort-value-custom-h.svg');
+}
+#tool-bar .block-sort.sort-count.sort-horizontal {
+  background-image: url('../assets/images/sort-count-asc-h.svg');
+}
+#tool-bar .block-sort.sort-count.sort-horizontal.sort-reverse {
+  background-image: url('../assets/images/sort-count-desc-h.svg');
+}
 #tool-bar #search-icon {
   background-image: url('../assets/images/search.svg');
   background-position: 10px center;
@@ -1063,8 +1079,14 @@ footer li:first-child::before {
   font-weight: 400;
   margin-left: calc(var(--band-total-margin) * 1em / 13);
 }
-#viewer .row.row-header {
+#viewer .row.row-header,
+#viewer .row.row-plain {
   background-color: transparent;
+}
+/* Without rows, each band gets the row background instead (behind the boxes) */
+#viewer .band-stripe {
+  background-color: var(--row);
+  position: absolute;
 }
 #viewer .label-item.label-header {
   /* Sits at the bottom of the (possibly taller) header row, next to the band labels */
@@ -1226,6 +1248,15 @@ footer li:first-child::before {
 }
 .dropdown label.disabled:hover {
   background-color: transparent;
+}
+/* Subheadings in a menu with more than one list (Group by: Rows, Columns) */
+.dropdown h4 {
+  color: var(--gray);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 4px 15px 2px;
+  text-transform: uppercase;
 }
 /* A labeled select inside a menu, such as a list column's separator */
 .dropdown .dropdown-field {
@@ -1518,14 +1549,14 @@ footer li:first-child::before {
   min-width: 0;
   position: relative;
 }
-/* The last toolbar controls: outlined pills, which become a tab joined to the open panel */
+/* The last toolbar controls: pills (filled on hover), which become a tab joined to the open panel */
 #tool-bar #tags-toggle,
 #tool-bar #ai-toggle {
   background-color: var(--white);
   background-image: url('../assets/images/ai-dark.svg');
   background-position: 11px center;
   background-repeat: no-repeat;
-  border: 1px solid #d8dadf;
+  border: 1px solid transparent;
   border-radius: 14px;
   margin: 6px 0 6px 0;
   padding: 0 13px 0 30px;

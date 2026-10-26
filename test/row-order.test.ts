@@ -52,10 +52,10 @@ describe('custom row order', () => {
     viz.sort('count');
     viz.sort('value');
     expect(viz.valueSortShown).toBe('custom');
-    viz.setGroupKey('B');
+    viz.setRowKey('B');
     expect(viz.hasRowOrder).toBe(false);
     expect(viz.valueSortShown).toBe('ascending');
-    viz.setGroupKey('A');
+    viz.setRowKey('A');
     expect(rows(viz)).toEqual(['z', 'x', 'y']);
   });
 
@@ -64,5 +64,45 @@ describe('custom row order', () => {
     viz.moveLegendEntry(0, 3);
     expect(viz.valueSortShown).toBe('custom');
     expect(rows(viz)).toEqual(rows(viz).length ? viz.layout.legend.map((g) => g.label) : []);
+  });
+});
+
+describe('rows, columns and the Split/Stack button', () => {
+  const data = () =>
+    buildDataset('t.csv', [
+      { P: 'Ann', D: 'Mon', S: 'x' },
+      { P: 'Ann', D: 'Tue', S: 'y' },
+      { P: 'Bob', D: 'Mon', S: 'y' },
+    ]);
+
+  it('Stack takes the columns away and Split brings the same ones back', () => {
+    const viz = new Viz(data());
+    viz.setColorKey('S');
+    viz.setColumnKey('D');
+    expect(viz.split).toBe(true);
+    viz.setSplit(false);
+    expect(viz.columnKey).toBeNull();
+    expect(viz.canSplit).toBe(true);
+    viz.setSplit(true);
+    expect(viz.columnKey).toBe('D');
+  });
+
+  it('Split falls back to the color column, and is off without rows or anything to split by', () => {
+    const viz = new Viz(data());
+    expect(viz.canSplit).toBe(false); // automatic: the colors are the rows
+    viz.setColorKey('S');
+    expect(viz.canSplit).toBe(true);
+    viz.setSplit(true);
+    expect(viz.columnKey).toBe('S');
+    viz.setRowKey(null);
+    expect(viz.canSplit).toBe(false);
+    expect(viz.groupKey).toBe('S');
+  });
+
+  it('reads old saved views, where split meant columns by the color column', () => {
+    const view = { groupKey: 'P', colorKey: 'S', automatic: false, split: true };
+    const viz = new Viz(data(), view as unknown as ConstructorParameters<typeof Viz>[1]);
+    expect(viz.rowKey).toBe('P');
+    expect(viz.columnKey).toBe('S');
   });
 });

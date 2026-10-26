@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import ColumnPicker from './ColumnPicker.svelte';
   import Dropdown from './Dropdown.svelte';
   import Legend from './Legend.svelte';
@@ -13,6 +13,7 @@
   import { saveView, serialize } from '../lib/persist';
   import { Popups } from '../lib/popups.svelte';
   import { addTerm } from '../lib/search';
+  import { appSettings } from '../lib/settings.svelte';
   import { toCsv, toXlsx } from '../lib/export-data';
   import { renderSnapshot } from '../lib/snapshot';
   import { canSaveStandalone, standaloneHtml } from '../lib/standalone';
@@ -35,6 +36,20 @@
   $effect(() => saveView(viz.toViewState()));
 
   let open = $state<{ name: DropdownName; anchor: HTMLElement } | null>(null);
+  /** In the Group by menu, the column chosen last: the list and tag options below the lists apply to it */
+  let groupTouched = $state<string | null>(null);
+  const classic = $derived(appSettings.classic);
+
+  // Classic Nineteen: rows (split by color at most), and no tag or AI tools; leaving it brings back what it folded away
+  $effect(() => {
+    if (!appSettings.classic) {
+      untrack(() => viz.leaveClassic());
+      return;
+    }
+    viz.applyClassic();
+    aiOpen = false;
+    tagsOpen = false;
+  });
   let aiOpen = $state(false);
   let settingsOpen = $state(false);
   /** Column whose List display options dialog is open */
@@ -62,6 +77,7 @@
   }
 
   function toggle(name: DropdownName, anchor: HTMLElement) {
+    if (name === 'group') groupTouched = null;
     open = open?.name === name ? null : { name, anchor };
   }
 
@@ -187,12 +203,25 @@
       <ul class="keys">
         <li class="viewer-key">
           Grouped by
-          <button
-            class="key"
-            aria-haspopup="dialog"
-            aria-expanded={open?.name === 'group'}
-            onclick={(e) => toggle('group', e.currentTarget)}>{viz.groupKey}</button
-          >
+          {#if viz.rowKey !== null}
+            <button
+              class="key"
+              aria-haspopup="dialog"
+              aria-expanded={open?.name === 'group'}
+              title="Rows: {viz.rowKey}"
+              onclick={(e) => toggle('group', e.currentTarget)}>{viz.rowKey}</button
+            >
+          {/if}
+          {#if viz.rowKey !== null && viz.columnKey !== null}and{/if}
+          {#if viz.columnKey !== null}
+            <button
+              class="key"
+              aria-haspopup="dialog"
+              aria-expanded={open?.name === 'group'}
+              title="Columns: {viz.columnKey}"
+              onclick={(e) => toggle('group', e.currentTarget)}>{viz.columnKey}</button
+            >
+          {/if}
         </li>
         <li class="legend-key">
           color-coded by
@@ -256,21 +285,66 @@
     <Dropdown anchor={open.anchor} label="Group by" onclose={close}>
       {#snippet header()}Group by:{/snippet}
       <section>
+        {#if !classic}
+          <h4>Rows</h4>
+          <label
+            class:disabled={viz.columnKey === null}
+            title={viz.columnKey === null ? 'Choose columns first' : 'No rows: each column collects its data items in a grid'}
+          >
+            <input
+              type="radio"
+              name="group-rows"
+              checked={viz.rowKey === null}
+              disabled={viz.columnKey === null}
+              onchange={() => viz.setRowKey(null)}
+            />
+            <span>None</span>
+          </label>
+        {/if}
         {#each viz.dataset.columns as column (column)}
           <label>
             <input
               type="radio"
-              name="group-by"
-              checked={viz.groupKey === column}
+              name="group-rows"
+              checked={viz.rowKey === column}
               onchange={() => {
-                viz.setGroupKey(column);
-                close();
+                viz.setRowKey(column);
+                groupTouched = column;
+                if (classic) close();
               }}
             />
             <span>{column}</span>
           </label>
         {/each}
-        {@render tagControls(viz.groupKey)}
+        {#if !classic}
+          <hr />
+          <h4>Columns</h4>
+          <label class:disabled={viz.rowKey === null} title={viz.rowKey === null ? 'Choose rows first' : 'No columns: one row per value'}>
+            <input
+              type="radio"
+              name="group-columns"
+              checked={viz.columnKey === null}
+              disabled={viz.rowKey === null}
+              onchange={() => viz.setColumnKey(null)}
+            />
+            <span>None</span>
+          </label>
+          {#each viz.dataset.columns as column (column)}
+            <label>
+              <input
+                type="radio"
+                name="group-columns"
+                checked={viz.columnKey === column}
+                onchange={() => {
+                  viz.setColumnKey(column);
+                  groupTouched = column;
+                }}
+              />
+              <span>{column}</span>
+            </label>
+          {/each}
+          {@render tagControls(groupTouched !== null && viz.dataset.columns.includes(groupTouched) ? groupTouched : viz.groupKey)}
+        {/if}
       </section>
     </Dropdown>
   {:else if open?.name === 'color'}
@@ -304,7 +378,7 @@
             <span>{column}</span>
           </label>
         {/each}
-        {#if !viz.automatic}{@render tagControls(viz.colorKey)}{/if}
+        {#if !viz.automatic && !classic}{@render tagControls(viz.colorKey)}{/if}
       </section>
     </Dropdown>
   {:else if open?.name === 'save'}

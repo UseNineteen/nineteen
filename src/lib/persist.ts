@@ -13,6 +13,13 @@ import type { SortBy, SortDirection } from './layout';
 export type FitMode = 'none' | 'square' | 'stretch';
 
 export interface ViewState {
+  /**
+   * Rows and column bands, each a column or null for none (at least one is set). Views saved
+   * before these existed have only `groupKey` (the rows) and `split` (bands by the color column),
+   * which are still written for them.
+   */
+  rowKey?: string | null;
+  columnKey?: string | null;
   groupKey: string;
   colorKey: string;
   automatic: boolean;

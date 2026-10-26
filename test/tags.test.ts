@@ -61,9 +61,9 @@ describe('grouping by tags', () => {
   it('keeps exactly one box per row in the layout', () => {
     const items = groupingItems(dataset.items, [{ column: 'Tags', catalog, ignored: new Set(['follow-up']) }]);
     const layout = computeLayout(items, {
-      groupKey: 'Tags',
+      rowKey: 'Tags',
+      columnKey: null,
       colorKey: 'Tags',
-      split: false,
       counts: false,
       sortBy: 'value',
       sortDirection: 'ascending',

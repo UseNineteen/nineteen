@@ -4,6 +4,7 @@
   import { segments, type Piece } from '../lib/linkify';
   import type { PopupState, Popups } from '../lib/popups.svelte';
   import { highlightRanges } from '../lib/search';
+  import { appSettings } from '../lib/settings.svelte';
   import type { Viz } from '../lib/viz.svelte';
 
   interface Props {
@@ -18,7 +19,9 @@
   const highlight = $derived(viz.isMatch(item));
   const tagColumn = $derived(viz.tagEditColumn);
   const tags = $derived(splitTags(item.raw[tagColumn], viz.separatorOf(tagColumn)));
-  const listed = $derived(viz.viewerColumns.filter((c) => c !== tagColumn));
+  /** Classic Nineteen: no tag editing, so the tags column is listed like any other */
+  const classic = $derived(appSettings.classic);
+  const listed = $derived(viz.viewerColumns.filter((c) => classic || c !== tagColumn));
 
   /** Clicking a tag finds every row carrying it */
   function findTag(column: string, tag: string) {
@@ -68,7 +71,7 @@
     <button class="close" aria-label="Close" onclick={() => popups.close(popup.key)}>&times;</button>
   </header>
   <section>
-    {#if popup.floating || tags.length}
+    {#if !classic && (popup.floating || tags.length)}
       <div class="popup-tags popup-tags-pinned">
         <strong>{tagColumn}</strong>
         <TagEditor
@@ -84,7 +87,7 @@
     {/if}
     {#each listed as column (column)}
       {@const text = item.raw[column] ?? ''}
-      {#if viz.isTagColumn(column)}
+      {#if viz.isTagColumn(column) && !classic}
         <div class="popup-tags">
           <strong>{column}</strong>
           <TagEditor

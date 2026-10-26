@@ -36,9 +36,9 @@ export class SearchTagging {
   /** What the view looks like: grouping, coloring and layout choices */
   view = $derived(
     [
-      this.viz.groupKey,
+      this.viz.rowKey,
+      this.viz.columnKey,
       this.viz.colorKey,
-      this.viz.split,
       this.viz.counts,
       this.viz.sortBy,
       this.viz.sortDirection,

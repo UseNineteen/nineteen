@@ -55,6 +55,8 @@ export const SWATCH = BAND.swatch + BAND.gap;
 export const TOTAL_GAP = BAND.gap + BAND.totalMargin;
 /** Height of a normal row's label area, which the label row grows beyond */
 export const HEADER_ROW = 20;
+/** Band labels follow the row font size, but stop growing here (px) so big boxes don't come with huge headers */
+export const HEADER_FONT_MAX = 18;
 /** Widen at most this share of the bands; with more narrow bands than that, turn the labels instead */
 const WIDEN_AT_MOST = 1 / 3;
 
@@ -69,15 +71,18 @@ export function decideBandLabels(
   labelOf: (header: BandHeader) => string,
   boxAspect: number,
   measure: MeasureLabel,
+  /** Labels start with a color swatch (when the bands are the color column's values) */
+  swatch = true,
 ): BandLabels {
   if (!headers.length) return ONE_LINE;
   const measureLabel = (text: string) => measure(text, 500);
+  const swatchWidth = swatch ? SWATCH : 0;
   let longest = 0;
   const bands = headers.map((header) => {
     const text = labelOf(header);
     const total = header.total ? measure(header.total, 400) + TOTAL_GAP : 0;
-    longest = Math.max(longest, SWATCH + measureLabel(text) + total);
-    const room = header.width * boxAspect + (header.cwidth - header.pad) - SWATCH - total - 4;
+    longest = Math.max(longest, swatchWidth + measureLabel(text) + total);
+    const room = header.width * boxAspect + (header.cwidth - header.pad) - swatchWidth - total - 4;
     const wrapped = wrapText(text, room, measureLabel, MAX_LINES);
     const tooNarrow = room <= 0 || wrapped.brokenWord || (!wrapped.complete && wrapped.shown < TURN_BELOW);
     // Extra width that would let it wrap in full (+2px for rounding)

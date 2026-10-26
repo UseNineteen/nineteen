@@ -10,6 +10,7 @@ const header = (label: string, width: number, total: string | null = null): Band
   total,
   x: 0,
   cx: 0,
+  boxes: 1,
   y: 0,
   width,
   cwidth: 0,

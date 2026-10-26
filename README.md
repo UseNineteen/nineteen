@@ -185,7 +185,9 @@ You can use Nineteen with confidential data.
 
 - **No cookies, only anonymous visit counts.** Nineteen sets no cookies and uses no advertising or cross-site tracking.
   usenineteen.com counts visits with Cloudflare Web Analytics, which stores nothing on your device and never sees your
-  data (page, referrer, browser and country only). Saved HTML files contain no analytics
+  data (page, referrer, browser and country only). The visualization has its own address, `/visualize`, and the example
+  `/example`, so the counts can tell the front page from actual use; nothing about your file is ever in the address. Saved
+  HTML files contain no analytics
 - **AI is opt-in.** Data reaches an AI provider only when you press Send or Code in the AI panel, after confirming. It goes
   straight from your browser to Anthropic or OpenAI
 - **Remembered settings and keys are opt-in.** Display settings and AI keys are stored in this browser's local storage only

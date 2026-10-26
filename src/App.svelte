@@ -17,7 +17,25 @@
     error?: string;
   }
 
-  const HASH: Record<Page, string> = { import: '', visualize: '#/visualize', privacy: '#/privacy' };
+  /**
+   * Page addresses. On the web each page has its own path under the app's directory ("/visualize",
+   * "/privacy"), so the host's cookieless visit counts can tell the front page from the
+   * visualization. The bundled example shows as "/example", so trying it out can be told from
+   * opening a file. Nothing about the file is ever in the address. A saved HTML file is opened
+   * from disk, where the path can't change, so it keeps hash addresses ("#/visualize").
+   */
+  const PAGES: Page[] = ['visualize', 'privacy'];
+  const useHash = location.protocol === 'file:';
+  /** The directory the app is served from ("/" or "/nineteen/"), whichever page the address names */
+  const base = location.pathname.replace(/(visualize|example|privacy|index\.html)$/, '').replace(/\/?$/, '/');
+  /** Whether the open file is the bundled example (kept across a reload by its address) */
+  let sample = !useHash && location.pathname.slice(base.length) === 'example';
+
+  function addressOf(next: Page): string {
+    const name = next === 'visualize' && sample ? 'example' : next;
+    if (useHash) return next === 'import' ? location.pathname + location.search : `#/${name}`;
+    return next === 'import' ? base : base + name;
+  }
 
   let page = $state<Page>('import');
   let viz = $state<Viz | null>(null);
@@ -28,22 +46,25 @@
     viz = new Viz(dataset, view);
   }
 
-  function pageFromHash(): Page {
-    if (location.hash === HASH.privacy) return 'privacy';
-    if (location.hash === HASH.visualize) return 'visualize';
-    return 'import';
+  function pageFromAddress(): Page {
+    const name = useHash ? location.hash.replace(/^#\//, '') : location.pathname.slice(base.length);
+    if (name === 'example') return 'visualize';
+    return PAGES.find((p) => p === name) ?? 'import';
   }
 
   function go(next: Page) {
-    if (location.hash !== HASH[next]) {
-      history.pushState(null, '', HASH[next] || location.pathname + location.search);
-    }
+    const current = useHash ? location.hash : location.pathname;
+    const wanted = useHash && next === 'import' ? '' : addressOf(next);
+    if (current !== wanted) history.pushState(null, '', addressOf(next));
     page = next;
     window.scrollTo(0, 0);
   }
 
-  function syncFromHash() {
-    const next = pageFromHash();
+  function syncFromAddress() {
+    // Links from before pages had paths ("#/visualize") still open the right page
+    const legacy = !useHash && /^#\/(visualize|privacy)$/.exec(location.hash);
+    if (legacy) history.replaceState(null, '', addressOf(legacy[1] as Page));
+    const next = pageFromAddress();
     if (next === 'visualize' && !viz) {
       const session = loadSession();
       if (session) show(session.dataset, session.view);
@@ -57,7 +78,7 @@
     show(embedded.dataset, embedded.view);
     page = 'visualize';
   } else {
-    syncFromHash();
+    syncFromAddress();
   }
 
   function fail(id: number, error: unknown) {
@@ -66,7 +87,7 @@
     loading = { message: '', progress: null, error: message };
   }
 
-  async function finish(id: number, name: string, bytes: Uint8Array) {
+  async function finish(id: number, name: string, bytes: Uint8Array, isSample = false) {
     if (id !== loadId) return;
     loading = { message: 'Parsing...', progress: null };
     // Let the progress window paint before the (synchronous) parse
@@ -77,6 +98,7 @@
     saveSession(dataset);
     show(dataset);
     loading = null;
+    sample = isSample;
     go('visualize');
   }
 
@@ -112,7 +134,7 @@
     try {
       const response = await fetch(href);
       if (!response.ok) throw new Error('The example file could not be loaded.');
-      await finish(id, 'shopping_decision_diary.xlsx', new Uint8Array(await response.arrayBuffer()));
+      await finish(id, 'shopping_decision_diary.xlsx', new Uint8Array(await response.arrayBuffer()), true);
     } catch (error) {
       fail(id, error);
     }
@@ -124,7 +146,7 @@
   }
 </script>
 
-<svelte:window onpopstate={syncFromHash} />
+<svelte:window onpopstate={syncFromAddress} />
 
 {#if page === 'visualize' && viz}
   {#key viz}

@@ -107,6 +107,10 @@ function guidePages(): Plugin {
       const whatsNew = readFileSync(resolve(root, 'docs/whats-new.html'), 'utf8').replaceAll('src="screenshots/', 'src="docs/screenshots/');
       writeFileSync(resolve(outDir, 'whats-new.html'), whatsNew);
       cpSync(resolve(root, 'docs/screenshots'), resolve(outDir, 'docs/screenshots'), { recursive: true });
+      // The app's pages have their own paths (/visualize, /privacy). GitHub Pages serves 404.html for
+      // paths it has no file for, so a copy of the app there lets those addresses load and reload
+      // (the Cloudflare Worker does the same with its single-page-application setting)
+      cpSync(resolve(outDir, 'index.html'), resolve(outDir, '404.html'));
     },
   };
 }

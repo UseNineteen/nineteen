@@ -979,8 +979,40 @@ footer li:first-child::before {
   transition:
     transform 1100ms ease-in-out,
     translate 1100ms ease-in-out,
+    width 1100ms ease-in-out,
+    border-width 1100ms ease-in-out,
+    border-radius 1100ms ease-in-out,
     background-color 250ms,
     border-color 250ms;
+}
+/* A change of scale glides with the boxes: the row font (which sizes the rows, labels and box heights),
+   the label column and the band headers all take the same 1100ms, so a refit never snaps */
+#viewer .visualizer.animate .block-items,
+#viewer .visualizer.animate .labels,
+#viewer .visualizer.animate .row-items {
+  transition:
+    font-size 1100ms ease-in-out,
+    width 1100ms ease-in-out,
+    padding-left 1100ms ease-in-out;
+}
+#viewer .visualizer.animate .row {
+  transition: width 1100ms ease-in-out;
+}
+#viewer .visualizer.animate .band-stripe,
+#viewer .visualizer.animate .band-header {
+  transition:
+    transform 1100ms ease-in-out,
+    width 1100ms ease-in-out,
+    height 1100ms ease-in-out,
+    font-size 1100ms ease-in-out;
+}
+#viewer .visualizer.zooming .block-items,
+#viewer .visualizer.zooming .labels,
+#viewer .visualizer.zooming .row-items,
+#viewer .visualizer.zooming .row,
+#viewer .visualizer.zooming .band-stripe,
+#viewer .visualizer.zooming .band-header {
+  transition: none !important;
 }
 /* A row being dragged by its label follows the pointer directly, above the other rows;
    on release its boxes glide from there to their new place (translate and transform together) */

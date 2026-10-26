@@ -37,7 +37,11 @@
   /** Width of the match count inside the search box, so typed text stops short of it */
   let countWidth = $state(0);
 
-  /** Vertical sizes use em (they follow the row font size); horizontal sizes use px (they follow scale.x). */
+  /**
+   * Vertical sizes use em (they follow the row font size); horizontal sizes use px (they follow
+   * scale.x). Box positions use px for both: a transitioned transform must not depend on the
+   * font size, which transitions too, or each frame of the one restarts the other.
+   */
   const em = (px: number) => `${px / GEOMETRY.font}em`;
   const px = (n: number) => `${n}px`;
 
@@ -113,7 +117,7 @@
   /** Band labels: the row font, capped; their row stays the height the box size gives it */
   const headerScale = $derived(Math.min(scale.y, HEADER_FONT_MAX / GEOMETRY.font));
   const headerFontSize = $derived(px(headerScale * GEOMETRY.font));
-  /** Vertical sizes that follow the box size, in px (for elements whose own font is capped) */
+  /** Vertical sizes that follow the box size, in px (positions, and elements whose own font is capped) */
   const rem = (n: number) => px(n * scale.y);
 
   $effect(() => {
@@ -414,7 +418,14 @@
         </div>
       {/if}
 
-      <div class="visualizer" bind:this={visualizerEl} bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
+      <div
+        class="visualizer"
+        class:animate={animated}
+        class:zooming={viz.zooming || resizing}
+        bind:this={visualizerEl}
+        bind:clientWidth={viewWidth}
+        bind:clientHeight={viewHeight}
+      >
         <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
           {#if layout.rowOffset}<div class="label-item label-header" style:height={em(HEADER_ROW + headerMode.extra)}></div>{/if}
           {#each layout.groups as group (group.label)}
@@ -478,7 +489,7 @@
                 class:filtered={viz.isFiltered(item)}
                 class:floating={popups.isFloating(item.id)}
                 class:row-dragged={draggedIds.has(item.id)}
-                style:transform="translate({sx(p.x, p.cx)}, {em(p.y)})"
+                style:transform="translate({sx(p.x, p.cx)}, {rem(p.y)})"
                 style:translate={draggedIds.has(item.id) ? dragOffset : null}
                 style:width={px(GEOMETRY.size * scale.x)}
                 style:border-width={px(5 * edge)}
@@ -499,7 +510,7 @@
               <div
                 class="block-item block-item-label"
                 class:row-dragged={inDraggedRow(count.key)}
-                style:transform="translate({sx(count.x, count.cx)}, {em(count.y)})"
+                style:transform="translate({sx(count.x, count.cx)}, {rem(count.y)})"
                 style:translate={inDraggedRow(count.key) ? dragOffset : null}
               >
                 {count.text}

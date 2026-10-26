@@ -757,16 +757,22 @@ footer li:first-child::before {
   width: 240px;
 }
 #legend.legend-collapsed {
+  overflow-y: hidden;
   width: 34px;
-}
-#legend.legend-collapsed .label,
-#legend.legend-collapsed .count {
-  opacity: 0;
 }
 #legend .legend-items {
   clear: both;
   margin: 0;
   padding: 0;
+  transition: opacity 350ms;
+}
+/* Collapsed, only the toggle stays: the entries (swatches too) fade out with the width, then stop taking clicks */
+#legend.legend-collapsed .legend-items {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 350ms,
+    visibility 0s 350ms;
 }
 /* --legend-* are set by the legend from LEGEND in layout.ts, which lines entries up with the rows */
 #legend .legend-item {
@@ -787,11 +793,6 @@ footer li:first-child::before {
   margin: 0 10px 0 0;
   height: 14px;
   width: 14px;
-}
-#legend .label,
-#legend .count {
-  opacity: 1;
-  transition: opacity 350ms;
 }
 #legend .label {
   flex: 0 1 auto;

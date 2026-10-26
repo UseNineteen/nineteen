@@ -2377,28 +2377,6 @@ footer li:first-child::before {
   outline: none;
 }
 
-/* The color column's name above the legend (a label; the column itself is changed in the header bar) */
-#legend .legend-title {
-  box-sizing: border-box;
-  color: var(--trout);
-  font-size: 13px;
-  font-weight: 700;
-  height: var(--legend-title);
-  left: 10px;
-  line-height: var(--legend-title);
-  max-width: calc(100% - 20px);
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  z-index: 1;
-}
-#legend .legend-title.beside-toggle {
-  /* Shares the top line with the collapse toggle */
-  left: 34px;
-  max-width: calc(100% - 44px);
-}
-
 /* ---------- Compact toolbar when the viewer is narrow ---------- */
 
 @container viewer (max-width: 1080px) {

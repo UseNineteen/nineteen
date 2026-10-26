@@ -21,8 +21,6 @@ export const LEGEND = {
   entryLine: 14,
   entryGapTop: 6,
   entryGapBottom: 8,
-  /** The color column's name above the entries */
-  title: 20,
 } as const;
 
 /** Vertical distance from one legend entry to the next */

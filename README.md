@@ -61,7 +61,7 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
   (see "Fitting the View" below), or zoom in and out
 - **Save (11):** Save a standalone HTML file or a PNG image of the visualization, or download the data itself
   (see "Saving and Downloading" below)
-- **Settings (13)**, **Analyze with AI (14)** and **Manage tags (17)** are described below
+- **Settings (13)**, **Analyze with AI (14)** and **Manage tags (16)** are described below
 
 ### Tagging Your Data
 Pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
@@ -75,7 +75,7 @@ your spreadsheet, CSV and HTML downloads.
   to every match at once.
   If your search is itself a tag, you can also remove it from the matches. **Undo** reverses the change, and **Color by this tag**
   shows the tagged data items against the rest
-- **Manage tags (17)** in the toolbar lists every tag with how many data items have it. Click a name to rename
+- **Manage tags (16)** in the toolbar lists every tag with how many data items have it. Click a name to rename
   it. Drag one tag onto another, or use **Combine into…**, to merge them (renaming onto an existing tag does the same). **Delete**
   removes a tag from every data item, after asking, and **Color by this tag** shows its data items against the rest. Every change
   can be undone
@@ -113,8 +113,6 @@ get a little wider. If many are, all the labels turn 90° together.
 - **Reordering the legend:** Drag legend entries up or down by their grip (B), or focus one and press Alt + ↑/↓, to put values in a
   meaningful order (the label moves with you; colors stay with their positions), such as *Not at all satisfied → Extremely satisfied*. Colors are reassigned in the new order, split bands
   follow it, and rows grouped by the same column take on that order too. "Reset order" (C) puts it back
-- **Legend title:** The name above the legend (16, in the main screenshot) is the column the colors stand for. To change it, use
-  "color-coded by" in the header bar
 
 ### Fitting the View: Square or Stretched Boxes
 Boxes don't have to be square. **Stretch to fit** (in the zoom controls, 15) reshapes them into wider or taller rectangles so the

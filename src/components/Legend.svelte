@@ -13,16 +13,6 @@
   /** Line the first entry up with the first data row: the list starts below the collapse toggle and the first entry's gap */
   const LIST_START = LEGEND.toggle + 2 * LEGEND.toggleMargin + LEGEND.entryGapTop;
   const offset = $derived(Math.max(0, viz.firstRowTop - LIST_START));
-
-  /**
-   * The color column's name, just above the first entry (a label only: the column is changed in
-   * the header bar). When there's no room there (no split header row), it shares the top line
-   * with the collapse toggle instead.
-   */
-  const aboveList = $derived(viz.firstRowTop - LEGEND.title - 4);
-  const titleBesideToggle = $derived(aboveList < 30);
-  /** Beside the toggle it lines up with it (the toggle's margin from the top) */
-  const titleTop = $derived(titleBesideToggle ? LEGEND.toggleMargin : aboveList);
   const reorderable = $derived(!viz.legendCollapsed && viz.layout.legend.length > 1);
 
   let listEl = $state<HTMLElement>();
@@ -49,7 +39,6 @@
   style:--legend-entry-line="{LEGEND.entryLine}px"
   style:--legend-entry-gap-top="{LEGEND.entryGapTop}px"
   style:--legend-entry-gap-bottom="{LEGEND.entryGapBottom}px"
-  style:--legend-title="{LEGEND.title}px"
 >
   <button
     id="legend-toggle"
@@ -59,11 +48,6 @@
     title={viz.legendCollapsed ? 'Show legend' : 'Hide legend'}
     onclick={() => (viz.legendCollapsed = !viz.legendCollapsed)}
   ></button>
-  {#if !viz.legendCollapsed}
-    <div class="legend-title" class:beside-toggle={titleBesideToggle} style:top="{titleTop}px" title="Color-coded by “{viz.colorKey}”">
-      {viz.colorKey}
-    </div>
-  {/if}
   <ul
     bind:this={listEl}
     class="legend-items"

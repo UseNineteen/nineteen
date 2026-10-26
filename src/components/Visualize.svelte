@@ -224,7 +224,7 @@
   </header>
 
   <figure id="visualization">
-    <Legend {viz} oncolormenu={(anchor) => toggle('color', anchor)} colorMenuOpen={open?.name === 'color'} />
+    <Legend {viz} />
     <div id="viewer">
       <Viewer
         {viz}

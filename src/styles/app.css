@@ -2377,11 +2377,8 @@ footer li:first-child::before {
   outline: none;
 }
 
-/* The color column's name above the legend; opens the "Color by" menu */
+/* The color column's name above the legend (a label; the column itself is changed in the header bar) */
 #legend .legend-title {
-  appearance: none;
-  background: none;
-  border: none;
   box-sizing: border-box;
   color: var(--trout);
   font-size: 13px;
@@ -2391,9 +2388,7 @@ footer li:first-child::before {
   line-height: var(--legend-title);
   max-width: calc(100% - 20px);
   overflow: hidden;
-  padding: 0;
   position: absolute;
-  text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
   z-index: 1;
@@ -2402,13 +2397,6 @@ footer li:first-child::before {
   /* Shares the top line with the collapse toggle */
   left: 34px;
   max-width: calc(100% - 44px);
-}
-#legend .legend-title::after {
-  color: var(--gray);
-  font-weight: 400;
-}
-#legend .legend-title:hover {
-  opacity: 0.8;
 }
 
 /* ---------- Compact toolbar when the viewer is narrow ---------- */

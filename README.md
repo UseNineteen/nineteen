@@ -113,7 +113,8 @@ get a little wider. If many are, all the labels turn 90° together.
 - **Reordering the legend:** Drag legend entries up or down by their grip (B), or focus one and press Alt + ↑/↓, to put values in a
   meaningful order (the label moves with you; colors stay with their positions), such as *Not at all satisfied → Extremely satisfied*. Colors are reassigned in the new order, split bands
   follow it, and rows grouped by the same column take on that order too. "Reset order" (C) puts it back
-- **Legend title:** The name above the legend (16, in the main screenshot) is the column the colors stand for. Click it to change it
+- **Legend title:** The name above the legend (16, in the main screenshot) is the column the colors stand for. To change it, use
+  "color-coded by" in the header bar
 
 ### Fitting the View: Square or Stretched Boxes
 Boxes don't have to be square. **Stretch to fit** (in the zoom controls, 15) reshapes them into wider or taller rectangles so the

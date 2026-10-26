@@ -5,12 +5,9 @@
 
   interface Props {
     viz: Viz;
-    /** Opens the "Color by" menu under the given element */
-    oncolormenu: (anchor: HTMLElement) => void;
-    colorMenuOpen: boolean;
   }
 
-  let { viz, oncolormenu, colorMenuOpen }: Props = $props();
+  let { viz }: Props = $props();
 
   const showCounts = $derived(viz.counts && !viz.split);
   /** Line the first entry up with the first data row: the list starts below the collapse toggle and the first entry's gap */
@@ -18,8 +15,9 @@
   const offset = $derived(Math.max(0, viz.firstRowTop - LIST_START));
 
   /**
-   * The color column's name, just above the first entry. When there's no room there
-   * (no split header row), it shares the top line with the collapse toggle instead.
+   * The color column's name, just above the first entry (a label only: the column is changed in
+   * the header bar). When there's no room there (no split header row), it shares the top line
+   * with the collapse toggle instead.
    */
   const aboveList = $derived(viz.firstRowTop - LEGEND.title - 4);
   const titleBesideToggle = $derived(aboveList < 30);
@@ -62,16 +60,9 @@
     onclick={() => (viz.legendCollapsed = !viz.legendCollapsed)}
   ></button>
   {#if !viz.legendCollapsed}
-    <button
-      type="button"
-      class="legend-title dropdown-arrow"
-      class:beside-toggle={titleBesideToggle}
-      style:top="{titleTop}px"
-      title="Color-coded by “{viz.colorKey}”. Click to change."
-      aria-haspopup="dialog"
-      aria-expanded={colorMenuOpen}
-      onclick={(e) => oncolormenu(e.currentTarget)}>{viz.colorKey}</button
-    >
+    <div class="legend-title" class:beside-toggle={titleBesideToggle} style:top="{titleTop}px" title="Color-coded by “{viz.colorKey}”">
+      {viz.colorKey}
+    </div>
   {/if}
   <ul
     bind:this={listEl}

@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { marked } from 'marked';
+import pkg from './package.json' with { type: 'json' };
 
 const CSP_PLACEHOLDER = '__NINETEEN_CSP__';
 
@@ -111,6 +112,8 @@ function guidePages(): Plugin {
 }
 
 export default defineConfig({
+  // The app shows its version (package.json is the only place it is set)
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [svelte(), viteSingleFile({ removeViteModuleLoader: true }), contentSecurityPolicy(), guidePages()],
   build: {
     target: 'es2022',

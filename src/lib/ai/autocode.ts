@@ -112,20 +112,20 @@ export function formatCategories(categories: Category[]): string {
   return categories.map((c) => (c.description ? `${c.name}: ${c.description}` : c.name)).join('\n');
 }
 
-/** Splits rows into requests that keep each response comfortably small. */
-export function batches(items: DataItem[], columns: string[], maxRows = 40, maxChars = 40_000): string[][] {
-  const result: string[][] = [];
-  let current: string[] = [];
+/** Splits the items into requests that keep each response comfortably small (by row count and by rendered size). */
+export function batches(items: DataItem[], columns: string[], maxRows = 40, maxChars = 40_000): DataItem[][] {
+  const result: DataItem[][] = [];
+  let current: DataItem[] = [];
   let size = 0;
   for (const item of items) {
-    const text = renderRows([item], columns);
-    if (current.length && (current.length >= maxRows || size + text.length > maxChars)) {
+    const length = renderRows([item], columns).length;
+    if (current.length && (current.length >= maxRows || size + length > maxChars)) {
       result.push(current);
       current = [];
       size = 0;
     }
-    current.push(text);
-    size += text.length;
+    current.push(item);
+    size += length;
   }
   if (current.length) result.push(current);
   return result;

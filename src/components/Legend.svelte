@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { LEGEND } from '../lib/layout';
+  import { ListReorder } from '../lib/reorder.svelte';
   import type { Viz } from '../lib/viz.svelte';
 
   interface Props {
@@ -11,86 +13,46 @@
   let { viz, oncolormenu, colorMenuOpen }: Props = $props();
 
   const showCounts = $derived(viz.counts && !viz.split);
-  /**
-   * Line the first entry up with the first data row. The list starts below the collapse
-   * toggle (20px + 5px margins) and each entry has a 6px top margin.
-   */
-  const LIST_START = 36;
+  /** Line the first entry up with the first data row: the list starts below the collapse toggle and the first entry's gap */
+  const LIST_START = LEGEND.toggle + 2 * LEGEND.toggleMargin + LEGEND.entryGapTop;
   const offset = $derived(Math.max(0, viz.firstRowTop - LIST_START));
 
   /**
    * The color column's name, just above the first entry. When there's no room there
    * (no split header row), it shares the top line with the collapse toggle instead.
    */
-  const TITLE_HEIGHT = 20;
-  const aboveList = $derived(viz.firstRowTop - TITLE_HEIGHT - 4);
+  const aboveList = $derived(viz.firstRowTop - LEGEND.title - 4);
   const titleBesideToggle = $derived(aboveList < 30);
-  /** Beside the toggle it lines up with it (5px from the top, like the toggle's margin) */
-  const titleTop = $derived(titleBesideToggle ? 5 : aboveList);
+  /** Beside the toggle it lines up with it (the toggle's margin from the top) */
+  const titleTop = $derived(titleBesideToggle ? LEGEND.toggleMargin : aboveList);
   const reorderable = $derived(!viz.legendCollapsed && viz.layout.legend.length > 1);
 
-  let listEl: HTMLElement;
-  /** Index of the entry being dragged, and where it would land */
-  let dragging = $state<number | null>(null);
-  let dropAt = $state<number | null>(null);
-  /** How far the dragged entry has moved (px): its label follows the pointer */
-  let dragDy = $state(0);
-  let pressed: { index: number; y: number; id: number } | null = null;
-
-  /** The gap (0…n) closest to the pointer */
-  function gapAt(clientY: number): number {
-    const items = [...listEl.querySelectorAll<HTMLElement>('.legend-item')];
-    const index = items.findIndex((el) => {
-      const r = el.getBoundingClientRect();
-      return clientY < r.top + r.height / 2;
-    });
-    return index === -1 ? items.length : index;
-  }
-
-  function pointerdown(index: number, event: PointerEvent) {
-    if (!reorderable || event.button !== 0) return;
-    pressed = { index, y: event.clientY, id: event.pointerId };
-  }
-
-  function pointermove(event: PointerEvent) {
-    if (!pressed || event.pointerId !== pressed.id) return;
-    // A few pixels of movement before it counts as a drag
-    if (dragging === null && Math.abs(event.clientY - pressed.y) < 4) return;
-    if (dragging === null) {
-      dragging = pressed.index;
-      try {
-        listEl.setPointerCapture(event.pointerId);
-      } catch {
-        // The pointer is already gone; the drag still works while it stays over the list
-      }
-    }
-    dropAt = gapAt(event.clientY);
-    dragDy = event.clientY - pressed.y;
-  }
-
-  function pointerup() {
-    if (dragging !== null && dropAt !== null) {
-      // Dropping into a gap after the dragged entry shifts by one once it is removed
-      viz.moveLegendEntry(dragging, dropAt > dragging ? dropAt - 1 : dropAt);
-    }
-    pressed = null;
-    dragging = dropAt = null;
-    dragDy = 0;
-  }
+  let listEl = $state<HTMLElement>();
+  const reorder = new ListReorder({
+    container: () => listEl,
+    entries: () => listEl?.querySelectorAll<HTMLElement>('.legend-item') ?? [],
+    length: () => viz.layout.legend.length,
+    enabled: () => reorderable,
+    onmove: (from, to) => viz.moveLegendEntry(from, to),
+  });
 
   function keydown(index: number, event: KeyboardEvent) {
-    if (!reorderable || !event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
-    event.preventDefault();
-    const to = index + (event.key === 'ArrowUp' ? -1 : 1);
-    viz.moveLegendEntry(index, to);
+    const to = reorder.keydown(index, event);
     // Keep focus on the moved entry
-    requestAnimationFrame(() =>
-      listEl.querySelectorAll<HTMLElement>('.legend-item')[Math.max(0, Math.min(to, viz.layout.legend.length - 1))]?.focus(),
-    );
+    if (to !== null) requestAnimationFrame(() => listEl?.querySelectorAll<HTMLElement>('.legend-item')[to]?.focus());
   }
 </script>
 
-<div id="legend" class:legend-collapsed={viz.legendCollapsed}>
+<div
+  id="legend"
+  class:legend-collapsed={viz.legendCollapsed}
+  style:--legend-toggle="{LEGEND.toggle}px"
+  style:--legend-toggle-margin="{LEGEND.toggleMargin}px"
+  style:--legend-entry-line="{LEGEND.entryLine}px"
+  style:--legend-entry-gap-top="{LEGEND.entryGapTop}px"
+  style:--legend-entry-gap-bottom="{LEGEND.entryGapBottom}px"
+  style:--legend-title="{LEGEND.title}px"
+>
   <button
     id="legend-toggle"
     class:legend-collapsed={viz.legendCollapsed}
@@ -116,12 +78,12 @@
     class="legend-items"
     class:dimmed={viz.hoveredColor !== null}
     class:reorderable
-    class:dragging={dragging !== null}
+    class:dragging={reorder.active}
     style:padding-top="{offset}px"
     aria-label="Legend: {viz.colorKey}. Drag entries, or press Alt and the arrow keys, to reorder them and their colors."
-    onpointermove={pointermove}
-    onpointerup={pointerup}
-    onpointercancel={pointerup}
+    onpointermove={(e) => reorder.pointermove(e)}
+    onpointerup={(e) => reorder.pointerup(e)}
+    onpointercancel={(e) => reorder.pointerup(e)}
   >
     {#each viz.layout.legend as entry, i (entry.label)}
       {@const swatch = viz.colors.get(entry.label)}
@@ -130,13 +92,13 @@
         aria-roledescription="reorderable legend entry"
         class="legend-item"
         class:highlighted={viz.hoveredColor === entry.label}
-        class:being-dragged={dragging === i}
-        class:drop-before={dragging !== null && dropAt === i && dropAt !== dragging && dropAt !== dragging + 1}
-        class:drop-after={dragging !== null && dropAt === viz.layout.legend.length && i === viz.layout.legend.length - 1 && dragging !== i}
+        class:being-dragged={reorder.from === i}
+        class:drop-before={reorder.dropBefore(i)}
+        class:drop-after={reorder.dropAfter(i)}
         title={reorderable ? `${viz.label(entry.label, viz.colorKey)} (drag to reorder)` : viz.label(entry.label, viz.colorKey)}
         tabindex={reorderable ? 0 : -1}
-        style:--drag-dy={dragging === i ? `${dragDy}px` : null}
-        onpointerdown={(e) => pointerdown(i, e)}
+        style:--drag-dy={reorder.from === i ? `${reorder.dy}px` : null}
+        onpointerdown={(e) => reorder.pointerdown(i, e)}
         onkeydown={(e) => keydown(i, e)}
       >
         <span class="swatch" style:background-color={swatch?.fill} style:border-color={swatch?.stroke}></span>

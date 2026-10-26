@@ -103,7 +103,7 @@
       </li>
       <li>
         <a class="whats-new-link" href={WHATS_NEW_URL}
-          >What's new in Ver. 2.0.0?{#if showNewBadge}<span class="new-badge">New · {RELEASED}</span>{/if}</a
+          >What's new in Ver. {__APP_VERSION__}?{#if showNewBadge}<span class="new-badge">New · {RELEASED}</span>{/if}</a
         >
       </li>
     </ul>

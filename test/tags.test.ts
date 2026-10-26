@@ -83,9 +83,10 @@ describe('grouping by tags', () => {
 describe('searching tag columns', () => {
   const all = dataset.columns;
   it('matches whole tags only in tag columns', () => {
-    expect([...search(dataset.items, 'price', all, new Set(['Tags']))!]).toEqual([1, 2, 3]);
+    const tagged = new Map([['Tags', 'auto' as const]]);
+    expect([...search(dataset.items, 'price', all, tagged)!]).toEqual([1, 2, 3]);
     // Without treating Tags as a tag column, "price" also finds "pricey"
     expect([...search(dataset.items, 'price', all)!]).toEqual([1, 2, 3, 4]);
-    expect([...search(dataset.items, 'price*', all, new Set(['Tags']))!]).toEqual([4]);
+    expect([...search(dataset.items, 'price*', all, tagged)!]).toEqual([4]);
   });
 });

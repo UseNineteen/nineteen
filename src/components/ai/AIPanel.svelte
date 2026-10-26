@@ -23,6 +23,7 @@
   import { aiSettings } from '../../lib/ai/settings.svelte';
   import { saveSession } from '../../lib/persist';
   import type { Popups } from '../../lib/popups.svelte';
+  import type { DataItem } from '../../lib/data';
   import type { Viz } from '../../lib/viz.svelte';
 
   interface Props {
@@ -278,12 +279,12 @@
     const controller = (codeController = new AbortController());
     let partial = false;
 
-    const request = async (rows: string[]) => {
-      const sent = new Set(rows.map((r) => Number(/^### Row (\d+)/.exec(r)?.[1])));
+    const request = async (rows: DataItem[]) => {
+      const sent = new Set(rows.map((r) => r.id));
       const response = await provider.json<{ results: Coding[] }>(aiSettings.key, {
         model: aiSettings.model,
         system: CODING_SYSTEM,
-        prompt: codingPrompt(categories, goal, rows.join('\n\n')),
+        prompt: codingPrompt(categories, goal, renderRows(rows, codeColumns)),
         schemaName: 'coding_results',
         schema: codingSchema(names),
         signal: controller.signal,
@@ -296,7 +297,7 @@
       for (const [i, rows] of groups.entries()) {
         const missing = await request(rows);
         // One retry for any rows the model skipped
-        if (missing.length) await request(rows.filter((r) => missing.includes(Number(/^### Row (\d+)/.exec(r)?.[1]))));
+        if (missing.length) await request(rows.filter((r) => missing.includes(r.id)));
         coding = { done: i + 1, total: groups.length, label: 'Coding data items…' };
       }
     } catch (error) {
@@ -333,9 +334,9 @@
 </script>
 
 <aside id="ai-panel" aria-label="Analyze with AI">
-  <header class="ai-header">
+  <header class="panel-header">
     <strong>Analyze with AI</strong>
-    <button type="button" class="ai-close" aria-label="Close AI panel" onclick={onclose}>&times;</button>
+    <button type="button" class="panel-close" aria-label="Close AI panel" onclick={onclose}>&times;</button>
   </header>
 
   <nav class="ai-tabs" aria-label="AI tools">
@@ -462,9 +463,9 @@
                 <Answer text={turn.content} oncite={cite} />
                 <div class="ai-answer-tools">
                   {#if rows.length > 1}
-                    <button type="button" class="ai-link" onclick={() => cite(rows)}>Highlight all {rows.length} cited rows</button>
+                    <button type="button" class="link-button" onclick={() => cite(rows)}>Highlight all {rows.length} cited rows</button>
                   {/if}
-                  <button type="button" class="ai-link" onclick={() => navigator.clipboard.writeText(turn.content)}>Copy answer</button>
+                  <button type="button" class="link-button" onclick={() => navigator.clipboard.writeText(turn.content)}>Copy answer</button>
                 </div>
               {/if}
             {/each}
@@ -504,7 +505,7 @@
                 <button type="submit" class="btn btn-primary" disabled={!aiSettings.ready || !question.trim()}>Send</button>
               {/if}
               {#if turns.length}
-                <button type="button" class="ai-link" onclick={clearConversation}>New conversation</button>
+                <button type="button" class="link-button" onclick={clearConversation}>New conversation</button>
               {/if}
             </div>
             <p class="ai-hint">

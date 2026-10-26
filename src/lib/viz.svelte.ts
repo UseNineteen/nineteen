@@ -1,22 +1,12 @@
 import { colorScale, type Swatch } from './colors';
 import { computeLayout, zoomBounds, type SortBy, type SortDirection } from './layout';
-import {
-  displayLabel,
-  joinTags,
-  NO_TAGS_LABEL,
-  sortTags,
-  splitTags,
-  withCell,
-  withColumn,
-  type Dataset,
-  type DataItem,
-  type ListSeparator,
-} from './data';
-import { saveSession, type FitMode, type ViewState } from './persist';
-import { COMBINATION_SEPARATOR, groupingItems, tagCatalog, tagKey, type TagInfo } from './tags';
+import { displayLabel, NO_TAGS_LABEL, type Dataset, type DataItem, type ListSeparator } from './data';
+import type { FitMode, ViewState } from './persist';
+import { groupingItems, tagCatalog, type TagInfo } from './tags';
 import { search } from './search';
 import { topTerms } from './terms';
 import { appSettings } from './settings.svelte';
+import * as tagEdits from './tag-edits';
 
 export const ZOOM = { step: 0.1 } as const;
 
@@ -266,154 +256,6 @@ export class Viz {
     return this.tagCatalogs.get(column) ?? [];
   }
 
-  /** Writes a row's tags (sorted, de-duplicated) and keeps the open file in session storage up to date. */
-  setTags(itemId: number, tags: string[]): void {
-    const column = this.tagEditColumn;
-    const isNew = !this.dataset.columns.includes(column);
-    this.dataset = withCell(this.dataset, itemId, column, joinTags(tags, this.separatorOf(column)));
-    if (isNew) this.#showNewColumn(column);
-    if (!this.tagColumns.includes(column)) this.tagColumns = [...this.tagColumns, column];
-    // A hand edit after a bulk change: undoing the bulk change would also undo this one
-    this.tagUndo = null;
-    saveSession(this.dataset);
-  }
-
-  #showNewColumn(column: string): void {
-    if (!this.searchScope.includes(column)) this.searchScope = [...this.searchScope, column];
-    if (!this.viewerColumns.includes(column)) this.viewerColumns = [...this.viewerColumns, column];
-  }
-
-  /** The existing spelling of a tag, or the new one, tidied */
-  #canonicalTag(tag: string): string {
-    const key = tagKey(tag);
-    return this.catalog(this.tagEditColumn).find((t) => t.key === key)?.label ?? tag.trim().replace(/\s+/g, ' ');
-  }
-
-  /**
-   * Rewrites the tags of every data item through `edit`, keeping what's needed to undo it.
-   * `renames` maps old tag keys to new labels (null: removed), so legend order and
-   * display options follow renamed, combined and deleted tags. Returns how many items changed.
-   */
-  #editTags(label: string, edit: (tags: string[], item: DataItem) => string[], renames?: Map<string, string | null>): number {
-    const column = this.tagEditColumn;
-    const separator = this.separatorOf(column);
-    const saved = {
-      dataset: this.dataset,
-      tagColumns: this.tagColumns,
-      tagIgnored: this.tagIgnored,
-      valueOrders: this.valueOrders,
-      searchScope: this.searchScope,
-      viewerColumns: this.viewerColumns,
-    };
-    const isNew = !this.dataset.columns.includes(column);
-    let changed = 0;
-    const dataset = withColumn(this.dataset, column, (item) => {
-      const before = splitTags(item.raw[column], separator);
-      const after = edit(before, item);
-      if (joinTags(after, separator) === joinTags(before, separator)) return item.raw[column] ?? '';
-      changed++;
-      return joinTags(after, separator);
-    });
-    if (changed === 0) return 0;
-    this.dataset = dataset;
-    if (isNew) this.#showNewColumn(column);
-    if (!this.tagColumns.includes(column)) this.tagColumns = [...this.tagColumns, column];
-    if (renames) this.#followRenames(column, renames);
-    saveSession(this.dataset);
-    this.tagUndo = {
-      label,
-      restore: () => {
-        Object.assign(this, saved);
-        this.tagUndo = null;
-        saveSession(this.dataset);
-      },
-    };
-    return changed;
-  }
-
-  /** Keeps legend order and hidden tags pointing at the right tags after a rename, combine or delete. */
-  #followRenames(column: string, renames: Map<string, string | null>): void {
-    const renamed = (label: string): string | null => {
-      const key = tagKey(label);
-      return renames.has(key) ? renames.get(key)! : label;
-    };
-    const order = this.valueOrders[column];
-    if (order) {
-      // Each entry is a combination like "gift + price"; '' is "(no tags)"
-      const next = order.map((combo) => {
-        const labels = combo.split(COMBINATION_SEPARATOR).filter(Boolean).map(renamed);
-        const kept = [...new Map(labels.filter((l): l is string => l !== null).map((l) => [tagKey(l), l])).values()];
-        return sortTags(kept).join(COMBINATION_SEPARATOR);
-      });
-      this.valueOrders = { ...this.valueOrders, [column]: [...new Set(next)] };
-    }
-    const ignored = this.tagIgnored[column];
-    if (ignored) {
-      const next = ignored.map((key) => (renames.has(key) ? renames.get(key) : key)).filter((k): k is string => !!k);
-      this.tagIgnored = { ...this.tagIgnored, [column]: [...new Set(next.map(tagKey))] };
-    }
-  }
-
-  undoTags(): void {
-    this.tagUndo?.restore();
-  }
-
-  /** Adds a tag to the given data items (those that don't have it already). */
-  tagItems(ids: ReadonlySet<number>, tag: string): number {
-    const label = this.#canonicalTag(tag);
-    const key = tagKey(label);
-    if (!key) return 0;
-    return this.#editTags(`Tagged with “${label}”`, (tags, item) =>
-      ids.has(item.id) && !tags.some((t) => tagKey(t) === key) ? [...tags, label] : tags,
-    );
-  }
-
-  /** Removes a tag from the given data items. */
-  untagItems(ids: ReadonlySet<number>, tag: string): number {
-    const key = tagKey(tag);
-    return this.#editTags(`Removed “${this.#canonicalTag(tag)}”`, (tags, item) =>
-      ids.has(item.id) ? tags.filter((t) => tagKey(t) !== key) : tags,
-    );
-  }
-
-  /** Renames a tag everywhere; renaming onto another existing tag combines the two. */
-  renameTag(from: string, to: string): number {
-    const fromKey = tagKey(from);
-    const target = to.trim().replace(/\s+/g, ' ');
-    if (!target || target === from) return 0;
-    const existing = this.catalog(this.tagEditColumn).find((t) => t.key === tagKey(target) && t.key !== fromKey);
-    const label = existing?.label ?? target;
-    return this.#editTags(
-      existing ? `Combined “${from}” into “${label}”` : `Renamed “${from}” to “${label}”`,
-      (tags) => tags.map((t) => (tagKey(t) === fromKey ? label : t)),
-      new Map([[fromKey, label]]),
-    );
-  }
-
-  /** Combines one tag into another: every item tagged `from` is tagged `into` instead. */
-  combineTags(from: string, into: string): number {
-    return this.renameTag(from, this.#canonicalTag(into));
-  }
-
-  /** Removes a tag from every data item. */
-  deleteTag(tag: string): number {
-    const key = tagKey(tag);
-    return this.#editTags(`Deleted “${this.#canonicalTag(tag)}”`, (tags) => tags.filter((t) => tagKey(t) !== key), new Map([[key, null]]));
-  }
-
-  /** Colors the view by one tag: data items with it versus everything else (the "Only this" display option). */
-  colorByTag(tag: string): void {
-    const column = this.tagEditColumn;
-    const key = tagKey(tag);
-    this.setColorKey(column);
-    this.setIgnoredTags(
-      column,
-      this.catalog(column)
-        .map((t) => t.key)
-        .filter((k) => k !== key),
-    );
-  }
-
   /** A column name not used yet: `name`, or `name (2)`, `name (3)`, … */
   freeColumnName(name: string): string {
     let candidate = name;
@@ -421,46 +263,50 @@ export class Viz {
     return candidate;
   }
 
-  /**
-   * Converts a tag into a data field: "True" for every data item that has the tag, "False" for the
-   * rest. The tag is removed from the data items unless `keepTag` (then the field is a copy that
-   * later tag changes don't update). One Undo reverses both. Returns the new field's name.
-   */
+  // ---------- Tag editing (the work is in tag-edits.ts; these keep the view's API in one place) ----------
+
+  /** Writes a row's tags (sorted, de-duplicated). */
+  setTags(itemId: number, tags: string[]): void {
+    tagEdits.setTags(this, itemId, tags);
+  }
+
+  undoTags(): void {
+    this.tagUndo?.restore();
+  }
+
+  /** Adds a tag to the given data items (those that don't have it already); returns how many changed. */
+  tagItems(ids: ReadonlySet<number>, tag: string): number {
+    return tagEdits.tagItems(this, ids, tag);
+  }
+
+  /** Removes a tag from the given data items; returns how many changed. */
+  untagItems(ids: ReadonlySet<number>, tag: string): number {
+    return tagEdits.untagItems(this, ids, tag);
+  }
+
+  /** Renames a tag everywhere; renaming onto another existing tag combines the two. */
+  renameTag(from: string, to: string): number {
+    return tagEdits.renameTag(this, from, to);
+  }
+
+  /** Combines one tag into another: every item tagged `from` is tagged `into` instead. */
+  combineTags(from: string, into: string): number {
+    return tagEdits.combineTags(this, from, into);
+  }
+
+  /** Removes a tag from every data item. */
+  deleteTag(tag: string): number {
+    return tagEdits.deleteTag(this, tag);
+  }
+
+  /** Colors the view by one tag: data items with it versus everything else. */
+  colorByTag(tag: string): void {
+    tagEdits.colorByTag(this, tag);
+  }
+
+  /** Converts a tag into a True/False data field (removing the tag unless `keepTag`); returns the field's name. */
   tagToColumn(tag: string, name: string, keepTag = false): string {
-    const key = tagKey(tag);
-    const column = this.freeColumnName(name.trim() || this.#canonicalTag(tag));
-    const tags = this.tagEditColumn;
-    const separator = this.separatorOf(tags);
-    const saved = {
-      dataset: this.dataset,
-      searchScope: this.searchScope,
-      viewerColumns: this.viewerColumns,
-      tagIgnored: this.tagIgnored,
-      valueOrders: this.valueOrders,
-    };
-    let dataset = withColumn(this.dataset, column, (item) =>
-      splitTags(item.raw[tags], separator).some((t) => tagKey(t) === key) ? 'True' : 'False',
-    );
-    if (!keepTag) {
-      dataset = withColumn(dataset, tags, (item) => {
-        const before = splitTags(item.raw[tags], separator);
-        const after = before.filter((t) => tagKey(t) !== key);
-        return after.length === before.length ? (item.raw[tags] ?? '') : joinTags(after, separator);
-      });
-    }
-    this.dataset = dataset;
-    this.#showNewColumn(column);
-    if (!keepTag) this.#followRenames(tags, new Map([[key, null]]));
-    saveSession(this.dataset);
-    this.tagUndo = {
-      label: `${keepTag ? 'Added' : 'Converted into'} data field “${column}”`,
-      restore: () => {
-        Object.assign(this, saved);
-        this.tagUndo = null;
-        saveSession(this.dataset);
-      },
-    };
-    return column;
+    return tagEdits.tagToColumn(this, tag, name, keepTag);
   }
 
   /** Display text for a group or legend value of `column` */

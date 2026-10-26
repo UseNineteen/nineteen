@@ -1,4 +1,4 @@
-import { sortTags, splitTags, type DataItem, type ListSeparator, type Row } from './data';
+import { normalizeTag, sortTags, splitTags, type DataItem, type ListSeparator, type Row } from './data';
 import type { Parsed } from './values';
 
 /**
@@ -19,8 +19,9 @@ export interface TagInfo {
 
 export const COMBINATION_SEPARATOR = ' + ';
 
+/** Case-insensitive identity of a tag (its normalized spelling, lower-cased) */
 export function tagKey(tag: string): string {
-  return tag.trim().replace(/\s+/g, ' ').toLowerCase();
+  return normalizeTag(tag).toLowerCase();
 }
 
 /** All tags in a column, most used first. */

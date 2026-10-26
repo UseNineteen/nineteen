@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import type { SearchTagging } from '../lib/search-tagging.svelte';
+  import { dataItems } from '../lib/text';
 
   /**
    * Under the toolbar, only while it's needed: the form for tagging every search match
@@ -24,8 +25,6 @@
       input?.select();
     });
   });
-
-  const items = (n: number) => `${n} ${n === 1 ? 'data item' : 'data items'}`;
 </script>
 
 {#if st.current || st.tagging}
@@ -36,9 +35,9 @@
         {#if done.count === 0}
           All matches {done.removed ? 'were already without' : 'already had'} “{done.tag}”.
         {:else if done.removed}
-          Removed “{done.tag}” from {items(done.count)}.
+          Removed “{done.tag}” from {dataItems(done.count)}.
         {:else}
-          Tagged {items(done.count)} with “{done.tag}”.
+          Tagged {dataItems(done.count)} with “{done.tag}”.
         {/if}
       </span>
       {#if st.undoable}<button type="button" onclick={() => st.undo()}>Undo</button>{/if}
@@ -54,7 +53,7 @@
           st.apply();
         }}
       >
-        <label for="search-tag-input">Tag {items(st.count)} with</label>
+        <label for="search-tag-input">Tag {dataItems(st.count)} with</label>
         <input
           id="search-tag-input"
           bind:this={input}

@@ -6,12 +6,14 @@
   import { onMount, tick, untrack, type Snippet } from 'svelte';
   import { displayLabel, type DataItem } from '../lib/data';
   import { boxScale, GEOMETRY } from '../lib/layout';
-  import { minWrapWidth, wrapText } from '../lib/wrap';
+  import { BAND, decideBandLabels, HEADER_ROW, LABEL_FONT, ONE_LINE, type MeasureLabel } from '../lib/band-labels';
   import type { Popups } from '../lib/popups.svelte';
   import { appSettings } from '../lib/settings.svelte';
   import { ZOOM, zoomRange, type Viz } from '../lib/viz.svelte';
   import SearchTagBar from './SearchTagBar.svelte';
   import { SearchTagging } from '../lib/search-tagging.svelte';
+  import { ListReorder } from '../lib/reorder.svelte';
+  import { dataItems } from '../lib/text';
 
   interface Props {
     viz: Viz;
@@ -35,61 +37,6 @@
   /** Width of the match count inside the search box, so typed text stops short of it */
   let countWidth = $state(0);
 
-  // ---------- Reordering rows by dragging their labels ----------
-
-  let labelsEl = $state<HTMLElement>();
-  let rowPressed: { index: number; y: number; id: number } | null = null;
-  /** The row being dragged, the gap (0…n) it would drop into, and how far it has moved (px) */
-  let rowDrag = $state<{ from: number; to: number; dy: number } | null>(null);
-
-  /** The gap between rows closest to the pointer */
-  function rowGapAt(clientY: number): number {
-    const rows = [...(labelsEl?.querySelectorAll<HTMLElement>('.row-label') ?? [])];
-    const index = rows.findIndex((el) => {
-      const r = el.getBoundingClientRect();
-      return clientY < r.top + r.height / 2;
-    });
-    return index === -1 ? rows.length : index;
-  }
-
-  function rowPointerDown(index: number, event: PointerEvent) {
-    if (event.button !== 0 || layout.groups.length < 2) return;
-    rowPressed = { index, y: event.clientY, id: event.pointerId };
-  }
-
-  function rowPointerMove(event: PointerEvent) {
-    if (!rowPressed || event.pointerId !== rowPressed.id) return;
-    // A few pixels of movement before it counts as a drag
-    if (rowDrag === null && Math.abs(event.clientY - rowPressed.y) < 4) return;
-    if (rowDrag === null) {
-      try {
-        labelsEl?.setPointerCapture(event.pointerId);
-      } catch {
-        // The pointer is already gone; the drag still works while it stays over the labels
-      }
-    }
-    rowDrag = { from: rowPressed.index, to: rowGapAt(event.clientY), dy: event.clientY - rowPressed.y };
-  }
-
-  function rowPointerUp() {
-    if (rowDrag) {
-      const { from, to } = rowDrag;
-      // Dropping into a gap after the dragged row shifts by one once it is removed
-      viz.moveRow(from, to > from ? to - 1 : to);
-    }
-    rowPressed = null;
-    rowDrag = null;
-  }
-
-  function rowKeydown(index: number, event: KeyboardEvent) {
-    if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
-    event.preventDefault();
-    const to = Math.max(0, Math.min(index + (event.key === 'ArrowUp' ? -1 : 1), layout.groups.length - 1));
-    viz.moveRow(index, to);
-    // Keep focus on the moved row
-    tick().then(() => labelsEl?.querySelectorAll<HTMLElement>('.row-label')[to]?.focus());
-  }
-
   /** Vertical sizes use em (they follow the row font size); horizontal sizes use px (they follow scale.x). */
   const em = (px: number) => `${px / GEOMETRY.font}em`;
   const px = (n: number) => `${n}px`;
@@ -108,10 +55,27 @@
 
   const layout = $derived(viz.layout);
 
+  // ---------- Reordering rows by dragging their labels ----------
+
+  let labelsEl = $state<HTMLElement>();
+  const rowOrder = new ListReorder({
+    container: () => labelsEl,
+    entries: () => labelsEl?.querySelectorAll<HTMLElement>('.row-label') ?? [],
+    length: () => layout.groups.length,
+    enabled: () => true,
+    onmove: (from, to) => viz.moveRow(from, to),
+  });
+
+  function rowKeydown(index: number, event: KeyboardEvent) {
+    const to = rowOrder.keydown(index, event);
+    // Keep focus on the moved row
+    if (to !== null) tick().then(() => labelsEl?.querySelectorAll<HTMLElement>('.row-label')[to]?.focus());
+  }
+
   /** The dragged row's group, and its data items (the whole row follows the pointer) */
-  const draggedLabel = $derived(rowDrag ? (layout.groups[rowDrag.from]?.label ?? null) : null);
-  const draggedIds = $derived(new Set(rowDrag ? (layout.groups[rowDrag.from]?.items.map((i) => i.id) ?? []) : []));
-  const dragOffset = $derived(rowDrag ? `0 ${rowDrag.dy}px` : null);
+  const draggedLabel = $derived(rowOrder.from !== null ? (layout.groups[rowOrder.from]?.label ?? null) : null);
+  const draggedIds = $derived(new Set(rowOrder.from !== null ? (layout.groups[rowOrder.from]?.items.map((i) => i.id) ?? []) : []));
+  const dragOffset = $derived(rowOrder.active ? `0 ${rowOrder.dy}px` : null);
   /** A count label belongs to a row: keyed by the group, or "band\0group" in split view */
   const inDraggedRow = (key: string) => draggedLabel !== null && (key === draggedLabel || key.endsWith(`\u0000${draggedLabel}`));
   const fitMode = $derived(viz.fit);
@@ -169,17 +133,12 @@
 
   // ---------- Split-view value labels: one line, wrapped, or turned ----------
 
-  const LABEL_FONT = 'Colfax, sans-serif';
-  /** Wrap onto at most this many lines before turning */
-  const MAX_LINES = 3;
-  /** Line height of wrapped labels (scale-1 px) */
-  const LINE_HEIGHT = 16;
-  /** Turn when even wrapped, any label would show less than this share of its text */
-  const TURN_BELOW = 0.6;
-  /** Longest turned label (scale-1 px, about 20 characters) before it is trimmed */
-  const TURNED_MAX = 140;
-  const SWATCH = 16;
   const measureCtx = document.createElement('canvas').getContext('2d');
+  /** Text width at scale 1 in the label font; the canvas is the only way to measure without rendering */
+  const measureLabel: MeasureLabel = (text, weight) => {
+    measureCtx!.font = `${weight} ${GEOMETRY.font}px ${LABEL_FONT}`;
+    return measureCtx!.measureText(text).width;
+  };
   let fontsReady = $state(0);
 
   /**
@@ -200,51 +159,11 @@
     return base.y > 0 ? base.x / base.y : 1;
   });
 
-  /** Widen at most this share of the bands; with more narrow bands than that, turn the labels instead */
-  const WIDEN_AT_MOST = 1 / 3;
-
-  /**
-   * Decided in label-text units at the on-screen box aspect, from band widths without any widening.
-   * One line if everything fits; otherwise wrap (up to 3 lines). When only a few bands are too narrow
-   * to wrap, just those get extra width; when many are, every label turns 90°.
-   */
+  /** One line, wrapped, or turned, with any band widening; measured again once the web font has loaded */
   const headerMode = $derived.by(() => {
     void fontsReady;
-    const line = { mode: 'line' as 'line' | 'wrap' | 'turn', lines: 1, extra: 0, length: 0, pads: [] as number[] };
-    if (!layout.headers.length || !measureCtx) return line;
-    const measureLabel = (text: string) => {
-      measureCtx.font = `500 ${GEOMETRY.font}px ${LABEL_FONT}`;
-      return measureCtx.measureText(text).width;
-    };
-    let longest = 0;
-    const bands = layout.headers.map((header) => {
-      const text = viz.label(header.label, viz.colorKey);
-      measureCtx.font = `400 ${GEOMETRY.font}px ${LABEL_FONT}`;
-      // The total sits after a 5px gap plus a 4px margin (see .band-label / .band-total)
-      const total = header.total ? measureCtx.measureText(header.total).width + 9 : 0;
-      longest = Math.max(longest, SWATCH + measureLabel(text) + total);
-      const room = header.width * boxAspect + (header.cwidth - header.pad) - SWATCH - total - 4;
-      const wrapped = wrapText(text, room, measureLabel, MAX_LINES);
-      const tooNarrow = room <= 0 || wrapped.brokenWord || (!wrapped.complete && wrapped.shown < TURN_BELOW);
-      // Extra width that would let it wrap in full (+2px for rounding)
-      const deficit = tooNarrow ? Math.ceil(minWrapWidth(text, measureLabel, MAX_LINES) - room + 2) : 0;
-      return { text, room, deficit, lines: wrapped.lines.length };
-    });
-
-    const narrow = bands.filter((b) => b.deficit > 0).length;
-    if (narrow > 0 && narrow > Math.max(1, Math.floor(bands.length * WIDEN_AT_MOST))) {
-      // +3px: canvas measurement and on-screen text can differ by a pixel or two
-      const length = Math.ceil(Math.min(longest + 3, TURNED_MAX));
-      return { mode: 'turn' as const, lines: 1, extra: Math.max(0, length + 6 - 20), length, pads: [] };
-    }
-    const pads = bands.map((b) => b.deficit);
-    const lines = Math.max(
-      1,
-      ...bands.map((b) => (b.deficit ? wrapText(b.text, b.room + b.deficit, measureLabel, MAX_LINES).lines.length : b.lines)),
-    );
-    const widened = narrow > 0 ? pads : [];
-    if (lines > 1) return { mode: 'wrap' as const, lines, extra: (lines - 1) * LINE_HEIGHT, length: 0, pads: widened };
-    return { ...line, pads: widened };
+    if (!measureCtx) return ONE_LINE;
+    return decideBandLabels(layout.headers, (header) => viz.label(header.label, viz.colorKey), boxAspect, measureLabel);
   });
 
   $effect(() => {
@@ -323,7 +242,14 @@
   }
 </script>
 
-<div class="viewer-wrapper" bind:this={wrapperEl}>
+<div
+  class="viewer-wrapper"
+  bind:this={wrapperEl}
+  style:--band-gap={BAND.gap}
+  style:--band-swatch={BAND.swatch}
+  style:--band-total-margin={BAND.totalMargin}
+  style:--band-line-height={BAND.lineHeight}
+>
   <form id="tool-bar" onsubmit={(e) => e.preventDefault()} aria-label="Visualization tools">
     <button
       type="button"
@@ -443,47 +369,50 @@
       <SearchTagBar {st} />
       {#if viz.aiHighlight}
         <div class="ai-highlight-bar" role="status">
-          Highlighting {viz.aiHighlight.size}
-          {viz.aiHighlight.size === 1 ? 'data item' : 'data items'} cited by AI
+          Highlighting {dataItems(viz.aiHighlight.size)} cited by AI
           <button type="button" onclick={() => (viz.aiHighlight = null)}>Clear</button>
         </div>
       {/if}
 
       <div class="visualizer" bind:this={visualizerEl} bind:clientWidth={viewWidth} bind:clientHeight={viewHeight}>
         <div class="labels labels-measure" bind:this={measureEl} aria-hidden="true">
-          {#if layout.rowOffset}<div class="label-item label-header" style:height={em(20 + headerMode.extra)}></div>{/if}
+          {#if layout.rowOffset}<div class="label-item label-header" style:height={em(HEADER_ROW + headerMode.extra)}></div>{/if}
           {#each layout.groups as group (group.label)}
             <div class="label-item">{viz.label(group.label, viz.groupKey)}</div>
           {/each}
         </div>
         <div
           class="labels"
-          class:row-dragging={rowDrag !== null}
+          class:row-dragging={rowOrder.active}
           bind:this={labelsEl}
           style:font-size={fontSize}
           style:width={px(labelWidth * scale.y)}
           role="list"
           aria-label="Rows. Drag a row label, or press Alt and the arrow keys, to put rows in your own order."
-          onpointermove={rowPointerMove}
-          onpointerup={rowPointerUp}
-          onpointercancel={rowPointerUp}
+          onpointermove={(e) => rowOrder.pointermove(e)}
+          onpointerup={(e) => rowOrder.pointerup(e)}
+          onpointercancel={(e) => rowOrder.pointerup(e)}
         >
           <!-- Empty: the legend's title names the color column -->
-          {#if layout.rowOffset}<div class="label-item label-header" aria-hidden="true" style:height={em(20 + headerMode.extra)}></div>{/if}
+          {#if layout.rowOffset}<div
+              class="label-item label-header"
+              aria-hidden="true"
+              style:height={em(HEADER_ROW + headerMode.extra)}
+            ></div>{/if}
           {#each layout.groups as group, i (group.label)}
             {@const text = viz.label(group.label, viz.groupKey)}
             <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions (rows reorder with Alt+arrows) -->
             <div
               class="label-item row-label"
-              class:being-dragged={rowDrag?.from === i}
-              style:translate={rowDrag?.from === i ? dragOffset : null}
-              class:drop-before={rowDrag && rowDrag.to === i && rowDrag.to !== rowDrag.from && rowDrag.to !== rowDrag.from + 1}
-              class:drop-after={rowDrag && rowDrag.to === layout.groups.length && i === layout.groups.length - 1 && rowDrag.from !== i}
+              class:being-dragged={rowOrder.from === i}
+              style:translate={rowOrder.from === i ? dragOffset : null}
+              class:drop-before={rowOrder.dropBefore(i)}
+              class:drop-after={rowOrder.dropAfter(i)}
               role="listitem"
               aria-roledescription="reorderable row"
               tabindex="0"
               title="{text} (drag to reorder)"
-              onpointerdown={(e) => rowPointerDown(i, e)}
+              onpointerdown={(e) => rowOrder.pointerdown(i, e)}
               onkeydown={(e) => rowKeydown(i, e)}
             >
               {text}
@@ -545,7 +474,7 @@
                 class:wrapped={headerMode.mode === 'wrap'}
                 style:transform="translate({sx(header.x, header.cx)}, {em(headerMode.mode === 'line' ? header.y : 0)})"
                 style:width={sx(header.width, header.cwidth)}
-                style:height={headerMode.mode === 'line' ? undefined : em(20 + headerMode.extra)}
+                style:height={headerMode.mode === 'line' ? undefined : em(HEADER_ROW + headerMode.extra)}
                 title={header.total ? `${text}: ${header.total} in total` : text}
               >
                 <div class="band-label" style:width={headerMode.mode === 'turn' ? em(headerMode.length) : undefined}>
@@ -562,7 +491,7 @@
               {#if layout.rowOffset}<div
                   class="row row-header"
                   style:width={sx(layout.rowWidth, layout.countWidth)}
-                  style:height={em(20 + headerMode.extra)}
+                  style:height={em(HEADER_ROW + headerMode.extra)}
                 ></div>{/if}
               {#each layout.groups as group (group.label)}
                 <div

@@ -107,7 +107,7 @@
   <p class="ai-hint">
     {#if aiSettings.remember}
       Saved in this browser’s local storage. Anyone using this browser profile can use it.
-      <button type="button" class="ai-link" onclick={() => aiSettings.forget()}>Forget my keys</button>
+      <button type="button" class="link-button" onclick={() => aiSettings.forget()}>Forget my keys</button>
     {:else}
       Your key is kept only in this page’s memory and is forgotten when you close the tab.
     {/if}

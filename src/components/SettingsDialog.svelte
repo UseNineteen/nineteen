@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
+  import Modal from './Modal.svelte';
   import type { FitMode } from '../lib/persist';
   import { BOX_LIMITS, DEFAULTS, appSettings } from '../lib/settings.svelte';
   import type { Viz } from '../lib/viz.svelte';
@@ -11,21 +13,18 @@
 
   let { viz, open, onclose }: Props = $props();
 
-  let dialog: HTMLDialogElement;
   /** Values when the dialog opened; restored when it is dismissed without saving */
   let saved = appSettings.snapshot();
   /** The view's fit and zoom when the dialog opened, since "Stretch to fit" here is the same switch as the button */
   let savedView: { fit: FitMode; zoom: number } = { fit: 'none', zoom: 1 };
-  let pressedOnBackdrop = false;
 
+  // Taken once per opening (untracked, or live edits would overwrite what Cancel restores)
   $effect(() => {
-    if (open && !dialog.open) {
+    if (!open) return;
+    untrack(() => {
       saved = appSettings.snapshot();
       savedView = { fit: viz.fit, zoom: viz.zoom };
-      dialog.showModal();
-    } else if (!open && dialog.open) {
-      dialog.close();
-    }
+    });
   });
 
   /** Changes preview live; Save keeps them. */
@@ -48,34 +47,9 @@
     appSettings.resetDisplay();
     viz.setStretch(false);
   }
-
-  function isBackdrop(event: MouseEvent): boolean {
-    if (event.target !== dialog) return false;
-    const r = dialog.getBoundingClientRect();
-    return event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
-  }
 </script>
 
-<dialog
-  id="settings"
-  class="nineteen-dialog"
-  bind:this={dialog}
-  aria-labelledby="settings-title"
-  oncancel={(e) => {
-    e.preventDefault();
-    cancel();
-  }}
-  onclose={() => {
-    // Only reached if the browser closed the dialog itself (it can ignore preventDefault on repeated Esc)
-    if (open) cancel();
-  }}
-  onpointerdown={(e) => (pressedOnBackdrop = isBackdrop(e))}
-  onclick={(e) => {
-    // Both press and release outside, so a text selection dragged out of the dialog doesn't close it
-    if (pressedOnBackdrop && isBackdrop(e)) cancel();
-    pressedOnBackdrop = false;
-  }}
->
+<Modal {open} id="settings" labelledby="settings-title" onclose={cancel}>
   <header class="title-bar">
     <strong class="title" id="settings-title">Settings</strong>
     <button type="button" class="close" aria-label="Close without saving" onclick={cancel}>&times;</button>
@@ -148,4 +122,4 @@
     <button type="button" class="btn" onclick={cancel}>Cancel</button>
     <button type="button" class="btn btn-primary" onclick={save}>Save</button>
   </footer>
-</dialog>
+</Modal>

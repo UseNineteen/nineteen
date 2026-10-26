@@ -134,8 +134,10 @@ describe('auto-coding', () => {
     ]);
   });
 
-  it('batches rows by count', () => {
-    expect(batches(dataset.items, ['Name'], 2).map((b) => b.length)).toEqual([2, 1]);
+  it('batches rows by count and by rendered size', () => {
+    expect(batches(dataset.items, ['Name'], 2).map((b) => b.map((i) => i.id))).toEqual([[1, 2], [3]]);
+    // Each rendered row is about 20 characters, so a 30-character budget holds one row per batch
+    expect(batches(dataset.items, ['Name'], 40, 30).map((b) => b.length)).toEqual([1, 1, 1]);
   });
 
   it('builds a strict schema that includes the fallback category', () => {

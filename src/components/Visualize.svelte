@@ -238,12 +238,12 @@
       >
         {#snippet side()}
           {#if tagsMounted}
-            <div class="ai-dock" hidden={!tagsOpen}>
+            <div class="side-dock" hidden={!tagsOpen}>
               <TagsPanel {viz} onclose={() => (tagsOpen = false)} ondisplayoptions={(column) => (tagOptionsFor = column)} />
             </div>
           {/if}
           {#if aiMounted}
-            <div class="ai-dock" hidden={!aiOpen}>
+            <div class="side-dock" hidden={!aiOpen}>
               <AIPanel {viz} {popups} onclose={() => (aiOpen = false)} />
             </div>
           {/if}

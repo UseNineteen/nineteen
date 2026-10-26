@@ -33,7 +33,7 @@ export function search(
   term: string,
   scope: string[],
   /** List (tag) columns, with how each one's cells are split */
-  tagColumns: ReadonlySet<string> | ReadonlyMap<string, ListSeparator> = new Set(),
+  tagColumns: ReadonlyMap<string, ListSeparator> = new Map(),
 ): Set<number> | null {
   // Groups without a term don't filter (a blank search, or "dog AND " before its second term is typed)
   const termGroups = groups(term)
@@ -47,8 +47,8 @@ export function search(
     for (const item of items) {
       const hit = scope.some((column) => {
         const value = item.raw[column] ?? '';
-        if (tagColumns.has(column)) {
-          const separator = tagColumns instanceof Map ? tagColumns.get(column) : 'auto';
+        const separator = tagColumns.get(column);
+        if (separator) {
           return splitTags(value, separator).some((tag) => whole.some((p) => p.test(tag)));
         }
         return patterns.some((p) => p.test(value));

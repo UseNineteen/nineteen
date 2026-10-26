@@ -9,6 +9,25 @@ export const GEOMETRY = {
   row: 26,
 } as const;
 
+/**
+ * Legend geometry in px, shared with the stylesheet: the legend sets these as CSS custom
+ * properties (--legend-*), and uses them to line its entries up with the rows.
+ */
+export const LEGEND = {
+  /** The collapse toggle, and its top and bottom margin */
+  toggle: 20,
+  toggleMargin: 5,
+  /** Each entry's line height, and the gaps above and below it */
+  entryLine: 14,
+  entryGapTop: 6,
+  entryGapBottom: 8,
+  /** The color column's name above the entries */
+  title: 20,
+} as const;
+
+/** Vertical distance from one legend entry to the next */
+export const LEGEND_PITCH = LEGEND.entryLine + LEGEND.entryGapTop + LEGEND.entryGapBottom;
+
 /** 'custom': a dragged order of values (rows, or legend entries); values it doesn't mention follow, A–Z */
 export type SortBy = 'value' | 'count' | 'custom';
 export type SortDirection = 'ascending' | 'descending';

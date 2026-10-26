@@ -1,5 +1,6 @@
 import { datasetDetails } from './data';
-import { GEOMETRY, rowTop } from './layout';
+import { HEADER_ROW, LINE_HEIGHT, SWATCH, TOTAL_GAP, TURNED_MAX } from './band-labels';
+import { GEOMETRY, LEGEND_PITCH, rowTop } from './layout';
 import { wrapText } from './wrap';
 import type { Viz } from './viz.svelte';
 
@@ -55,7 +56,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
   const plotHeight = layout.rowCount * GEOMETRY.row + extra;
   // The legend starts level with the first data row (below any split label row), under its title
   const legendTop = rowTop(1 + layout.rowOffset) + extra;
-  const legendHeight = viz.legendCollapsed ? 0 : legendTop + layout.legend.length * 28 + 10;
+  const legendHeight = viz.legendCollapsed ? 0 : legendTop + layout.legend.length * LEGEND_PITCH + 10;
   const width = Math.ceil(plotLeft + maxLabel + rowWidth + PAD);
   const height = Math.ceil(plotTop + Math.max(plotHeight, legendHeight) + PAD);
 
@@ -106,7 +107,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     ctx.fillStyle = '#47535e';
     ctx.fillText(ellipsize(ctx, viz.colorKey, LEGEND - PAD - 10), PAD, plotTop + legendTop - 12);
     layout.legend.forEach((entry, i) => {
-      const top = plotTop + legendTop + i * 28;
+      const top = plotTop + legendTop + i * LEGEND_PITCH;
       const swatch = viz.colors.get(entry.label)!;
       ctx.fillStyle = swatch.stroke;
       ctx.beginPath();
@@ -148,12 +149,12 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     const swatch = viz.colors.get(header.key);
     const text = viz.label(header.label, viz.colorKey);
     ctx.font = `400 ${font}px ${FONT}`;
-    const totalWidth = header.total ? ctx.measureText(header.total).width + 9 : 0;
+    const totalWidth = header.total ? ctx.measureText(header.total).width + TOTAL_GAP : 0;
     ctx.font = `500 ${font}px ${FONT}`;
-    const room = header.width + header.cwidth - 16 - totalWidth;
+    const room = header.width + header.cwidth - SWATCH - totalWidth;
     // Lines of text, bottom line last; the row's bottom edge is where the boxes begin
     let lines: string[];
-    if (mode === 'turn') lines = [ellipsize(ctx, text, 140 - 16 - totalWidth)];
+    if (mode === 'turn') lines = [ellipsize(ctx, text, TURNED_MAX - SWATCH - totalWidth)];
     else if (mode === 'wrap') {
       const wrapped = wrapText(text, room, (t) => ctx.measureText(t).width, viz.headerLines);
       lines = wrapped.lines;
@@ -167,9 +168,9 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
       ctx.rotate(-Math.PI / 2);
       ctx.translate(0, -size);
     } else {
-      ctx.translate(left, bottom - size - (lines.length - 1) * 16 - (mode === 'line' ? 20 - size - 1.67 : 0));
+      ctx.translate(left, bottom - size - (lines.length - 1) * LINE_HEIGHT - (mode === 'line' ? HEADER_ROW - size - 1.67 : 0));
     }
-    const lastY = (lines.length - 1) * 16;
+    const lastY = (lines.length - 1) * LINE_HEIGHT;
     if (swatch) {
       ctx.fillStyle = swatch.stroke;
       ctx.fillRect(0, lastY + 4, 11, 11);
@@ -177,14 +178,14 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
       ctx.fillRect(3, lastY + 7, 5, 5);
     }
     ctx.fillStyle = '#47535e';
-    lines.forEach((line, n) => ctx.fillText(line, 16, n * 16 + size / 2));
+    lines.forEach((line, n) => ctx.fillText(line, SWATCH, n * LINE_HEIGHT + size / 2));
     if (header.total) {
       const lastWidth = ctx.measureText(lines[lines.length - 1]).width;
       ctx.font = `400 ${font}px ${FONT}`;
       ctx.fillStyle = '#a3a8ae';
       ctx.fillText(
         header.total,
-        16 + (mode === 'wrap' ? Math.max(...lines.map((l) => ctx.measureText(l).width)) : lastWidth) + 9,
+        SWATCH + (mode === 'wrap' ? Math.max(...lines.map((l) => ctx.measureText(l).width)) : lastWidth) + TOTAL_GAP,
         lastY + size / 2,
       );
     }

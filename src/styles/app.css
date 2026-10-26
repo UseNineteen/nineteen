@@ -768,10 +768,11 @@ footer li:first-child::before {
   margin: 0;
   padding: 0;
 }
+/* --legend-* are set by the legend from LEGEND in layout.ts, which lines entries up with the rows */
 #legend .legend-item {
   display: flex;
-  line-height: 14px;
-  margin: 6px 0 8px;
+  line-height: var(--legend-entry-line);
+  margin: var(--legend-entry-gap-top) 0 var(--legend-entry-gap-bottom);
   transition: opacity 50ms 50ms;
   padding: 0 10px;
 }
@@ -806,17 +807,17 @@ footer li:first-child::before {
 #legend-toggle {
   background-color: transparent;
   background-image: url('../assets/images/collapse.svg');
-  background-size: 20px;
+  background-size: var(--legend-toggle);
   background-position: center;
   background-repeat: no-repeat;
   border: none;
   display: block;
   float: left;
-  height: 20px;
-  margin: 5px 7px;
+  height: var(--legend-toggle);
+  margin: var(--legend-toggle-margin) 7px;
   overflow: hidden;
   padding: 0;
-  width: 20px;
+  width: var(--legend-toggle);
 }
 #legend-toggle.legend-collapsed {
   transform: scaleX(-1);
@@ -1005,10 +1006,11 @@ footer li:first-child::before {
   height: calc(18em / 13);
   position: absolute;
 }
+/* --band-* are set by the viewer from BAND in band-labels.ts, which measures the labels with the same numbers */
 #viewer .band-label {
   align-items: center;
   display: flex;
-  gap: calc(5em / 13);
+  gap: calc(var(--band-gap) * 1em / 13);
   height: 100%;
   min-width: 0;
   overflow: hidden;
@@ -1023,7 +1025,7 @@ footer li:first-child::before {
 #viewer .band-header.wrapped .band-text {
   -webkit-box-orient: vertical;
   display: -webkit-box;
-  line-height: calc(16em / 13);
+  line-height: calc(var(--band-line-height) * 1em / 13);
   white-space: normal;
 }
 #viewer .band-header.wrapped .band-swatch,
@@ -1049,15 +1051,15 @@ footer li:first-child::before {
   border-radius: calc(2em / 13);
   box-sizing: border-box;
   flex: 0 0 auto;
-  height: calc(11em / 13);
-  width: calc(11em / 13);
+  height: calc(var(--band-swatch) * 1em / 13);
+  width: calc(var(--band-swatch) * 1em / 13);
 }
 #viewer .band-total {
   /* Like the legend and row counts; never trimmed, the value text gives way instead */
   color: var(--gray);
   flex: 0 0 auto;
   font-weight: 400;
-  margin-left: calc(4em / 13);
+  margin-left: calc(var(--band-total-margin) * 1em / 13);
 }
 #viewer .row.row-header {
   background-color: transparent;
@@ -1556,12 +1558,12 @@ footer li:first-child::before {
   background-image: url('../assets/images/tag-dark.svg');
   margin-right: 8px;
 }
-.ai-dock {
+.side-dock {
   flex: 0 0 auto;
   display: flex;
   min-height: 0;
 }
-.ai-dock[hidden] {
+.side-dock[hidden] {
   display: none;
 }
 #ai-panel,
@@ -1578,8 +1580,8 @@ footer li:first-child::before {
   width: 400px;
   max-width: 100vw;
 }
-#ai-panel .ai-header,
-#tags-panel .ai-header {
+#ai-panel .panel-header,
+#tags-panel .panel-header {
   align-items: center;
   background-color: var(--lightgray);
   border-bottom: 1px solid #d8dadf;
@@ -1589,12 +1591,12 @@ footer li:first-child::before {
   font-size: 16px;
   padding: 10px 15px;
 }
-#ai-panel .ai-header strong,
-#tags-panel .ai-header strong {
+#ai-panel .panel-header strong,
+#tags-panel .panel-header strong {
   flex: 1 1 auto;
 }
-#ai-panel .ai-close,
-#tags-panel .ai-close {
+#ai-panel .panel-close,
+#tags-panel .panel-close {
   appearance: none;
   background: none;
   border: none;
@@ -1710,8 +1712,8 @@ footer li:first-child::before {
 #ai-panel .btn:disabled {
   opacity: 0.4;
 }
-#ai-panel .ai-link,
-#tags-panel .ai-link {
+#ai-panel .link-button,
+#tags-panel .link-button {
   appearance: none;
   background: none;
   border: none;
@@ -1986,7 +1988,7 @@ footer li:first-child::before {
   text-decoration: underline;
 }
 @media (max-width: 900px) {
-  .ai-dock:not([hidden]) {
+  .side-dock:not([hidden]) {
     position: fixed;
     inset: 0 0 0 auto;
     z-index: 6;
@@ -2383,9 +2385,9 @@ footer li:first-child::before {
   color: var(--trout);
   font-size: 13px;
   font-weight: 700;
-  height: 20px;
+  height: var(--legend-title);
   left: 10px;
-  line-height: 20px;
+  line-height: var(--legend-title);
   max-width: calc(100% - 20px);
   overflow: hidden;
   padding: 0;

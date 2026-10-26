@@ -1,6 +1,8 @@
 <script lang="ts">
   import { tick } from 'svelte';
-  import { splitTags } from '../lib/data';
+  import { normalizeTag, splitTags } from '../lib/data';
+  import { dataItems } from '../lib/text';
+  import { PointerDrag } from '../lib/drag';
   import { tagKey, type TagInfo } from '../lib/tags';
   import type { Viz } from '../lib/viz.svelte';
 
@@ -53,11 +55,8 @@
   });
   /** The tag column can be any column; "Tags" is offered even before it exists */
   const columnChoices = $derived(
-    viz.dataset.columns.includes('Tags') || viz.dataset.columns.some((c) => /^tags$/i.test(c))
-      ? viz.dataset.columns
-      : [...viz.dataset.columns, NEW_TAGS],
+    viz.dataset.columns.some((c) => /^tags$/i.test(c)) ? viz.dataset.columns : [...viz.dataset.columns, NEW_TAGS],
   );
-  const items = (n: number) => `${n} ${n === 1 ? 'data item' : 'data items'}`;
 
   function chooseColumn(value: string) {
     if (value === NEW_TAGS) viz.resetTagsColumn();
@@ -97,7 +96,7 @@
   }
 
   function finishRename(tag: TagInfo) {
-    const next = renameDraft.trim().replace(/\s+/g, ' ');
+    const next = normalizeTag(renameDraft);
     renaming = null;
     if (!next || next === tag.label) return;
     const existing = catalog.find((t) => t.key === tagKey(next) && t.key !== tag.key);
@@ -119,46 +118,37 @@
 
   // Drag one tag onto another
   let listEl = $state<HTMLElement>();
-  let pressed: { key: string; x: number; y: number; id: number } | null = null;
   let dragging = $state<string | null>(null);
   let dropOn = $state<string | null>(null);
   /** Set when a drag ends, so the click that follows doesn't start a rename */
   let justDragged = false;
+  const drag = new PointerDrag<string>({
+    onstart: ({ pressed }) => (dragging = pressed),
+    onmove: ({ event }) => {
+      const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-tag-key]');
+      const key = row?.dataset.tagKey ?? null;
+      dropOn = key && key !== dragging ? key : null;
+    },
+    onend: (_move, dragged) => {
+      if (dragged) {
+        justDragged = true;
+        setTimeout(() => (justDragged = false));
+        const from = catalog.find((t) => t.key === dragging);
+        const into = catalog.find((t) => t.key === dropOn);
+        if (from && into) {
+          reset();
+          pending = { kind: 'combine', from, into };
+        }
+      }
+      dragging = dropOn = null;
+    },
+  });
 
   function pointerdown(tag: TagInfo, event: PointerEvent) {
-    if (event.button !== 0 || renaming) return;
+    if (renaming) return;
     // The name can be dragged too (a click without moving still renames)
     if ((event.target as HTMLElement).closest('.tags-more, .tags-menu, input, select')) return;
-    pressed = { key: tag.key, x: event.clientX, y: event.clientY, id: event.pointerId };
-  }
-
-  function pointermove(event: PointerEvent) {
-    if (!pressed || event.pointerId !== pressed.id) return;
-    if (dragging === null && Math.hypot(event.clientX - pressed.x, event.clientY - pressed.y) < 5) return;
-    if (dragging === null) {
-      dragging = pressed.key;
-      listEl?.setPointerCapture(event.pointerId);
-    }
-    const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-tag-key]');
-    const key = row?.dataset.tagKey ?? null;
-    dropOn = key && key !== dragging ? key : null;
-  }
-
-  function pointerup() {
-    if (dragging) {
-      justDragged = true;
-      setTimeout(() => (justDragged = false));
-    }
-    if (dragging && dropOn) {
-      const from = catalog.find((t) => t.key === dragging);
-      const into = catalog.find((t) => t.key === dropOn);
-      if (from && into) {
-        reset();
-        pending = { kind: 'combine', from, into };
-      }
-    }
-    pressed = null;
-    dragging = dropOn = null;
+    drag.press(tag.key, event);
   }
 
   // ---------- Delete, column ----------
@@ -166,7 +156,7 @@
   function confirmDelete(tag: TagInfo) {
     const changed = viz.deleteTag(tag.label);
     pending = null;
-    report(`Deleted “${tag.label}” from ${items(changed)}.`);
+    report(`Deleted “${tag.label}” from ${dataItems(changed)}.`);
   }
 
   function makeColumn(tag: TagInfo, name: string, keep: boolean) {
@@ -201,9 +191,9 @@
 />
 
 <aside id="tags-panel" aria-label="Manage tags">
-  <header class="ai-header">
+  <header class="panel-header">
     <strong>Manage tags</strong>
-    <button type="button" class="ai-close" aria-label="Close Manage tags" onclick={onclose}>&times;</button>
+    <button type="button" class="panel-close" aria-label="Close Manage tags" onclick={onclose}>&times;</button>
   </header>
 
   <div class="tags-body">
@@ -227,7 +217,7 @@
       <div class="tags-confirm" role="alertdialog" aria-label="Combine tags">
         <p>
           Combine <strong>“{pending.from.label}”</strong> into <strong>“{pending.into.label}”</strong>?
-          {items(counts.from - counts.both)} gain “{pending.into.label}”{#if counts.both}; {counts.both} already had both{/if}.
+          {dataItems(counts.from - counts.both)} gain “{pending.into.label}”{#if counts.both}; {counts.both} already had both{/if}.
         </p>
         <div class="tags-confirm-actions">
           <button type="button" class="btn btn-primary" onclick={() => pending?.kind === 'combine' && combine(pending.from, pending.into)}
@@ -237,11 +227,13 @@
         </div>
       </div>
     {:else if pending?.kind === 'pick-combine'}
+      <!-- A narrowed copy for the closures below, which can't see the {:else if} test -->
+      {@const picking = pending}
       <div class="tags-confirm">
         <label>
-          Combine <strong>“{pending.from.label}”</strong> into
+          Combine <strong>“{picking.from.label}”</strong> into
           <select bind:value={pending.into}>
-            {#each catalog.filter((t) => pending?.kind === 'pick-combine' && t.key !== pending.from.key) as tag (tag.key)}
+            {#each catalog.filter((t) => t.key !== picking.from.key) as tag (tag.key)}
               <option value={tag.key}>{tag.label}</option>
             {/each}
           </select>
@@ -251,9 +243,8 @@
             type="button"
             class="btn btn-primary"
             onclick={() => {
-              if (pending?.kind !== 'pick-combine') return;
-              const into = catalog.find((t) => t.key === (pending as { into: string }).into);
-              if (into) pending = { kind: 'combine', from: pending.from, into };
+              const into = catalog.find((t) => t.key === picking.into);
+              if (into) pending = { kind: 'combine', from: picking.from, into };
             }}>Next</button
           >
           <button type="button" class="btn" onclick={() => (pending = null)}>Cancel</button>
@@ -261,7 +252,7 @@
       </div>
     {:else if pending?.kind === 'delete'}
       <div class="tags-confirm" role="alertdialog" aria-label="Delete tag">
-        <p>Remove <strong>“{pending.tag.label}”</strong> from {items(pending.tag.count)}?</p>
+        <p>Remove <strong>“{pending.tag.label}”</strong> from {dataItems(pending.tag.count)}?</p>
         <div class="tags-confirm-actions">
           <button type="button" class="btn btn-danger" onclick={() => pending?.kind === 'delete' && confirmDelete(pending.tag)}
             >Delete</button
@@ -279,7 +270,7 @@
       >
         <p>
           {pending.keep ? 'Add' : 'Replace the tag with'} a data field that is <strong>True</strong> for the
-          {items(pending.tag.count)} tagged “{pending.tag.label}” and <strong>False</strong> for the rest.
+          {dataItems(pending.tag.count)} tagged “{pending.tag.label}” and <strong>False</strong> for the rest.
         </p>
         <label>Field name <input type="text" bind:value={pending.name} spellcheck="false" /></label>
         <label class="tags-keep">
@@ -309,9 +300,9 @@
         class:dragging={dragging !== null}
         bind:this={listEl}
         aria-label="Tags. Drag a tag onto another to combine them."
-        onpointermove={pointermove}
-        onpointerup={pointerup}
-        onpointercancel={pointerup}
+        onpointermove={(e) => drag.move(listEl, e)}
+        onpointerup={(e) => drag.release(e)}
+        onpointercancel={(e) => drag.release(e)}
       >
         {#each shown as tag (tag.key)}
           <li
@@ -372,6 +363,6 @@
   </div>
 
   <footer class="tags-footer">
-    <button type="button" class="ai-link" onclick={() => ondisplayoptions(column)}>List display options…</button>
+    <button type="button" class="link-button" onclick={() => ondisplayoptions(column)}>List display options…</button>
   </footer>
 </aside>

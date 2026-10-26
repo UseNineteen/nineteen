@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Modal from './Modal.svelte';
+  import { dataItems } from '../lib/text';
   import type { Viz } from '../lib/viz.svelte';
 
   interface Props {
@@ -10,16 +12,8 @@
 
   let { viz, column, onclose }: Props = $props();
 
-  let dialog: HTMLDialogElement;
-  let pressedOnBackdrop = false;
-
   const catalog = $derived(column ? viz.catalog(column) : []);
   const ignored = $derived(new Set(column ? (viz.tagIgnored[column] ?? []) : []));
-
-  $effect(() => {
-    if (column && !dialog.open) dialog.showModal();
-    else if (!column && dialog.open) dialog.close();
-  });
 
   function setIncluded(key: string, included: boolean) {
     if (!column) return;
@@ -41,32 +35,9 @@
   function includeAll() {
     if (column) viz.setIgnoredTags(column, []);
   }
-
-  function isBackdrop(event: MouseEvent): boolean {
-    if (event.target !== dialog) return false;
-    const r = dialog.getBoundingClientRect();
-    return event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
-  }
 </script>
 
-<dialog
-  id="tag-options"
-  class="nineteen-dialog"
-  bind:this={dialog}
-  aria-labelledby="tag-options-title"
-  oncancel={(e) => {
-    e.preventDefault();
-    onclose();
-  }}
-  onclose={() => {
-    if (column) onclose();
-  }}
-  onpointerdown={(e) => (pressedOnBackdrop = isBackdrop(e))}
-  onclick={(e) => {
-    if (pressedOnBackdrop && isBackdrop(e)) onclose();
-    pressedOnBackdrop = false;
-  }}
->
+<Modal open={column !== null} id="tag-options" labelledby="tag-options-title" {onclose}>
   <header class="title-bar">
     <strong class="title" id="tag-options-title">List display options: {column}</strong>
     <button type="button" class="close" aria-label="Close" onclick={onclose}>&times;</button>
@@ -84,9 +55,9 @@
             <label class="settings-check">
               <input type="checkbox" checked={!ignored.has(tag.key)} onchange={(e) => setIncluded(tag.key, e.currentTarget.checked)} />
               <span class="tag-option-name">{tag.label}</span>
-              <span class="tag-option-count">{tag.count} {tag.count === 1 ? 'data item' : 'data items'}</span>
+              <span class="tag-option-count">{dataItems(tag.count)}</span>
             </label>
-            <button type="button" class="ai-link tag-only" onclick={() => only(tag.key)} title="Leave out every other value"
+            <button type="button" class="link-button tag-only" onclick={() => only(tag.key)} title="Leave out every other value"
               >Only this</button
             >
           </li>
@@ -102,4 +73,4 @@
     <span class="settings-spacer"></span>
     <button type="button" class="btn btn-primary" onclick={onclose}>Done</button>
   </footer>
-</dialog>
+</Modal>

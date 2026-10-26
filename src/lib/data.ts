@@ -119,12 +119,17 @@ export const LIST_SEPARATORS: { value: ListSeparator; label: string }[] = [
 const SPLIT: Record<ListSeparator, RegExp> = { auto: /[,;]/, comma: /,/, semicolon: /;/, newline: /\r?\n/ };
 const JOIN: Record<ListSeparator, string> = { auto: ', ', comma: ', ', semicolon: '; ', newline: '\n' };
 
-/** Trimmed, single-spaced values without duplicates (ignoring case), in their original order. */
+/** A tag as it is stored and shown: trimmed, with runs of whitespace collapsed to one space. */
+export function normalizeTag(tag: string): string {
+  return tag.trim().replace(/\s+/g, ' ');
+}
+
+/** Normalized values without duplicates (ignoring case), in their original order. */
 function unique(values: string[]): string[] {
   const seen = new Set<string>();
   const kept: string[] = [];
   for (const value of values) {
-    const tag = value.trim().replace(/\s+/g, ' ');
+    const tag = normalizeTag(value);
     const key = tag.toLowerCase();
     if (!tag || seen.has(key)) continue;
     seen.add(key);

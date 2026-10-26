@@ -1,6 +1,6 @@
 import { datasetDetails } from './data';
 import { HEADER_ROW, LINE_HEIGHT, SWATCH, TOTAL_GAP, TURNED_MAX } from './band-labels';
-import { GEOMETRY, LEGEND_PITCH, rowTop } from './layout';
+import { GEOMETRY, LEGEND, LEGEND_PITCH, legendWidth, rowTop } from './layout';
 import { wrapText } from './wrap';
 import type { Viz } from './viz.svelte';
 
@@ -12,7 +12,6 @@ import type { Viz } from './viz.svelte';
 
 const FONT = 'Colfax, sans-serif';
 const HEADER = 92;
-const LEGEND = 240;
 const PAD = 20;
 const MAX_SIDE = 16384;
 const MAX_AREA = 16_000_000; // stay under Safari's canvas limit
@@ -48,13 +47,23 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
   const maxLabel = Math.min(325, Math.max(0, ...rowLabels.map((label) => measure.measureText(label).width + 20)));
   const rowWidth = layout.rowWidth + layout.countWidth;
 
-  const legendWidth = viz.legendCollapsed ? 0 : LEGEND;
+  const showCounts = viz.counts && !viz.split;
+  const legendLabels = layout.legend.map((entry) => viz.label(entry.label, viz.colorKey));
+  // As on screen, the legend is as wide as its longest entry, plus the export's wider margins
+  const widestEntry = Math.max(
+    0,
+    ...layout.legend.map((entry, i) => {
+      const count = showCounts ? LEGEND.countGap + measure.measureText(String(entry.count)).width : 0;
+      return LEGEND.swatch + LEGEND.swatchGap + measure.measureText(legendLabels[i]).width + count;
+    }),
+  );
+  const legendBox = viz.legendCollapsed ? 0 : legendWidth(widestEntry) + 2 * (PAD - LEGEND.padding);
   const plotTop = HEADER + PAD;
-  const plotLeft = legendWidth + PAD;
+  const plotLeft = legendBox + PAD;
   const extra = layout.headerExtra;
   const mode = viz.headerMode;
   const plotHeight = layout.rowCount * GEOMETRY.row + extra;
-  // The legend starts level with the first data row (below any split label row), under its title
+  // The legend starts level with the first data row (below any split label row)
   const legendTop = rowTop(1 + layout.rowOffset) + extra;
   const legendHeight = viz.legendCollapsed ? 0 : legendTop + layout.legend.length * LEGEND_PITCH + 10;
   const width = Math.ceil(plotLeft + maxLabel + rowWidth + PAD);
@@ -102,27 +111,25 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
 
   // Legend
   if (!viz.legendCollapsed) {
-    const showCounts = viz.counts && !viz.split;
-    ctx.font = `700 13px ${FONT}`;
-    ctx.fillStyle = '#47535e';
-    ctx.fillText(ellipsize(ctx, viz.colorKey, LEGEND - PAD - 10), PAD, plotTop + legendTop - 12);
+    const textLeft = PAD + LEGEND.swatch + LEGEND.swatchGap;
     layout.legend.forEach((entry, i) => {
       const top = plotTop + legendTop + i * LEGEND_PITCH;
       const swatch = viz.colors.get(entry.label)!;
       ctx.fillStyle = swatch.stroke;
       ctx.beginPath();
-      ctx.roundRect(PAD, top, 14, 14, 2);
+      ctx.roundRect(PAD, top, LEGEND.swatch, LEGEND.swatch, 2);
       ctx.fill();
       ctx.fillStyle = swatch.fill;
       ctx.fillRect(PAD + 4, top + 4, 6, 6);
       ctx.font = `400 13px ${FONT}`;
       ctx.fillStyle = '#222222';
-      const label = ellipsize(ctx, viz.label(entry.label, viz.colorKey), LEGEND - PAD - 24 - (showCounts ? 40 : 10));
-      ctx.fillText(label, PAD + 24, top + 8);
+      const countWidth = showCounts ? LEGEND.countGap + ctx.measureText(String(entry.count)).width : 0;
+      const label = ellipsize(ctx, legendLabels[i], legendBox - textLeft - countWidth - PAD);
+      ctx.fillText(label, textLeft, top + 8);
       if (showCounts) {
         const w = ctx.measureText(label).width;
         ctx.fillStyle = '#a1a7ad';
-        ctx.fillText(String(entry.count), PAD + 24 + w + 5, top + 8);
+        ctx.fillText(String(entry.count), textLeft + w + LEGEND.countGap, top + 8);
       }
     });
   }

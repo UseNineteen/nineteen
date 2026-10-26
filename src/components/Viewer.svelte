@@ -400,7 +400,7 @@
           onpointerup={(e) => rowOrder.pointerup(e)}
           onpointercancel={(e) => rowOrder.pointerup(e)}
         >
-          <!-- Empty: the legend's title names the color column -->
+          <!-- Empty: the split header row has no row label -->
           {#if layout.rowOffset}<div
               class="label-item label-header"
               aria-hidden="true"

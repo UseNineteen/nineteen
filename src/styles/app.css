@@ -754,7 +754,8 @@ footer li:first-child::before {
   overflow-x: hidden;
   overflow-y: auto;
   transition: width 350ms;
-  width: 240px;
+  /* --legend-* are set by the legend from LEGEND in layout.ts; the width fits its longest entry */
+  width: var(--legend-width);
 }
 #legend.legend-collapsed {
   overflow-y: hidden;
@@ -774,13 +775,13 @@ footer li:first-child::before {
     opacity 350ms,
     visibility 0s 350ms;
 }
-/* --legend-* are set by the legend from LEGEND in layout.ts, which lines entries up with the rows */
+/* The entry geometry lines entries up with the rows and is what the legend's width is measured from */
 #legend .legend-item {
   display: flex;
   line-height: var(--legend-entry-line);
   margin: var(--legend-entry-gap-top) 0 var(--legend-entry-gap-bottom);
   transition: opacity 50ms 50ms;
-  padding: 0 10px;
+  padding: 0 var(--legend-padding);
 }
 #legend .legend-items.dimmed .legend-item:not(.highlighted) {
   opacity: 0.25;
@@ -790,9 +791,9 @@ footer li:first-child::before {
   box-sizing: border-box;
   border-radius: 2px;
   flex: 0 0 auto;
-  margin: 0 10px 0 0;
-  height: 14px;
-  width: 14px;
+  margin: 0 var(--legend-swatch-gap) 0 0;
+  height: var(--legend-swatch);
+  width: var(--legend-swatch);
 }
 #legend .label {
   flex: 0 1 auto;
@@ -803,7 +804,7 @@ footer li:first-child::before {
 #legend .count {
   color: #a1a7ad;
   flex: 0 0 auto;
-  margin: 0 0 0 5px;
+  margin: 0 0 0 var(--legend-count-gap);
 }
 #legend-toggle {
   background-color: transparent;

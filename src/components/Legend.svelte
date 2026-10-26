@@ -1,7 +1,12 @@
 <script lang="ts">
-  import { LEGEND } from '../lib/layout';
+  import { LABEL_FONT } from '../lib/band-labels';
+  import { GEOMETRY, LEGEND, legendWidth } from '../lib/layout';
   import { ListReorder } from '../lib/reorder.svelte';
   import type { Viz } from '../lib/viz.svelte';
+  import { onMount } from 'svelte';
+
+  /** The reorder grip's extra width beside the swatch (see the legend's grip rules in app.css) */
+  const GRIP = 4;
 
   interface Props {
     viz: Viz;
@@ -14,6 +19,29 @@
   const LIST_START = LEGEND.toggle + 2 * LEGEND.toggleMargin + LEGEND.entryGapTop;
   const offset = $derived(Math.max(0, viz.firstRowTop - LIST_START));
   const reorderable = $derived(!viz.legendCollapsed && viz.layout.legend.length > 1);
+
+  /** Re-measured once the web font has loaded: the fallback font has different widths */
+  let fontsReady = $state(0);
+  onMount(() => {
+    document.fonts?.ready.then(() => fontsReady++);
+  });
+  const measureCtx = document.createElement('canvas').getContext('2d');
+  /** As wide as the longest entry: swatch, grip when reorderable, label and count */
+  const width = $derived.by(() => {
+    void fontsReady;
+    if (!measureCtx) return legendWidth(LEGEND.maxWidth);
+    measureCtx.font = `400 ${GEOMETRY.font}px ${LABEL_FONT}`;
+    const grip = reorderable ? GRIP : 0;
+    const widest = Math.max(
+      0,
+      ...viz.layout.legend.map((entry) => {
+        const label = measureCtx.measureText(viz.label(entry.label, viz.colorKey)).width;
+        const count = showCounts ? LEGEND.countGap + measureCtx.measureText(String(entry.count)).width : 0;
+        return LEGEND.swatch + LEGEND.swatchGap + grip + label + count;
+      }),
+    );
+    return legendWidth(widest);
+  });
 
   let listEl = $state<HTMLElement>();
   const reorder = new ListReorder({
@@ -34,6 +62,11 @@
 <div
   id="legend"
   class:legend-collapsed={viz.legendCollapsed}
+  style:--legend-width="{width}px"
+  style:--legend-padding="{LEGEND.padding}px"
+  style:--legend-swatch="{LEGEND.swatch}px"
+  style:--legend-swatch-gap="{LEGEND.swatchGap}px"
+  style:--legend-count-gap="{LEGEND.countGap}px"
   style:--legend-toggle="{LEGEND.toggle}px"
   style:--legend-toggle-margin="{LEGEND.toggleMargin}px"
   style:--legend-entry-line="{LEGEND.entryLine}px"

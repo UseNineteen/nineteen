@@ -21,7 +21,23 @@ export const LEGEND = {
   entryLine: 14,
   entryGapTop: 6,
   entryGapBottom: 8,
+  /** An entry: the swatch, its gap to the label, the gap before a count, and the legend's side padding */
+  swatch: 14,
+  swatchGap: 10,
+  countGap: 5,
+  padding: 10,
+  /** The legend is as wide as its longest entry, within these */
+  minWidth: 110,
+  maxWidth: 280,
 } as const;
+
+/**
+ * Legend width for its entries, from the widest one (swatch, gap and text, measured by the
+ * caller in the legend's font) plus the side padding, kept within the min and max.
+ */
+export function legendWidth(widestEntry: number): number {
+  return Math.round(Math.min(LEGEND.maxWidth, Math.max(LEGEND.minWidth, widestEntry + 2 * LEGEND.padding)));
+}
 
 /** Vertical distance from one legend entry to the next */
 export const LEGEND_PITCH = LEGEND.entryLine + LEGEND.entryGapTop + LEGEND.entryGapBottom;

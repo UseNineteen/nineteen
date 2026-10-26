@@ -50,6 +50,13 @@
   /** Label column width at scale 1 */
   let labelWidth = $state(0);
   let animate = $state(false);
+  /**
+   * Above this many data items the boxes move without gliding: a transition on every box puts
+   * each one on its own compositor layer, which stalls large files for seconds after any change
+   * (measured: 20,000 boxes made "Show counts" take 6 s animated and 0.2 s without)
+   */
+  const ANIMATED_ITEMS_MAX = 3000;
+  const animated = $derived(animate && viz.dataset.items.length <= ANIMATED_ITEMS_MAX);
   let resizing = $state(false);
   let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -423,7 +430,7 @@
         <div class="blocks">
           <div
             class="block-items"
-            class:animate
+            class:animate={animated}
             class:zooming={viz.zooming || resizing}
             style:font-size={fontSize}
             style:padding-left={px(labelWidth * scale.y)}

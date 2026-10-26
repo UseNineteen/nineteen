@@ -118,6 +118,8 @@ get a little wider. If many are, all the labels turn 90° together.
 Boxes don't have to be square. **Stretch to fit** (in the zoom controls, 15) reshapes them into wider or taller rectangles so the
 whole visualization fills the window, and they resize automatically as you resize the window or regroup your data.
 Settings (13) lets you set the smallest and largest box width and height, and start every file stretched (see below).
+When the layout changes, boxes glide to their new places; above 3,000 data items they move directly instead, which keeps large
+files quick.
 
 <img src="docs/screenshots/whats-new/stretch.png" alt="Stretch to fit: boxes reshaped into rectangles that fill the window, grouped by date" title="Stretch to fit: boxes reshape to fill the window">
 

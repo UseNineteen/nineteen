@@ -7,6 +7,7 @@
     <style>
       :root {
         --trout: #47535e;
+        --heading: #0a3bb1;
         --ink: #222222;
         --muted: #6b737b;
         --line: #eaecef;
@@ -54,18 +55,17 @@
       }
       section {
         border-bottom: 1px solid var(--line);
-        padding: 24px 0 14px;
+        padding: 44px 0 18px;
       }
       section:last-of-type {
         border-bottom: none;
       }
       h2 {
-        color: var(--trout);
-        font-size: 13px;
+        color: var(--heading);
+        font-size: 22px;
         font-weight: 700;
-        letter-spacing: 0.06em;
-        margin: 0 0 12px;
-        text-transform: uppercase;
+        line-height: 1.2;
+        margin: 0 0 16px;
       }
       ul {
         list-style: none;
@@ -137,6 +137,14 @@
       figure.narrow img {
         max-width: 470px;
       }
+      .classic-note {
+        color: var(--muted);
+        font-size: 13px;
+        margin: -4px 0 14px;
+      }
+      .classic-note a {
+        color: inherit;
+      }
       figcaption {
         color: var(--muted);
         font-size: 13px;
@@ -184,34 +192,54 @@
         <h2>Rows, columns and color</h2>
         <ul>
           <li>
-            <strong>Columns of your own:</strong>
+            <strong>Columns separate from color:</strong>
             <span>"Grouped by" now sets rows and columns separately, so the columns no longer have to repeat the colors. Group by participant in rows and date in columns, and color by satisfaction, to see three things at once. The title reads "Grouped by Participant and Date Shopped".</span>
-          </li>
-          <li>
-            <strong>Columns only:</strong>
-            <span>Set Rows to <em>None</em> and each column collects its data items in a compact grid, with the sort buttons ordering the columns.</span>
-          </li>
-          <li>
-            <strong>Split and Stack:</strong>
-            <span>Stack takes the columns away and Split brings them back. With no columns chosen, Split uses the color column, as it always did.</span>
-          </li>
-          <li>
-            <strong>Classic Nineteen:</strong>
-            <span>A setting that keeps to rows, Split by color and a legend, as in the original, and hides the Columns choice, tagging and the AI tools.</span>
           </li>
         </ul>
         <figure>
           <img src="screenshots/whats-new/grid.png" alt="Participants in rows, dates in columns, boxes colored by satisfaction level" loading="lazy" />
           <figcaption>Rows by participant, columns by date shopped, color by satisfaction level.</figcaption>
         </figure>
+        <ul>
+          <li>
+            <strong>Columns only:</strong>
+            <span>Set Rows to <em>None</em> and each column collects its data items in a compact grid, with the sort buttons ordering the columns.</span>
+          </li>
+        </ul>
         <figure>
           <img src="screenshots/whats-new/columns.png" alt="Columns only: each date's data items in a compact grid, colored by satisfaction level" loading="lazy" />
           <figcaption>Columns only: each date collects its data items in a grid.</figcaption>
+        </figure>
+        <p class="classic-note">The Columns choice can be hidden with <a href="#classic">Classic Nineteen</a> in Settings.</p>
+      </section>
+
+      <section>
+        <h2>Sizing and fit</h2>
+        <ul>
+          <li>
+            <strong>Boxes that reshape to fit your screen:</strong>
+            <span>Data boxes no longer have to be square. With Stretch to fit, they become wider or taller rectangles so the whole dataset fills the window, and they resize automatically as the window changes or you regroup.</span>
+          </li>
+        </ul>
+        <figure>
+          <img src="screenshots/whats-new/stretch.png" alt="Stretch to fit: boxes reshaped into rectangles that fill the window, grouped by date" loading="lazy" />
+          <figcaption>Stretch to fit: boxes become rectangles so the whole dataset fills the window.</figcaption>
+        </figure>
+        <ul>
+          <li>
+            <strong>Settings dialog:</strong>
+            <span>Separate smallest and largest limits for box width and height, a Stretch to fit default, and an opt-in "Remember settings on this device". Changes preview live and only apply when you save.</span>
+          </li>
+        </ul>
+        <figure class="narrow">
+          <img src="screenshots/whats-new/settings.png" alt="The Settings dialog with box size limits" loading="lazy" />
+          <figcaption>The Settings dialog.</figcaption>
         </figure>
       </section>
 
       <section>
         <h2>Tagging and organizing data</h2>
+        <p class="classic-note">Tagging can be hidden with <a href="#classic">Classic Nineteen</a> in Settings.</p>
         <ul>
           <li>
             <strong>Tagging:</strong>
@@ -290,42 +318,10 @@
             <span>Above 3,000 data items the boxes move to their new places without gliding, so sorting, counting and searching stay quick on big files.</span>
           </li>
           <li>
-            <strong>Legend width:</strong>
-            <span>The legend is as wide as its longest entry, so short values like dates leave more room for the visualization, and long ones get a little more space before they are trimmed.</span>
-          </li>
-          <li>
             <strong>Hiding the legend:</strong>
             <span>The arrow at the top left hides the whole legend, color swatches included, leaving more room for the visualization. Click it again to bring the legend back.</span>
           </li>
         </ul>
-      </section>
-
-      <section>
-        <h2>Sizing and fit</h2>
-        <ul>
-          <li>
-            <strong>Boxes that reshape to fit your screen:</strong>
-            <span>Data boxes no longer have to be square. With Stretch to fit, they become wider or taller rectangles so the whole dataset fills the window, and they resize automatically as the window changes or you regroup.</span>
-          </li>
-        </ul>
-        <figure>
-          <img src="screenshots/whats-new/stretch.png" alt="Stretch to fit: boxes reshaped into rectangles that fill the window, grouped by date" loading="lazy" />
-          <figcaption>Stretch to fit: boxes become rectangles so the whole dataset fills the window.</figcaption>
-        </figure>
-        <ul>
-          <li>
-            <strong>Sticky Best fit:</strong>
-            <span>Best fit keeps square boxes sized to the window as you resize or regroup, until you zoom.</span>
-          </li>
-          <li>
-            <strong>Settings dialog:</strong>
-            <span>Separate smallest and largest limits for box width and height, a Stretch to fit default, and an opt-in "Remember settings on this device". Changes preview live and only apply when you save.</span>
-          </li>
-        </ul>
-        <figure class="narrow">
-          <img src="screenshots/whats-new/settings.png" alt="The Settings dialog with box size limits" loading="lazy" />
-          <figcaption>The Settings dialog.</figcaption>
-        </figure>
       </section>
 
       <section>
@@ -344,6 +340,7 @@
 
       <section>
         <h2>AI analysis</h2>
+        <p class="classic-note">The AI tools can be hidden with <a href="#classic">Classic Nineteen</a> in Settings.</p>
         <ul>
           <li>
             <strong>Copy prompt for AI:</strong>
@@ -366,6 +363,16 @@
           <img src="screenshots/whats-new/ai.png" alt="The Analyze with AI panel, showing Copy prompt and the Data to share controls" loading="lazy" />
           <figcaption>The Analyze with AI panel, with the data sharing controls at the top.</figcaption>
         </figure>
+      </section>
+
+      <section id="classic">
+        <h2>Classic Nineteen</h2>
+        <ul>
+          <li>
+            <strong>The original, by choice:</strong>
+            <span>A setting that keeps to rows, Split by color and a legend, as in the original Nineteen. It hides the Columns choice under "Grouped by", tagging and the AI tools. Off by default; find it under Features in Settings.</span>
+          </li>
+        </ul>
       </section>
 
       <footer>Nineteen · runs entirely in your browser · no cookies</footer>

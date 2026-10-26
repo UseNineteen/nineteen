@@ -20,10 +20,10 @@
   const offset = $derived(Math.max(0, viz.firstRowTop - LIST_START));
   const reorderable = $derived(!viz.legendCollapsed && viz.layout.legend.length > 1);
 
-  /** Re-measured once the web font has loaded: the fallback font has different widths */
+  /** Re-measured once the web font has loaded (asking for it starts the load): the fallback font has different widths */
   let fontsReady = $state(0);
   onMount(() => {
-    document.fonts?.ready.then(() => fontsReady++);
+    document.fonts?.load(`400 ${GEOMETRY.font}px ${LABEL_FONT}`).then(() => fontsReady++);
   });
   const measureCtx = document.createElement('canvas').getContext('2d');
   /** As wide as the longest entry: swatch, grip when reorderable, label and count */

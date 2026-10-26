@@ -57,7 +57,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
       return LEGEND.swatch + LEGEND.swatchGap + measure.measureText(legendLabels[i]).width + count;
     }),
   );
-  const legendBox = viz.legendCollapsed ? 0 : legendWidth(widestEntry) + 2 * (PAD - LEGEND.padding);
+  const legendBox = viz.legendCollapsed ? 0 : legendWidth(widestEntry) + (PAD - LEGEND.padding) + (PAD - LEGEND.paddingRight);
   const plotTop = HEADER + PAD;
   const plotLeft = legendBox + PAD;
   const extra = layout.headerExtra;

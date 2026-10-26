@@ -26,17 +26,19 @@ export const LEGEND = {
   swatchGap: 10,
   countGap: 5,
   padding: 10,
+  /** Extra room after the longest entry, before the row labels */
+  paddingRight: 14,
   /** The legend is as wide as its longest entry, within these */
-  minWidth: 110,
+  minWidth: 132,
   maxWidth: 280,
 } as const;
 
 /**
  * Legend width for its entries, from the widest one (swatch, gap and text, measured by the
- * caller in the legend's font) plus the side padding, kept within the min and max.
+ * caller in the legend's font) plus the padding on each side, kept within the min and max.
  */
 export function legendWidth(widestEntry: number): number {
-  return Math.round(Math.min(LEGEND.maxWidth, Math.max(LEGEND.minWidth, widestEntry + 2 * LEGEND.padding)));
+  return Math.round(Math.min(LEGEND.maxWidth, Math.max(LEGEND.minWidth, widestEntry + LEGEND.padding + LEGEND.paddingRight)));
 }
 
 /** Vertical distance from one legend entry to the next */

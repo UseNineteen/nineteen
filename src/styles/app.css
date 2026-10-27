@@ -2836,7 +2836,7 @@ footer li:first-child::before {
   gap: 8px;
   margin-bottom: 8px;
 }
-#tags-panel .tags-tools input {
+#tags-panel .tags-tools > input {
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -2986,6 +2986,18 @@ footer li:first-child::before {
 #tags-panel .tags-list li {
   flex-wrap: wrap;
   padding-bottom: 4px;
+}
+#tags-panel .tags-list.compact li {
+  padding-bottom: 0;
+}
+#tags-panel .tags-toggle {
+  align-items: center;
+  color: var(--trout);
+  cursor: pointer;
+  display: flex;
+  font-size: 12.5px;
+  gap: 4px;
+  white-space: nowrap;
 }
 #tags-panel .tags-count.unused {
   color: #a7adb4;

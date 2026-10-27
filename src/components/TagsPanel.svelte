@@ -1,3 +1,8 @@
+<script module lang="ts">
+  /** Whether the list shows each tag's description; kept while the page is open */
+  let showDescriptions = $state(true);
+</script>
+
 <script lang="ts">
   import { tick } from 'svelte';
   import { normalizeTag, splitTags } from '../lib/data';
@@ -235,9 +240,10 @@
     message = null;
   }
 
-  function act(action: 'rename' | 'combine' | 'column' | 'delete', tag: TagInfo) {
+  function act(action: 'rename' | 'describe' | 'combine' | 'column' | 'delete', tag: TagInfo) {
     menuFor = null;
     if (action === 'rename') return startRename(tag);
+    if (action === 'describe') return startDescribe(tag);
     reset();
     if (action === 'combine') pending = { kind: 'pick-combine', from: tag, into: catalog.find((t) => t.key !== tag.key)?.key ?? '' };
     if (action === 'delete') pending = { kind: 'delete', tag };
@@ -367,10 +373,15 @@
           <option value="count">Most used</option>
           <option value="name">A–Z</option>
         </select>
+        <label class="tags-toggle" title="Show each tag’s description under its name">
+          <input type="checkbox" bind:checked={showDescriptions} />
+          Descriptions
+        </label>
       </div>
 
       <ul
         class="tags-list"
+        class:compact={!showDescriptions}
         class:dragging={dragging !== null}
         bind:this={listEl}
         aria-label="Tags. Drag a tag onto another to combine them."
@@ -419,6 +430,9 @@
             {#if menuFor === tag.key}
               <div class="tags-menu" role="menu">
                 <button type="button" role="menuitem" onclick={() => act('rename', tag)}>Rename</button>
+                <button type="button" role="menuitem" onclick={() => act('describe', tag)}
+                  >{tag.description ? 'Edit description' : 'Describe…'}</button
+                >
                 <button type="button" role="menuitem" disabled={catalog.length < 2} onclick={() => act('combine', tag)}
                   >Combine into…</button
                 >
@@ -444,7 +458,7 @@
                 }}
                 onblur={() => finishDescribe(tag)}
               ></textarea>
-            {:else}
+            {:else if showDescriptions}
               <button
                 type="button"
                 class="tags-description"
@@ -458,7 +472,9 @@
           <li class="tags-empty">No tags match “{filter}”.</li>
         {/each}
       </ul>
-      <p class="tags-hint">Click a name to rename it, or the line under it to describe it. Drag a tag onto another to combine them.</p>
+      <p class="tags-hint">
+        Click a name to rename it{showDescriptions ? ', or the line under it to describe it' : ''}. Drag a tag onto another to combine them.
+      </p>
     {:else}
       <p class="tags-hint">
         No tags yet. Tag data items from a pinned viewer (click a box), search and choose <strong>Tag these…</strong>, or import a tag list

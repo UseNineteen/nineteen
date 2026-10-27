@@ -1,0 +1,10 @@
+{
+  "ort-wasm-simd-threaded.asyncify.wasm": {
+    "size": 26861777,
+    "etag": "\"49871f5a4409519797e127440868a6d1\"",
+    "parts": [
+      13430889,
+      13430888
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+# Written by the build (vite.config.ts): files over Cloudflare's size limit, served from their parts instead
+ort/ort-wasm-simd-threaded.asyncify.wasm

@@ -66,6 +66,9 @@ function contentSecurityPolicy(): Plugin {
   };
 }
 
+/** Cloudflare Workers serves static files of up to 25 MiB each; a larger one is split for the Worker to join (cloudflare/worker.ts) */
+const ASSET_LIMIT = 25 * 1024 * 1024;
+
 /**
  * Copies the ONNX runtime (which runs the "Find by meaning" model) into dist/ort/, so it is served
  * from our own origin like the rest of the app, never from a CDN. The model itself is not part of
@@ -81,17 +84,50 @@ function onnxRuntime(): Plugin {
     },
     closeBundle() {
       const from = resolve('node_modules/onnxruntime-web/dist');
+      const ortDir = resolve(outDir, 'ort');
       // The runtime asks for the "asyncify" build, or the plain one in Safari before 26 without WebGPU
       // (checked in the built worker: it names no other variant)
       for (const variant of ['', '.asyncify'])
         for (const ext of ['wasm', 'mjs']) {
           const name = `ort-wasm-simd-threaded${variant}.${ext}`;
-          cpSync(resolve(from, name), resolve(outDir, 'ort', name));
+          cpSync(resolve(from, name), resolve(ortDir, name));
         }
       // The worker refers to these files by URL, so the bundler emits hashed copies too; wasmPaths points at ort/, so drop them
       for (const name of readdirSync(outDir)) if (/^ort-wasm-.*\.(wasm|mjs)$/.test(name)) rmSync(resolve(outDir, name));
+      splitLargeFiles(outDir, ortDir);
     },
   };
+}
+
+/**
+ * Writes each file in ort/ larger than Cloudflare's limit as parts beside it (name.part1, name.part2, …),
+ * describes them in ort/split.json for the Worker that joins them, and lists the whole file in
+ * .assetsignore so Cloudflare skips it. The whole file stays for GitHub Pages and the local preview.
+ */
+function splitLargeFiles(outDir: string, ortDir: string): void {
+  const split: Record<string, { size: number; etag: string; parts: number[] }> = {};
+  const whole: string[] = [];
+  for (const name of readdirSync(ortDir)) {
+    const data = readFileSync(resolve(ortDir, name));
+    if (data.length <= ASSET_LIMIT) continue;
+    const count = Math.ceil(data.length / ASSET_LIMIT);
+    const partSize = Math.ceil(data.length / count);
+    const parts: number[] = [];
+    for (let i = 0; i < count; i++) {
+      const part = data.subarray(i * partSize, (i + 1) * partSize);
+      writeFileSync(resolve(ortDir, `${name}.part${i + 1}`), part);
+      parts.push(part.length);
+    }
+    split[name] = { size: data.length, etag: `"${createHash('sha256').update(data).digest('hex').slice(0, 32)}"`, parts };
+    whole.push(`ort/${name}`);
+  }
+  writeFileSync(resolve(ortDir, 'split.json'), JSON.stringify(split, null, 2) + '\n');
+  writeFileSync(
+    resolve(outDir, '.assetsignore'),
+    ["# Written by the build (vite.config.ts): files over Cloudflare's size limit, served from their parts instead", ...whole, ''].join(
+      '\n',
+    ),
+  );
 }
 
 const README_STYLE = `

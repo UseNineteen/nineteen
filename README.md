@@ -246,6 +246,8 @@ The single-file build also powers "Download HTML file": a saved copy is the same
 "Find by meaning" is the one part kept outside that file: its worker (`dist/worker-*.js`) and the ONNX runtime it runs the model
 with (`dist/ort/`) are served next to the app, and the model itself is downloaded from Hugging Face on first use.
 `public/_headers` sets the cross-origin isolation headers on usenineteen.com so the runtime can use threads where there is no WebGPU.
+Cloudflare serves static files of up to 25 MiB and the runtime's largest file is bigger, so the build writes that file as parts
+and a small Worker (`cloudflare/worker.ts`) joins them again on usenineteen.com; GitHub Pages serves the whole file as it is.
 
 `dist/` is committed, so the repository always contains a working copy of the app. A pre-commit hook (`.githooks/pre-commit`)
 rebuilds it and stages it before every commit; `npm install` turns the hook on. The README screenshots are in `docs/screenshots/`.
@@ -263,6 +265,7 @@ SheetJS is installed from the official SheetJS CDN, because the `xlsx` package o
 | `src/styles/app.css` | Styles ported from the original Stylus sources |
 | `test/` | Vitest suite, including the search cases from the original test suite |
 | `dist/` | The built app, committed (see above) |
+| `cloudflare/` | The Worker behind usenineteen.com: static assets, plus the runtime file served from its parts |
 | `docs/` | README screenshots and a summary of what's new |
 
 ### What changed in the browser-only rewrite

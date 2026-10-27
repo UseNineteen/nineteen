@@ -259,7 +259,9 @@ plus <code>dist/shopping_decision_diary_extended.xlsx</code> for &quot;Try an ex
 The single-file build also powers &quot;Download HTML file&quot;: a saved copy is the same page with the data embedded.
 &quot;Find by meaning&quot; is the one part kept outside that file: its worker (<code>dist/worker-*.js</code>) and the ONNX runtime it runs the model
 with (<code>dist/ort/</code>) are served next to the app, and the model itself is downloaded from Hugging Face on first use.
-<code>public/_headers</code> sets the cross-origin isolation headers on usenineteen.com so the runtime can use threads where there is no WebGPU.</p>
+<code>public/_headers</code> sets the cross-origin isolation headers on usenineteen.com so the runtime can use threads where there is no WebGPU.
+Cloudflare serves static files of up to 25 MiB and the runtime&#39;s largest file is bigger, so the build writes that file as parts
+and a small Worker (<code>cloudflare/worker.ts</code>) joins them again on usenineteen.com; GitHub Pages serves the whole file as it is.</p>
 <p><code>dist/</code> is committed, so the repository always contains a working copy of the app. A pre-commit hook (<code>.githooks/pre-commit</code>)
 rebuilds it and stages it before every commit; <code>npm install</code> turns the hook on. The README screenshots are in <code>docs/screenshots/</code>.</p>
 <p>SheetJS is installed from the official SheetJS CDN, because the <code>xlsx</code> package on npm is no longer updated and has known vulnerabilities.</p>
@@ -298,6 +300,10 @@ rebuilds it and stages it before every commit; <code>npm install</code> turns th
 <tr>
 <td><code>dist/</code></td>
 <td>The built app, committed (see above)</td>
+</tr>
+<tr>
+<td><code>cloudflare/</code></td>
+<td>The Worker behind usenineteen.com: static assets, plus the runtime file served from its parts</td>
 </tr>
 <tr>
 <td><code>docs/</code></td>

@@ -1388,11 +1388,12 @@ footer li:first-child::before {
   padding: 2px 4px;
   width: 56px;
 }
+/* Indented like the cut rows above it: it belongs to Meaning similarity */
 .dropdown .search-mode-note {
   color: #7d838a;
   font-size: 12px;
   line-height: 1.35;
-  margin: 6px 15px 2px;
+  margin: 6px 15px 2px 33px;
   max-width: 310px;
 }
 /* A labeled select inside a menu, such as a list column's separator */

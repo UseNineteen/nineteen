@@ -335,76 +335,79 @@
       aria-pressed={viz.sortBy === 'count'}
       onclick={() => viz.sort('count')}
     ></button>
-    <button
-      type="button"
-      id="search-icon"
-      class="dropdown-arrow"
-      title="High-frequency words"
-      aria-label="High-frequency words"
-      aria-expanded={open === 'terms'}
-      onclick={toggle('terms')}
-    ></button>
-    <div id="search">
-      {#if viz.meaningOn && viz.similarTo !== null}
-        <!-- "Find similar": the data item takes the place of a typed search -->
-        <div class="search-similar" style:padding-right={viz.matches || meaningStatus ? `${countWidth + 30}px` : null}>
-          <span>Similar to file row {viz.similarTo}</span>
-          <button
-            type="button"
-            aria-label="Stop finding similar data items"
-            title="Back to a typed search"
-            onclick={() => viz.clearSimilar()}>&times;</button
-          >
-        </div>
-      {:else}
-        <input
-          type="search"
-          id="search-field"
-          placeholder={viz.meaningOn ? 'Find by meaning' : 'Find'}
-          aria-label={viz.meaningOn ? 'Find by meaning' : 'Find'}
-          autocomplete="off"
-          spellcheck="false"
-          bind:value={viz.searchTerm}
-          style:padding-right={viz.matches || meaningStatus ? `${countWidth + 30}px` : null}
-          onkeydown={(e) => e.key === 'Enter' && e.preventDefault()}
-        />
-      {/if}
-      <!-- Only while the text actually searches (spaces alone, or a dangling AND, don't), or meaning mode is getting ready -->
-      {#if meaningStatus}
-        <span class="search-count" bind:clientWidth={countWidth}>
-          <span class="search-count-text search-status">{meaningStatus}</span>
-        </span>
-      {:else if viz.matches}
-        <span class="search-count" bind:clientWidth={countWidth}>
-          <span class="search-count-text">{st.count} of {st.total}</span>
-          {#if st.count > 0 && !st.tagging && !classic}
-            <button
-              type="button"
-              aria-label="Tag these {st.count} matches"
-              title="Add a tag to all {st.count} of {st.total} matches"
-              onclick={() => st.start()}><span class="search-count-label">Tag these…</span></button
-            >
-          {/if}
-        </span>
-      {/if}
-    </div>
-    {#if canMeaning}
+    <!-- The find group: the word list, the field and its two settings, boxed together -->
+    <div id="find" class:meaning={viz.meaningOn} role="group" aria-label="Find">
       <button
         type="button"
-        id="search-mode"
+        id="search-icon"
         class="dropdown-arrow"
-        aria-expanded={open === 'searchMode'}
-        title={viz.meaningOn
-          ? 'Finding by meaning: data items with a sentence that means something similar, plus any containing the exact phrase'
-          : 'Finding by text: words and phrases as typed'}
-        onclick={toggle('searchMode')}
-      >
-        <span class="tool-word">by</span> <strong>{viz.meaningOn ? 'meaning' : 'text'}</strong>
+        title="High-frequency words"
+        aria-label="High-frequency words"
+        aria-expanded={open === 'terms'}
+        onclick={toggle('terms')}
+      ></button>
+      <div id="search">
+        {#if viz.meaningOn && viz.similarTo !== null}
+          <!-- "Find similar": the data item takes the place of a typed search -->
+          <div class="search-similar" style:padding-right={viz.matches || meaningStatus ? `${countWidth + 30}px` : null}>
+            <span>Similar to file row {viz.similarTo}</span>
+            <button
+              type="button"
+              aria-label="Stop finding similar data items"
+              title="Back to a typed search"
+              onclick={() => viz.clearSimilar()}>&times;</button
+            >
+          </div>
+        {:else}
+          <input
+            type="search"
+            id="search-field"
+            placeholder={viz.meaningOn ? 'Find by meaning' : 'Find'}
+            aria-label={viz.meaningOn ? 'Find by meaning' : 'Find'}
+            autocomplete="off"
+            spellcheck="false"
+            bind:value={viz.searchTerm}
+            style:padding-right={viz.matches || meaningStatus ? `${countWidth + 30}px` : null}
+            onkeydown={(e) => e.key === 'Enter' && e.preventDefault()}
+          />
+        {/if}
+        <!-- Only while the text actually searches (spaces alone, or a dangling AND, don't), or meaning mode is getting ready -->
+        {#if meaningStatus}
+          <span class="search-count" bind:clientWidth={countWidth}>
+            <span class="search-count-text search-status">{meaningStatus}</span>
+          </span>
+        {:else if viz.matches}
+          <span class="search-count" bind:clientWidth={countWidth}>
+            <span class="search-count-text">{st.count} of {st.total}</span>
+            {#if st.count > 0 && !st.tagging && !classic}
+              <button
+                type="button"
+                aria-label="Tag these {st.count} matches"
+                title="Add a tag to all {st.count} of {st.total} matches"
+                onclick={() => st.start()}><span class="search-count-label">Tag these…</span></button
+              >
+            {/if}
+          </span>
+        {/if}
+      </div>
+      {#if canMeaning}
+        <button
+          type="button"
+          id="search-mode"
+          class="dropdown-arrow"
+          aria-expanded={open === 'searchMode'}
+          title={viz.meaningOn
+            ? 'Finding by meaning: data items with a sentence that means something similar, plus any containing the exact phrase'
+            : 'Finding by text: words and phrases as typed'}
+          onclick={toggle('searchMode')}
+        >
+          <span class="tool-word">by</span> <strong>{viz.meaningOn ? 'meaning' : 'text'}</strong>
+        </button>
+      {/if}
+      <button type="button" id="search-in" class="dropdown-arrow" aria-expanded={open === 'searchIn'} onclick={toggle('searchIn')}>
+        <span class="tool-word">within</span> <strong>{viz.scopeText}</strong>
       </button>
-    {/if}
-    <button type="button" id="search-in" class="dropdown-arrow" aria-expanded={open === 'searchIn'} onclick={toggle('searchIn')}>
-      <span class="tool-word">within</span> <strong>{viz.scopeText}</strong>
-    </button>
+    </div>
     <button
       type="button"
       id="toggle-view"

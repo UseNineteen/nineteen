@@ -628,14 +628,48 @@ footer li:first-child::before {
 #tool-bar .block-sort.sort-count.sort-horizontal.sort-reverse {
   background-image: url('../assets/images/sort-count-desc-h.svg');
 }
+/*
+ * The find group: the word list, the field and its two settings in one bordered box, so the
+ * settings read as the field's rather than as more toolbar buttons. It takes the room it needs
+ * (up to a limit, so the settings stay next to the text) and is followed by the toolbar's divider.
+ */
+#tool-bar #find {
+  background-color: var(--white);
+  border: 1px solid var(--gray);
+  border-radius: 15px;
+  display: flex;
+  flex: 1 1 auto;
+  margin: 5px 41px 5px 0;
+  max-width: 640px;
+  min-width: 0;
+  position: relative;
+}
+#tool-bar #find::after {
+  border-left: 1px solid var(--gray);
+  bottom: 0;
+  content: '';
+  position: absolute;
+  right: -21px;
+  top: 0;
+}
+#tool-bar #find:focus-within {
+  border-color: var(--trout);
+}
+/* By meaning: the box and the word say so even with the menu closed */
+#tool-bar #find.meaning {
+  border-color: #9cc7ee;
+}
+#tool-bar #find.meaning #search-mode strong {
+  color: #0a3bb1;
+}
 #tool-bar #search-icon {
   background-image: url('../assets/images/search.svg');
-  background-position: 10px center;
+  background-position: 11px center;
   background-repeat: no-repeat;
-  border-left: 1px solid var(--gray);
+  border-radius: 14px 0 0 14px;
   flex: 0 0 auto;
-  margin: 5px;
-  padding: 0 15px 0 20px;
+  margin: 0;
+  padding: 0 4px 0 17px;
   width: 35px;
   box-sizing: content-box;
   font-size: 13px;
@@ -652,7 +686,7 @@ footer li:first-child::before {
 #tool-bar #search-field {
   background-color: white;
   box-sizing: border-box;
-  padding: 12px 0 8px;
+  padding: 6px 0 2px;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -721,7 +755,7 @@ footer li:first-child::before {
   gap: 6px;
   inset: 0;
   min-width: 0;
-  padding: 9px 0 5px;
+  padding: 3px 0 1px;
   position: absolute;
 }
 #tool-bar .search-similar span {
@@ -746,25 +780,21 @@ footer li:first-child::before {
 #tool-bar .search-similar button:hover {
   color: var(--trout);
 }
-/* Find by text or by meaning, between the search box and "within" */
-#tool-bar #search-mode {
-  font-size: 16px;
+/* The field's settings, at the right end of the box: find by text or by meaning, and within which fields */
+#tool-bar #search-mode,
+#tool-bar #search-in {
+  border-left: 1px solid var(--lightgray);
+  font-size: 14px;
   font-weight: normal;
-  margin: 5px 0;
-  padding: 0 16px 0 0;
+  line-height: 20px;
+  margin: 4px 0;
+  padding: 0 12px;
   white-space: nowrap;
-}
-#tool-bar #search-mode strong {
-  font-weight: 700;
 }
 #tool-bar #search-in {
-  border-right: 1px solid var(--gray);
-  font-size: 16px;
-  font-weight: normal;
-  margin: 5px 20px 5px 0;
-  padding: 0 20px 0 0;
-  white-space: nowrap;
+  border-radius: 0 14px 14px 0;
 }
+#tool-bar #search-mode strong,
 #tool-bar #search-in strong {
   font-weight: 700;
 }
@@ -2627,6 +2657,14 @@ footer li:first-child::before {
   #tool-bar .tool-label {
     display: none;
   }
+  /* The find box loses its border too, keeping only the room; it comes back while the field has focus */
+  #tool-bar #find,
+  #tool-bar #find.meaning {
+    border-color: transparent;
+  }
+  #tool-bar #find:focus-within {
+    border-color: var(--trout);
+  }
   #tool-bar #toggle-view {
     margin-right: 14px;
     padding-left: 22px;
@@ -2656,9 +2694,15 @@ footer li:first-child::before {
   #tool-bar .tool-word {
     display: none;
   }
+  #tool-bar #search-mode,
   #tool-bar #search-in {
-    margin-right: 12px;
-    padding-right: 12px;
+    padding: 0 9px;
+  }
+  #tool-bar #find {
+    margin-right: 25px;
+  }
+  #tool-bar #find::after {
+    right: -13px;
   }
 }
 
@@ -2675,14 +2719,16 @@ footer li:first-child::before {
   #tool-bar #search {
     min-width: 56px;
   }
-  #tool-bar #search-in,
+  #tool-bar #find {
+    margin-right: 17px;
+  }
+  #tool-bar #find::after {
+    right: -9px;
+  }
   #tool-bar #toggle-view,
   #tool-bar #toggle-counts,
   #tool-bar #viewer-columns {
     margin-right: 8px;
-  }
-  #tool-bar #search-in {
-    padding-right: 8px;
   }
   #tool-bar #tags-toggle {
     margin-right: 4px;

@@ -1356,16 +1356,16 @@ footer li:first-child::before {
 .dropdown .search-mode .dropdown-field {
   padding-left: 33px;
 }
-/* The two ways to cut the list: plain radios (the custom check marks belong to the menu's own labels) */
+/* The two ways to cut the list, under the Meaning text: plain radios (the custom check marks belong to the menu's own labels) */
 .dropdown .search-mode .search-cut {
   gap: 6px;
-  padding-left: 15px;
 }
 .dropdown .search-mode .search-cut input[type='radio'] {
   margin: 0 2px 0 0;
   opacity: 1;
   pointer-events: auto;
   position: static;
+  width: auto;
 }
 .dropdown .search-mode .search-cut label {
   cursor: pointer;
@@ -1381,7 +1381,7 @@ footer li:first-child::before {
 .dropdown .search-mode .dropdown-field.disabled {
   opacity: 0.6;
 }
-.dropdown .search-mode .dropdown-field input {
+.dropdown .search-mode .dropdown-field input[type='number'] {
   border: 1px solid var(--lightgray);
   border-radius: 3px;
   font-size: 13px;

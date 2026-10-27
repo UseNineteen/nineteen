@@ -434,14 +434,14 @@
         <label>
           <input type="radio" name="search-mode" checked={!viz.meaningOn} onchange={() => viz.setSearchMode('text')} />
           <span>
-            <strong>Text</strong>
+            <strong>Text match</strong>
             <small>Words and phrases as typed: <em>dog food</em> finds either word, quotes find the phrase, AND needs both.</small>
           </span>
         </label>
         <label>
           <input type="radio" name="search-mode" checked={viz.meaningOn} onchange={() => viz.setSearchMode('meaning')} />
           <span>
-            <strong>Meaning</strong>
+            <strong>Meaning similarity</strong>
             <small
               >Data items with a sentence that means something similar, in whatever words, plus any that contain the exact phrase.</small
             >

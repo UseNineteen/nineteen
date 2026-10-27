@@ -63,7 +63,8 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
   *worried about the price* finds the data items with a sentence that means something similar, in whatever words they use
   ("the cost was more than I'd planned on"), plus any that contain the exact phrase. The viewer says why each one matched: its rank
   ("#3 closest in meaning") and the sentence it matched by, which is highlighted:
-	- Nineteen shows the 20 closest data items. Change that number in the "by meaning" menu
+	- Nineteen shows the 20 closest data items. In the "by meaning" menu, change that number, or show every data item with at
+	  least a chosen similarity score (0 to 1; the viewer shows each match's score, and the menu suggests a cut-off for the model)
 	- **Find similar** in a pinned viewer finds the data items closest in meaning to that one
 	- Meaning is judged by a small language model that runs inside your browser. The first time, Nineteen asks before your browser
 	  downloads it (about 70 MB) from Hugging Face; it is kept for next time, and Settings can remove it. Your data never leaves your

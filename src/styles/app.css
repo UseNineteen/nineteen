@@ -1356,6 +1356,28 @@ footer li:first-child::before {
 .dropdown .search-mode .dropdown-field {
   padding-left: 33px;
 }
+/* The two ways to cut the list: plain radios (the custom check marks belong to the menu's own labels) */
+.dropdown .search-mode .search-cut {
+  gap: 6px;
+  padding-left: 15px;
+}
+.dropdown .search-mode .search-cut input[type='radio'] {
+  margin: 0 2px 0 0;
+  opacity: 1;
+  pointer-events: auto;
+  position: static;
+}
+.dropdown .search-mode .search-cut label {
+  cursor: pointer;
+  display: inline;
+  padding: 0;
+}
+.dropdown .search-mode .search-cut label:hover {
+  background: none;
+}
+.dropdown .search-mode .search-cut #search-min-score {
+  width: 62px;
+}
 .dropdown .search-mode .dropdown-field.disabled {
   opacity: 0.6;
 }
@@ -1645,6 +1667,10 @@ footer li:first-child::before {
 .popup .popup-meaning-why {
   color: #1f4f8f;
   display: block;
+}
+.popup .popup-meaning-score {
+  color: #1f4f8f;
+  font-weight: normal;
 }
 .popup section {
   flex: 1 1 auto;

@@ -16,6 +16,8 @@ export type FitMode = 'none' | 'square' | 'stretch';
 export type SearchMode = 'text' | 'meaning';
 /** How many of the closest data items a meaning search shows, unless the user changes it */
 export const DEFAULT_CLOSEST = 20;
+/** Which data items a meaning search shows: the closest so many, or every one above a similarity score */
+export type MeaningCut = 'closest' | 'score';
 
 export interface ViewState {
   /**
@@ -42,7 +44,10 @@ export interface ViewState {
   searchMode?: SearchMode;
   /** "Find similar": the data item searched from, in place of the term */
   similarTo?: number | null;
+  meaningCut?: MeaningCut;
   closest?: number;
+  /** The similarity score cut-off; absent or null: the model's own default */
+  minScore?: number | null;
   legendCollapsed: boolean;
   /** Columns treated as comma-separated tags */
   tagColumns?: string[];

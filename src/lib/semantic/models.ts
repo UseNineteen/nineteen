@@ -23,6 +23,8 @@ export interface EmbeddingModel {
   passagePrefix: string;
   /** Download sizes in MB: the model file for each variant, plus the tokenizer and configuration */
   size: Record<Variant, number> & { extra: number };
+  /** A sensible "at least this similar" cut-off: each model's scores sit in their own range */
+  minScore: number;
 }
 
 export const MODELS: Record<ModelId, EmbeddingModel> = {
@@ -35,6 +37,7 @@ export const MODELS: Record<ModelId, EmbeddingModel> = {
     queryPrefix: 'Represent this sentence for searching relevant passages: ',
     passagePrefix: '',
     size: { fp16: 67, q8: 34, extra: 1 },
+    minScore: 0.65,
   },
   'e5-multilingual': {
     id: 'e5-multilingual',
@@ -45,6 +48,7 @@ export const MODELS: Record<ModelId, EmbeddingModel> = {
     queryPrefix: 'query: ',
     passagePrefix: 'passage: ',
     size: { fp16: 235, q8: 118, extra: 23 },
+    minScore: 0.83,
   },
 };
 

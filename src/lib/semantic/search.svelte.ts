@@ -1,6 +1,6 @@
 import { Engine, type Probe } from './engine';
 import { downloadSize, isCached, MODELS, type EmbeddingModel, type ModelId, type Variant } from './models';
-import { closestByPassage, distinctTexts, dot, meanVector, topScores, type Passage, type Scored } from './passages';
+import { closestByPassage, distinctTexts, dot, meanVector, topScores, type Cut, type Passage, type Scored } from './passages';
 import { EMBED_ID } from '../persist';
 
 /**
@@ -214,8 +214,8 @@ export class SemanticSearch {
 
   // ---------- Searching ----------
 
-  /** The `limit` data items closest to a text, or to another data item, as `results` (tagged with `key`). */
-  async find(key: string, query: { text: string } | { itemId: number }, limit: number): Promise<void> {
+  /** The data items closest to a text, or to another data item (see `Cut`), as `results` (tagged with `key`). */
+  async find(key: string, query: { text: string } | { itemId: number }, cut: Cut): Promise<void> {
     const job = ++this.#findJob;
     this.finding = true;
     try {
@@ -227,9 +227,9 @@ export class SemanticSearch {
       if ('text' in query) {
         const { vectors } = await engine.embed([model.queryPrefix + query.text]);
         if (job !== this.#findJob) return;
-        scored = closestByPassage(this.#passages, vectors, (text) => this.#vectors.get(text), limit);
+        scored = closestByPassage(this.#passages, vectors, (text) => this.#vectors.get(text), cut);
       } else {
-        scored = this.#similar(query.itemId, limit);
+        scored = this.#similar(query.itemId, cut);
       }
       const matches = new Map<number, MeaningMatch>();
       if ('itemId' in query) matches.set(query.itemId, { rank: 0, score: 1, passage: '', column: '' });
@@ -243,14 +243,14 @@ export class SemanticSearch {
   }
 
   /** Items by the similarity of their whole text to one item's, each explained by its passage closest to that item */
-  #similar(itemId: number, limit: number): Scored[] {
+  #similar(itemId: number, cut: Cut): Scored[] {
     const anchor = this.#itemVectors.get(itemId);
     if (!anchor) return [];
     const scored: Scored[] = [];
     for (const [id, vector] of this.#itemVectors) {
       if (id !== itemId) scored.push({ itemId: id, score: dot(anchor, vector), passage: '', column: '' });
     }
-    const top = topScores(scored, limit);
+    const top = topScores(scored, cut);
     for (const entry of top) {
       let best = -Infinity;
       for (const passage of this.#passagesByItem.get(entry.itemId) ?? []) {

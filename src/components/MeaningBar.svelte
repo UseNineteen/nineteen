@@ -42,10 +42,10 @@
     const key = viz.meaningKey;
     const term = viz.searchTerm.trim();
     const similarTo = viz.similarTo;
-    const limit = viz.closest;
+    const cut = viz.cut;
     if (similarTo === null && !term) return;
     const query = similarTo !== null ? { itemId: similarTo } : { text: term };
-    const timer = setTimeout(() => semantic.find(key, query, limit), similarTo !== null ? 0 : TYPING_PAUSE);
+    const timer = setTimeout(() => semantic.find(key, query, cut), similarTo !== null ? 0 : TYPING_PAUSE);
     return () => clearTimeout(timer);
   });
 

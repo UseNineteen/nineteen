@@ -83,15 +83,18 @@ export interface Scored {
   column: string;
 }
 
+/** How many results to show: the closest so many, or every one scoring at least so much */
+export type Cut = { closest: number } | { minScore: number };
+
 /**
- * Scores each item by its closest passage to the query vector, and returns the `limit` closest
- * items, best first. `vectorOf` gives a passage text's vector (passages without one are skipped).
+ * Scores each item by its closest passage to the query vector, and returns the closest items
+ * (see `Cut`), best first. `vectorOf` gives a passage text's vector (passages without one are skipped).
  */
 export function closestByPassage(
   passages: Passage[],
   query: Float32Array,
   vectorOf: (text: string) => Float32Array | undefined,
-  limit: number,
+  cut: Cut,
 ): Scored[] {
   const best = new Map<number, Scored>();
   // Identical texts score the same; compute each once
@@ -108,9 +111,11 @@ export function closestByPassage(
     if (!current || current.score < score)
       best.set(passage.itemId, { itemId: passage.itemId, score, passage: passage.text, column: passage.column });
   }
-  return topScores([...best.values()], limit);
+  return topScores([...best.values()], cut);
 }
 
-export function topScores(scored: Scored[], limit: number): Scored[] {
-  return scored.sort((a, b) => b.score - a.score || a.itemId - b.itemId).slice(0, Math.max(0, limit));
+export function topScores(scored: Scored[], cut: Cut): Scored[] {
+  const sorted = scored.sort((a, b) => b.score - a.score || a.itemId - b.itemId);
+  if ('minScore' in cut) return sorted.filter((s) => s.score >= cut.minScore);
+  return sorted.slice(0, Math.max(0, cut.closest));
 }

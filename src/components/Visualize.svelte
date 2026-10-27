@@ -447,8 +447,16 @@
             >
           </span>
         </label>
-        <div class="dropdown-field" class:disabled={!viz.meaningOn}>
-          <label for="search-closest">Show the closest</label>
+        <div class="dropdown-field search-cut" class:disabled={!viz.meaningOn}>
+          <input
+            type="radio"
+            id="search-cut-closest"
+            name="search-cut"
+            checked={viz.meaningCut === 'closest'}
+            disabled={!viz.meaningOn}
+            onchange={() => (viz.meaningCut = 'closest')}
+          />
+          <label for="search-cut-closest">Show the closest</label>
           <input
             id="search-closest"
             type="number"
@@ -456,18 +464,49 @@
             max={viz.dataset.items.length}
             step="1"
             value={viz.closest}
+            aria-label="How many of the closest data items to show"
             disabled={!viz.meaningOn}
+            onfocus={() => (viz.meaningCut = 'closest')}
             onchange={(e) => {
               const n = Math.round(Number(e.currentTarget.value));
               viz.closest = Number.isFinite(n) && n > 0 ? Math.min(n, viz.dataset.items.length) : DEFAULT_CLOSEST;
               e.currentTarget.value = String(viz.closest);
             }}
           />
-          <span>data items</span>
+          <label for="search-closest">data items</label>
+        </div>
+        <div class="dropdown-field search-cut" class:disabled={!viz.meaningOn}>
+          <input
+            type="radio"
+            id="search-cut-score"
+            name="search-cut"
+            checked={viz.meaningCut === 'score'}
+            disabled={!viz.meaningOn}
+            onchange={() => (viz.meaningCut = 'score')}
+          />
+          <label for="search-cut-score">Show every data item with at least</label>
+          <input
+            id="search-min-score"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            value={viz.scoreCutoff.toFixed(2)}
+            aria-label="The lowest similarity score to show, from 0 to 1"
+            disabled={!viz.meaningOn}
+            onfocus={() => (viz.meaningCut = 'score')}
+            onchange={(e) => {
+              const n = Number(e.currentTarget.value);
+              viz.minScore = Number.isFinite(n) ? Math.min(1, Math.max(0, Math.round(n * 100) / 100)) : null;
+              e.currentTarget.value = viz.scoreCutoff.toFixed(2);
+            }}
+          />
+          <label for="search-min-score">similarity score</label>
         </div>
         <p class="search-mode-note">
           Meaning is judged by {MODELS[appSettings.meaningModel].label} ({MODELS[appSettings.meaningModel].languages}), a small model that
-          runs in your browser. Choose the model in Settings.
+          runs in your browser. Choose the model in Settings. Its scores run from 0 to 1; the viewer shows each match's score, and
+          {MODELS[appSettings.meaningModel].minScore.toFixed(2)} is a reasonable cut-off for this model.
         </p>
       </section>
     </Dropdown>

@@ -73,14 +73,25 @@ describe('passages', () => {
       { text: 'c', itemId: 2, column: 'N' },
       { text: 'missing', itemId: 3, column: 'N' },
     ];
-    const closest = closestByPassage(passages, new Float32Array([0, 1]), (t) => vectors.get(t), 5);
+    const closest = closestByPassage(passages, new Float32Array([0, 1]), (t) => vectors.get(t), { closest: 5 });
     expect(closest.map((s) => [s.itemId, s.passage])).toEqual([
       [1, 'b'],
       [2, 'c'],
     ]);
     expect(closest[0].score).toBeCloseTo(1);
-    expect(closestByPassage(passages, new Float32Array([0, 1]), (t) => vectors.get(t), 1)).toHaveLength(1);
-    expect(topScores([], 3)).toEqual([]);
+    expect(closestByPassage(passages, new Float32Array([0, 1]), (t) => vectors.get(t), { closest: 1 })).toHaveLength(1);
+    expect(topScores([], { closest: 3 })).toEqual([]);
+  });
+
+  it('can cut the list at a similarity score instead', () => {
+    const scored = [
+      { itemId: 1, score: 0.9, passage: 'a', column: 'N' },
+      { itemId: 2, score: 0.65, passage: 'b', column: 'N' },
+      { itemId: 3, score: 0.4, passage: 'c', column: 'N' },
+    ];
+    expect(topScores([...scored], { minScore: 0.65 }).map((s) => s.itemId)).toEqual([1, 2]);
+    expect(topScores([...scored], { minScore: 0.95 })).toEqual([]);
+    expect(topScores([...scored], { minScore: 0 })).toHaveLength(3);
   });
 
   it('averages unit vectors into a unit vector', () => {

@@ -96,6 +96,7 @@
           <strong>Finding data items similar to this one</strong>
         {:else}
           <strong>#{meaning.rank} closest {viz.similarTo !== null ? `to file row ${viz.similarTo}` : 'in meaning'}</strong>
+          <span class="popup-meaning-score">· similarity {meaning.score.toFixed(2)}</span>
           {#if meaning.passage}<span class="popup-meaning-why">by “{meaning.passage}” in {meaning.column}</span>{/if}
         {/if}
       </p>

@@ -1,7 +1,9 @@
 import { colorScale, type Swatch } from './colors';
 import { computeLayout, zoomBounds, type SortBy, type SortDirection } from './layout';
 import { displayLabel, NO_TAGS_LABEL, type Dataset, type DataItem, type ListSeparator } from './data';
-import { DEFAULT_CLOSEST, type FitMode, type SearchMode, type ViewState } from './persist';
+import { DEFAULT_CLOSEST, type FitMode, type MeaningCut, type SearchMode, type ViewState } from './persist';
+import { MODELS } from './semantic/models';
+import type { Cut } from './semantic/passages';
 import { canFindByMeaning, SemanticSearch, type MeaningMatch } from './semantic/search.svelte';
 import { groupingItems, tagCatalog, type TagInfo } from './tags';
 import { search } from './search';
@@ -50,8 +52,12 @@ export class Viz {
   searchMode = $state<SearchMode>('text');
   /** "Find similar": the data item whose closest items are shown, in place of a typed search */
   similarTo = $state<number | null>(null);
+  /** Which data items a meaning search shows: the closest so many, or every one scoring at least `minScore` */
+  meaningCut = $state<MeaningCut>('closest');
   /** How many of the closest data items a meaning search shows (exact text matches come on top) */
   closest = $state(DEFAULT_CLOSEST);
+  /** The similarity score cut-off (0 to 1) the user set; null: the model's own default */
+  minScore = $state<number | null>(null);
   /** The model and vectors behind finding by meaning; it does nothing until meaning mode is used */
   semantic = new SemanticSearch();
   legendCollapsed = $state(false);
@@ -123,10 +129,14 @@ export class Viz {
   colors = $derived.by(() => colorScale(this.layout.legend.map((g) => g.label)));
   /** Meaning mode, where this page can offer it (not in a saved file, and not in Classic Nineteen) */
   meaningOn = $derived(this.searchMode === 'meaning' && canFindByMeaning() && !appSettings.classic);
+  /** The cut-off in use: the model's default score unless the user set one */
+  scoreCutoff = $derived(this.minScore ?? MODELS[appSettings.meaningModel].minScore);
+  /** The cut as the scoring sees it */
+  cut = $derived<Cut>(this.meaningCut === 'score' ? { minScore: this.scoreCutoff } : { closest: this.closest });
   /** Identifies the current meaning search, so results from an earlier one are never shown for it */
   meaningKey = $derived.by(() => {
     const query = this.similarTo !== null ? `item:${this.similarTo}` : `text:${this.searchTerm.trim()}`;
-    return `${query}|${this.closest}|${this.semantic.indexVersion}`;
+    return `${query}|${JSON.stringify(this.cut)}|${this.semantic.indexVersion}`;
   });
   /**
    * What the text search looks for. By meaning, the search is a sentence, not a list of words, so
@@ -182,6 +192,9 @@ export class Viz {
     this.searchMode = view?.searchMode === 'meaning' ? 'meaning' : 'text';
     this.similarTo = this.searchMode === 'meaning' && dataset.items.some((item) => item.id === view?.similarTo) ? view!.similarTo! : null;
     this.closest = Number.isInteger(view?.closest) && view!.closest! > 0 ? view!.closest! : DEFAULT_CLOSEST;
+    this.meaningCut = view?.meaningCut === 'score' ? 'score' : 'closest';
+    const score = view?.minScore;
+    this.minScore = typeof score === 'number' && score >= 0 && score <= 1 ? score : null;
     this.legendCollapsed = view?.legendCollapsed ?? false;
     this.tagColumns = view?.tagColumns?.filter(has) ?? columns.filter((c) => /^tags$/i.test(c));
     this.listSeparators = view?.listSeparators ?? {};
@@ -594,7 +607,9 @@ export class Viz {
       searchScope: [...this.searchScope],
       searchMode: this.searchMode,
       similarTo: this.similarTo,
+      meaningCut: this.meaningCut,
       closest: this.closest,
+      minScore: this.minScore,
       legendCollapsed: this.legendCollapsed,
       tagColumns: [...this.tagColumns],
       listSeparators: { ...this.listSeparators },

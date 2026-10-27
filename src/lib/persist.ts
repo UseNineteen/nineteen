@@ -1,5 +1,6 @@
 import { buildDataset, type Dataset, type ListSeparator } from './data';
 import type { SortBy, SortDirection } from './layout';
+import type { TagEntry } from './tag-list';
 
 /**
  * Data persistence, all on the user's own device:
@@ -59,6 +60,8 @@ export interface ViewState {
   tagIgnored?: Record<string, string[]>;
   /** Per column, the value order dragged in the legend */
   valueOrders?: Record<string, string[]>;
+  /** The tag list: the study's tags with descriptions, including ones no data item carries yet */
+  tagList?: TagEntry[];
 }
 
 export interface SavedFile {

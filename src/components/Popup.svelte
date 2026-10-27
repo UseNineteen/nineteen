@@ -112,7 +112,7 @@
           id="tags-{popup.key}"
           {tags}
           editable={popup.floating}
-          suggestions={viz.catalog(tagColumn).map((t) => t.label)}
+          suggestions={viz.tagEntries.map((t) => ({ label: t.label, description: t.description }))}
           separator={viz.separatorOf(tagColumn)}
           onchange={(next) => viz.setTags(item.id, next)}
           onpick={(tag) => findTag(tagColumn, tag)}

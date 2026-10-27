@@ -2,10 +2,15 @@
   import { splitTags, type ListSeparator } from '../lib/data';
   import { tagKey } from '../lib/tags';
 
+  export interface TagSuggestion {
+    label: string;
+    description?: string;
+  }
+
   interface Props {
     tags: string[];
-    /** Existing tags offered while typing */
-    suggestions?: string[];
+    /** Existing tags offered while typing, with what they mean */
+    suggestions?: TagSuggestion[];
     editable?: boolean;
     onchange?: (tags: string[]) => void;
     /** Clicking a tag (to search for it) */
@@ -23,11 +28,11 @@
 
   let draft = $state('');
 
-  const available = $derived(suggestions.filter((s) => !tags.some((t) => tagKey(t) === tagKey(s))));
+  const available = $derived(suggestions.filter((s) => !tags.some((t) => tagKey(t) === tagKey(s.label))));
 
   /** Reuse the existing spelling of a tag when one matches, so "Price" and "price" stay one tag */
   function canonical(tag: string): string {
-    return suggestions.find((s) => tagKey(s) === tagKey(tag)) ?? tag;
+    return suggestions.find((s) => tagKey(s.label) === tagKey(tag))?.label ?? tag;
   }
 
   function add(text: string) {
@@ -88,8 +93,8 @@
           onblur={() => add(draft)}
         />
         <datalist id="{id}-suggestions">
-          {#each available as suggestion (suggestion)}
-            <option value={suggestion}></option>
+          {#each available as suggestion (suggestion.label)}
+            <option value={suggestion.label} label={suggestion.description || undefined}></option>
           {/each}
         </datalist>
       </li>

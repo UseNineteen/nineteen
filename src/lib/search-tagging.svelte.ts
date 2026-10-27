@@ -27,7 +27,8 @@ export class SearchTagging {
 
   total = $derived(this.viz.dataset.items.length);
   count = $derived(this.viz.matches?.size ?? 0);
-  catalog = $derived(this.viz.catalog(this.viz.tagEditColumn));
+  /** The tags on offer: those in the data and those in the tag list */
+  catalog = $derived(this.viz.tagEntries);
   /** The search is a single existing tag ("price" or "\"price\""), so its matches can lose it */
   searchedTag = $derived.by(() => {
     const key = tagKey(this.viz.searchTerm.replace(/^"(.*)"$/, '$1'));

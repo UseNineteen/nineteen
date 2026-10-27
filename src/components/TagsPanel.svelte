@@ -3,14 +3,19 @@
   import { normalizeTag, splitTags } from '../lib/data';
   import { dataItems } from '../lib/text';
   import { PointerDrag } from '../lib/drag';
-  import { tagKey, type TagInfo } from '../lib/tags';
+  import { tagKey } from '../lib/tags';
+  import { download } from '../lib/download';
+  import { formatTagList, parseTagList, TAG_LIST_FORMATS, type TagListFormat, type TagListItem } from '../lib/tag-list';
   import type { Viz } from '../lib/viz.svelte';
 
   /**
-   * Manage tags: every tag in the tags column with its count. Rename (click the name),
-   * combine (drag one tag onto another, or "Combine into…"), delete, or copy a tag into
-   * its own True/False data field. Every change can be undone until the next one.
+   * Manage tags: every tag in the tags column with its count and description, plus the tag
+   * list's tags no data item carries yet. Rename (click the name), describe (click the line
+   * under it), combine (drag one tag onto another, or "Combine into…"), delete, or copy a tag
+   * into its own True/False data field. The tag list can be exported and imported. Every
+   * change to the data can be undone until the next one.
    */
+  type TagInfo = TagListItem;
   interface Props {
     viz: Viz;
     onclose: () => void;
@@ -46,10 +51,11 @@
 
   const column = $derived(viz.tagEditColumn);
   const separator = $derived(viz.separatorOf(column));
-  const catalog = $derived(viz.catalog(column));
+  /** Tags in the data and in the tag list, with counts and descriptions */
+  const catalog = $derived(viz.tagEntries);
   const shown = $derived.by(() => {
     const needle = filter.trim().toLowerCase();
-    const list = needle ? catalog.filter((t) => t.key.includes(needle)) : [...catalog];
+    const list = needle ? catalog.filter((t) => t.key.includes(needle) || t.description.toLowerCase().includes(needle)) : [...catalog];
     if (sortBy === 'name') list.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base', numeric: true }));
     return list;
   });
@@ -66,8 +72,65 @@
 
   function reset() {
     renaming = null;
+    describing = null;
     menuFor = null;
     pending = null;
+  }
+
+  // ---------- Descriptions ----------
+
+  /** The tag whose description is being edited */
+  let describing = $state<string | null>(null);
+  let descriptionDraft = $state('');
+
+  async function startDescribe(tag: TagInfo) {
+    reset();
+    describing = tag.key;
+    descriptionDraft = tag.description;
+    await tick();
+    const field = document.getElementById(`tag-describe-${tag.key}`) as HTMLTextAreaElement | null;
+    field?.focus();
+  }
+
+  function finishDescribe(tag: TagInfo) {
+    if (describing !== tag.key) return;
+    describing = null;
+    const next = descriptionDraft.trim();
+    if (next !== tag.description) viz.describeTag(tag.label, next);
+  }
+
+  // ---------- The tag list: export and import ----------
+
+  let fileInput = $state<HTMLInputElement>();
+  let importError = $state<string | null>(null);
+
+  function exportList(format: TagListFormat) {
+    const spec = TAG_LIST_FORMATS.find((f) => f.id === format)!;
+    const rows = [...catalog]
+      .sort((a, b) => a.label.localeCompare(b.label))
+      .map((t) => ({ tag: t.label, description: t.description, count: t.count }));
+    const stem = viz.dataset.name.replace(/\.[^.]+$/, '') || 'nineteen';
+    download(new Blob([formatTagList(rows, format)], { type: spec.type }), `${stem}-tags.${spec.extension}`);
+  }
+
+  async function importList() {
+    const file = fileInput?.files?.[0];
+    if (fileInput) fileInput.value = '';
+    if (!file) return;
+    importError = null;
+    try {
+      const entries = parseTagList(file.name, await file.text());
+      if (!entries.length) throw new Error('No tags were found in the file.');
+      const { added, described } = viz.importTagList(entries);
+      reset();
+      const parts = [added ? `added ${added === 1 ? '1 tag' : `${added} tags`}` : '', described ? `described ${described}` : ''].filter(
+        Boolean,
+      );
+      if (parts.length) report(`Imported the tag list: ${parts.join(', ')}.`);
+      else importError = `Every tag in “${file.name}” was already in the list.`;
+    } catch (error) {
+      importError = `“${file.name}” could not be read as a tag list. ${(error as Error).message}`;
+    }
   }
 
   /** How many data items have `a`, and how many of those also have `b` */
@@ -147,7 +210,7 @@
   function pointerdown(tag: TagInfo, event: PointerEvent) {
     if (renaming) return;
     // The name can be dragged too (a click without moving still renames)
-    if ((event.target as HTMLElement).closest('.tags-more, .tags-menu, input, select')) return;
+    if ((event.target as HTMLElement).closest('.tags-more, .tags-menu, .tags-description, input, select, textarea')) return;
     drag.press(tag.key, event);
   }
 
@@ -156,7 +219,7 @@
   function confirmDelete(tag: TagInfo) {
     const changed = viz.deleteTag(tag.label);
     pending = null;
-    report(`Deleted “${tag.label}” from ${dataItems(changed)}.`);
+    report(changed ? `Deleted “${tag.label}” from ${dataItems(changed)}.` : `Removed “${tag.label}” from the tag list.`);
   }
 
   function makeColumn(tag: TagInfo, name: string, keep: boolean) {
@@ -211,6 +274,11 @@
         {message.text} <button type="button" onclick={undo}>Undo</button>
       </div>
     {/if}
+    {#if importError}
+      <div class="tags-message tags-error" role="alert">
+        {importError} <button type="button" onclick={() => (importError = null)}>Dismiss</button>
+      </div>
+    {/if}
 
     {#if pending?.kind === 'combine'}
       {@const counts = overlap(pending.from.key, pending.into.key)}
@@ -252,7 +320,13 @@
       </div>
     {:else if pending?.kind === 'delete'}
       <div class="tags-confirm" role="alertdialog" aria-label="Delete tag">
-        <p>Remove <strong>“{pending.tag.label}”</strong> from {dataItems(pending.tag.count)}?</p>
+        <p>
+          {#if pending.tag.count}
+            Remove <strong>“{pending.tag.label}”</strong> from {dataItems(pending.tag.count)}?
+          {:else}
+            Remove <strong>“{pending.tag.label}”</strong> from the tag list? No data item carries it.
+          {/if}
+        </p>
         <div class="tags-confirm-actions">
           <button type="button" class="btn btn-danger" onclick={() => pending?.kind === 'delete' && confirmDelete(pending.tag)}
             >Delete</button
@@ -330,7 +404,11 @@
                 >{tag.label}</button
               >
             {/if}
-            <span class="tags-count">{tag.count}</span>
+            <span
+              class="tags-count"
+              class:unused={tag.count === 0}
+              title={tag.count === 0 ? 'No data item carries this tag yet' : undefined}>{tag.count || 'unused'}</span
+            >
             <button
               type="button"
               class="tags-more"
@@ -349,20 +427,64 @@
                 <button type="button" role="menuitem" class="danger" onclick={() => act('delete', tag)}>Delete…</button>
               </div>
             {/if}
+            {#if describing === tag.key}
+              <textarea
+                id="tag-describe-{tag.key}"
+                class="tags-describe"
+                rows="2"
+                bind:value={descriptionDraft}
+                aria-label="Description of {tag.label}"
+                placeholder="What this tag means"
+                onkeydown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    finishDescribe(tag);
+                  }
+                  if (e.key === 'Escape') describing = null;
+                }}
+                onblur={() => finishDescribe(tag)}
+              ></textarea>
+            {:else}
+              <button
+                type="button"
+                class="tags-description"
+                class:empty={!tag.description}
+                title={tag.description ? 'Edit the description' : 'Describe this tag'}
+                onclick={() => !justDragged && startDescribe(tag)}>{tag.description || 'Add a description'}</button
+              >
+            {/if}
           </li>
         {:else}
           <li class="tags-empty">No tags match “{filter}”.</li>
         {/each}
       </ul>
-      <p class="tags-hint">Click a name to rename it. Drag a tag onto another to combine them.</p>
+      <p class="tags-hint">Click a name to rename it, or the line under it to describe it. Drag a tag onto another to combine them.</p>
     {:else}
       <p class="tags-hint">
-        No tags yet. Tag data items from a pinned viewer (click a box), or search and choose <strong>Tag these…</strong>
+        No tags yet. Tag data items from a pinned viewer (click a box), search and choose <strong>Tag these…</strong>, or import a tag list
+        below.
       </p>
     {/if}
   </div>
 
   <footer class="tags-footer">
+    <div class="tags-list-tools">
+      <span>Tag list:</span>
+      <button type="button" class="link-button" onclick={() => fileInput?.click()}>Import…</button>
+      <input
+        bind:this={fileInput}
+        type="file"
+        accept=".csv,.tsv,.json,.txt,text/csv,application/json,text/plain"
+        hidden
+        onchange={importList}
+      />
+      {#if catalog.length}
+        <span class="tags-export">Export as</span>
+        {#each TAG_LIST_FORMATS as format (format.id)}
+          <button type="button" class="link-button" onclick={() => exportList(format.id)}>{format.label}</button>
+        {/each}
+      {/if}
+    </div>
     <button type="button" class="link-button" onclick={() => ondisplayoptions(column)}>List display options…</button>
   </footer>
 </aside>

@@ -65,6 +65,7 @@
     columnKey: viz.columnKey,
     colorKey: viz.colorKey,
     searchTerm: viz.searchTerm,
+    tags: { column: viz.tagEditColumn, entries: viz.tagEntries.map((t) => ({ tag: t.label, description: t.description })) },
   });
   const data = $derived(renderData(items, columns, view, scope));
   const tokens = $derived(estimateTokens(data));

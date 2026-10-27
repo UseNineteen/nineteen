@@ -15,6 +15,7 @@
   import { Popups } from '../lib/popups.svelte';
   import { addTerm } from '../lib/search';
   import { appSettings } from '../lib/settings.svelte';
+  import { download } from '../lib/download';
   import { toCsv, toXlsx } from '../lib/export-data';
   import { renderSnapshot } from '../lib/snapshot';
   import { canSaveStandalone, standaloneHtml } from '../lib/standalone';
@@ -96,18 +97,6 @@
   const PNG_READY = 'Save a static image of this view';
   let pngStatus = $state(PNG_READY);
   let rendering = $state(false);
-
-  /** Hands a file to the browser as a download; the object URL lives only as long as the click needs it */
-  function download(blob: Blob, filename: string) {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.append(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
 
   function saveHtml() {
     const html = standaloneHtml(serialize(viz.dataset, viz.toViewState()));

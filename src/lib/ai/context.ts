@@ -1,4 +1,5 @@
 import { displayLabel, withColumn, type DataItem, type Dataset } from '../data';
+import type { TagEntry } from '../tag-list';
 
 /**
  * Packages the user's data for an AI model: which rows, which columns, and a
@@ -23,6 +24,8 @@ export interface ViewContext {
   columnKey?: string | null;
   colorKey: string;
   searchTerm: string;
+  /** The tags column and the described tags of the tag list, so the model knows what the tags mean */
+  tags?: { column: string; entries: TagEntry[] };
 }
 
 /** "grouping rows by X and columns by Y", as the view is set up */
@@ -60,6 +63,10 @@ export function describeData(items: DataItem[], columns: string[], view: ViewCon
     `Columns included: ${columns.join(', ')}`,
     `The researcher is currently ${describeGrouping(view)} and color-coding them by "${view.colorKey}".`,
   ];
+  const described = view.tags?.entries.filter((e) => e.description) ?? [];
+  if (view.tags && described.length && columns.includes(view.tags.column)) {
+    lines.push(`Tags in "${view.tags.column}" and what they mean: ${described.map((e) => `${e.tag}: ${e.description}`).join('; ')}`);
+  }
   return lines.join('\n');
 }
 

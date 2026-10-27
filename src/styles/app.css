@@ -2961,3 +2961,71 @@ footer li:first-child::before {
   flex: 0 0 auto;
   padding: 10px 15px;
 }
+/* Import and export of the tag list */
+#tags-panel .tags-list-tools {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  margin-bottom: 6px;
+}
+#tags-panel .tags-list-tools > span {
+  color: var(--trout);
+  font-weight: 600;
+}
+#tags-panel .tags-list-tools .tags-export {
+  color: #7d838a;
+  font-weight: 400;
+  margin-left: 4px;
+}
+#tags-panel .tags-message.tags-error {
+  background: #fdf0ee;
+  color: #8a2d1f;
+}
+/* A tag's description on its own line under the name; "Add a description" shows only when pointed at */
+#tags-panel .tags-list li {
+  flex-wrap: wrap;
+  padding-bottom: 4px;
+}
+#tags-panel .tags-count.unused {
+  color: #a7adb4;
+  font-style: italic;
+}
+#tags-panel .tags-description {
+  appearance: none;
+  background: none;
+  border: none;
+  color: #6b737b;
+  cursor: text;
+  flex: 1 0 100%;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: -4px 0 0 14px;
+  overflow-wrap: anywhere;
+  padding: 0 24px 0 0;
+  text-align: left;
+}
+#tags-panel .tags-description.empty {
+  color: #a7adb4;
+  font-style: italic;
+  opacity: 0;
+}
+#tags-panel .tags-list li:hover .tags-description.empty,
+#tags-panel .tags-list li:focus-within .tags-description.empty {
+  opacity: 1;
+}
+#tags-panel .tags-description:hover {
+  color: var(--trout);
+}
+#tags-panel .tags-describe {
+  border: 1px solid #9cc7ee;
+  border-radius: 3px;
+  box-sizing: border-box;
+  flex: 1 0 100%;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0 0 2px 14px;
+  padding: 3px 6px;
+  resize: vertical;
+}

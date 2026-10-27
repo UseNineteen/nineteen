@@ -1,6 +1,7 @@
 import { joinTags, normalizeTag, sortTags, splitTags, withCell, withColumn, type DataItem } from './data';
 import { saveSession } from './persist';
 import { COMBINATION_SEPARATOR, tagKey } from './tags';
+import { followTagRenames } from './tag-list';
 import type { Viz } from './viz.svelte';
 
 /**
@@ -16,10 +17,10 @@ function showNewColumn(viz: Viz, column: string): void {
   if (!viz.viewerColumns.includes(column)) viz.viewerColumns = [...viz.viewerColumns, column];
 }
 
-/** The existing spelling of a tag, or the new one, tidied */
+/** The existing spelling of a tag (in the data, or else in the tag list), or the new one, tidied */
 export function canonicalTag(viz: Viz, tag: string): string {
   const key = tagKey(tag);
-  return viz.catalog(viz.tagEditColumn).find((t) => t.key === key)?.label ?? normalizeTag(tag);
+  return viz.tagEntries.find((t) => t.key === key)?.label ?? normalizeTag(tag);
 }
 
 /** Writes one row's tags (sorted, de-duplicated). */
@@ -36,8 +37,9 @@ export function setTags(viz: Viz, itemId: number, tags: string[]): void {
 
 /**
  * Rewrites the tags of every data item through `edit`, keeping what's needed to undo it.
- * `renames` maps old tag keys to new labels (null: removed), so legend order and display
- * options follow renamed, combined and deleted tags. Returns how many items changed.
+ * `renames` maps old tag keys to new labels (null: removed), so legend order, display options
+ * and the tag list follow renamed, combined and deleted tags (a tag the list has but no data
+ * item carries is renamed or removed there alone). Returns how many items changed.
  */
 function editTags(
   viz: Viz,
@@ -54,8 +56,11 @@ function editTags(
     valueOrders: viz.valueOrders,
     searchScope: viz.searchScope,
     viewerColumns: viz.viewerColumns,
+    tagList: viz.tagList,
   };
   const isNew = !viz.dataset.columns.includes(column);
+  const tagList = renames ? followTagRenames(viz.tagList, renames) : viz.tagList;
+  const listChanged = JSON.stringify(tagList) !== JSON.stringify(viz.tagList);
   let changed = 0;
   const dataset = withColumn(viz.dataset, column, (item) => {
     const before = splitTags(item.raw[column], separator);
@@ -64,12 +69,15 @@ function editTags(
     changed++;
     return joinTags(after, separator);
   });
-  if (changed === 0) return 0;
-  viz.dataset = dataset;
-  if (isNew) showNewColumn(viz, column);
-  if (!viz.tagColumns.includes(column)) viz.tagColumns = [...viz.tagColumns, column];
-  if (renames) followRenames(viz, column, renames);
-  saveSession(viz.dataset);
+  if (changed === 0 && !listChanged) return 0;
+  if (changed > 0) {
+    viz.dataset = dataset;
+    if (isNew) showNewColumn(viz, column);
+    if (!viz.tagColumns.includes(column)) viz.tagColumns = [...viz.tagColumns, column];
+    if (renames) followRenames(viz, column, renames);
+    saveSession(viz.dataset);
+  }
+  viz.tagList = tagList;
   viz.tagUndo = {
     label,
     restore: () => {
@@ -178,6 +186,7 @@ export function tagToColumn(viz: Viz, tag: string, name: string, keepTag = false
     viewerColumns: viz.viewerColumns,
     tagIgnored: viz.tagIgnored,
     valueOrders: viz.valueOrders,
+    tagList: viz.tagList,
   };
   let dataset = withColumn(viz.dataset, column, (item) =>
     splitTags(item.raw[tags], separator).some((t) => tagKey(t) === key) ? 'True' : 'False',
@@ -191,7 +200,10 @@ export function tagToColumn(viz: Viz, tag: string, name: string, keepTag = false
   }
   viz.dataset = dataset;
   showNewColumn(viz, column);
-  if (!keepTag) followRenames(viz, tags, new Map([[key, null]]));
+  if (!keepTag) {
+    followRenames(viz, tags, new Map([[key, null]]));
+    viz.tagList = followTagRenames(viz.tagList, new Map([[key, null]]));
+  }
   saveSession(viz.dataset);
   viz.tagUndo = {
     label: `${keepTag ? 'Added' : 'Converted into'} data field “${column}”`,

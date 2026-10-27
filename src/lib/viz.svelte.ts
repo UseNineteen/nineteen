@@ -5,7 +5,8 @@ import { DEFAULT_CLOSEST, type FitMode, type MeaningCut, type SearchMode, type V
 import { MODELS } from './semantic/models';
 import type { Cut } from './semantic/passages';
 import { canFindByMeaning, SemanticSearch, type MeaningMatch } from './semantic/search.svelte';
-import { groupingItems, tagCatalog, type TagInfo } from './tags';
+import { groupingItems, tagCatalog, tagKey, type TagInfo } from './tags';
+import { dedupeEntries, mergeTagList, withDescription, type MergeResult, type TagEntry, type TagListItem } from './tag-list';
 import { search } from './search';
 import { topTerms } from './terms';
 import { appSettings } from './settings.svelte';
@@ -89,12 +90,30 @@ export class Viz {
   tagIgnored = $state<Record<string, string[]>>({});
   /** Per column: the value order dragged in the legend (colors, split bands, and A–Z rows follow it) */
   valueOrders = $state<Record<string, string[]>>({});
+  /** The tag list: the study's tags with descriptions, including ones no data item carries yet */
+  tagList = $state<TagEntry[]>([]);
 
   tagSet = $derived.by(() => new Set(this.tagColumns.filter((c) => this.dataset.columns.includes(c))));
   /** Tags in each tag column, most used first */
   /** List columns with how each one is split, for search */
   listColumns = $derived.by(() => new Map([...this.tagSet].map((c) => [c, this.separatorOf(c)])));
   tagCatalogs = $derived.by(() => new Map([...this.tagSet].map((c) => [c, tagCatalog(this.dataset.items, c, this.separatorOf(c))])));
+  /**
+   * The tags column's tags as Manage tags and the suggestions see them: every tag in the data
+   * (its spelling from the file) plus the tag list's unused ones, each with its description.
+   * Most used first, unused last.
+   */
+  tagEntries = $derived.by((): TagListItem[] => {
+    const catalog = this.catalog(this.tagEditColumn);
+    const listed = new Map(this.tagList.map((e) => [tagKey(e.tag), e]));
+    const entries: TagListItem[] = catalog.map((t) => ({ ...t, description: listed.get(t.key)?.description ?? '' }));
+    const used = new Set(catalog.map((t) => t.key));
+    for (const entry of this.tagList) {
+      const key = tagKey(entry.tag);
+      if (!used.has(key)) entries.push({ key, label: entry.tag, count: 0, description: entry.description });
+    }
+    return entries.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  });
   /** Items as the layout sees them: tag columns used for grouping/coloring hold the row's tag combination */
   layoutItems = $derived.by(() =>
     groupingItems(
@@ -202,6 +221,11 @@ export class Viz {
     this.tagsColumnChoice = has(view?.tagsColumn) ? view.tagsColumn : null;
     this.tagIgnored = view?.tagIgnored ?? {};
     this.valueOrders = view?.valueOrders ?? {};
+    this.tagList = dedupeEntries(
+      (Array.isArray(view?.tagList) ? view.tagList : [])
+        .filter((e) => e && typeof e.tag === 'string')
+        .map((e) => ({ tag: String(e.tag), description: String(e.description ?? '') })),
+    );
   }
 
   // ---------- Rows, columns and color ----------
@@ -397,6 +421,31 @@ export class Viz {
 
   catalog(column: string): TagInfo[] {
     return this.tagCatalogs.get(column) ?? [];
+  }
+
+  // ---------- The tag list ----------
+
+  /** Sets a tag's description (the tag joins the list if it wasn't there). */
+  describeTag(tag: string, description: string): void {
+    this.tagList = withDescription(this.tagList, tag, description);
+  }
+
+  /** Adds an imported list's tags and descriptions (see `mergeTagList`), with one Undo. */
+  importTagList(entries: TagEntry[]): MergeResult {
+    const before = this.tagList;
+    const result = mergeTagList(before, entries);
+    this.tagList = result.list;
+    this.tagUndo =
+      result.added || result.described
+        ? {
+            label: 'Imported tag list',
+            restore: () => {
+              this.tagList = before;
+              this.tagUndo = null;
+            },
+          }
+        : null;
+    return result;
   }
 
   /** A column name not used yet: `name`, or `name (2)`, `name (3)`, … */
@@ -622,6 +671,7 @@ export class Viz {
       tagsColumn: this.tagsColumnChoice ?? undefined,
       tagIgnored: { ...this.tagIgnored },
       valueOrders: { ...this.valueOrders },
+      tagList: this.tagList.map((e) => ({ ...e })),
     };
   }
 }

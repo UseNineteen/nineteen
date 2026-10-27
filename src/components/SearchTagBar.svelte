@@ -65,7 +65,7 @@
           onkeydown={(e) => e.key === 'Escape' && st.cancel()}
         />
         <datalist id="search-tag-suggestions">
-          {#each st.catalog as tag (tag.key)}<option value={tag.label}></option>{/each}
+          {#each st.catalog as tag (tag.key)}<option value={tag.label} label={tag.description || undefined}></option>{/each}
         </datalist>
         <button type="submit" class="primary" disabled={!st.draft.trim()}>Add tag</button>
         {#if st.searchedTag}

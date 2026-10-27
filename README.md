@@ -105,6 +105,12 @@ your spreadsheet, CSV and HTML downloads.
   combinations, or show only one tag. Your data keeps every tag; only the grouping changes
 - **Finding tags:** Click a tag in a viewer to find every data item with that tag. In tag fields, search matches whole tags, so
   "price" doesn't find "pricey"
+- **Tag list and descriptions:** Manage tags lists every tag with its count, and the line under each one holds its description:
+  click it to write what the tag means. Descriptions appear beside the suggestions when you tag, and the AI tools are told
+  what the tags mean. The tag list can hold tags no data item carries yet, so a team can agree on the tagging options first:
+  **Import…** at the bottom of Manage tags reads a list (CSV, JSON or a text file with one tag per line, with an optional
+  description column), and **Export as** CSV, JSON or Text writes the current list with counts. Tags keep their spelling but
+  match regardless of case; importing never removes a tag from your data
 
 ### Fields that Hold Lists
 Tags are one kind of list. Any field whose cells hold several values, like "Target, Walmart", can be treated the same way: choose

@@ -15,7 +15,11 @@
   let { viz }: Props = $props();
 
   const showCounts = $derived(viz.counts && !viz.split);
-  /** Line the first entry up with the first data row: the list starts below the collapse toggle and the first entry's gap */
+  /**
+   * Line the first entry up with the first data row: the collapse toggle sits directly above the
+   * list (level with the band labels in split view), and the list starts below it and the first
+   * entry's gap, so the space to the first row goes above the toggle
+   */
   const LIST_START = LEGEND.toggle + 2 * LEGEND.toggleMargin + LEGEND.entryGapTop;
   const offset = $derived(Math.max(0, viz.firstRowTop - LIST_START));
   const reorderable = $derived(!viz.legendCollapsed && viz.layout.legend.length > 1);
@@ -79,6 +83,7 @@
     aria-label={viz.legendCollapsed ? 'Show legend' : 'Hide legend'}
     aria-expanded={!viz.legendCollapsed}
     title={viz.legendCollapsed ? 'Show legend' : 'Hide legend'}
+    style:margin-top="{offset + LEGEND.toggleMargin}px"
     onclick={() => (viz.legendCollapsed = !viz.legendCollapsed)}
   ></button>
   <ul
@@ -87,7 +92,6 @@
     class:dimmed={viz.hoveredColor !== null}
     class:reorderable
     class:dragging={reorder.active}
-    style:padding-top="{offset}px"
     aria-label="Legend: {viz.colorKey}. Drag entries, or press Alt and the arrow keys, to reorder them and their colors."
     onpointermove={(e) => reorder.pointermove(e)}
     onpointerup={(e) => reorder.pointerup(e)}

@@ -559,13 +559,17 @@ footer li:first-child::before {
 }
 
 #tool-bar {
+  /* Room above and below the controls; an open panel's tab reaches through it (see the panel toggles) */
+  --tool-bar-pad: 6px;
   align-items: stretch;
   box-sizing: border-box;
   display: flex;
   flex: 0 0 auto;
   color: var(--trout);
-  padding: 0 10px;
-  height: 40px;
+  padding: var(--tool-bar-pad) 10px;
+  /* The sort buttons start where the first column of boxes does (--sort-offset is set by the viewer) */
+  padding-left: max(10px, var(--sort-offset, 10px));
+  height: calc(40px + 2 * var(--tool-bar-pad));
   width: 100%;
 }
 #tool-bar input,
@@ -654,10 +658,7 @@ footer li:first-child::before {
 #tool-bar #find:focus-within {
   border-color: var(--trout);
 }
-/* By meaning: the box and the word say so even with the menu closed */
-#tool-bar #find.meaning {
-  border-color: #9cc7ee;
-}
+/* By meaning: the word says so even with the menu closed */
 #tool-bar #find.meaning #search-mode strong {
   color: #0a3bb1;
 }
@@ -937,8 +938,8 @@ footer li:first-child::before {
 }
 #viewer .visualizer {
   flex: 1 1 auto;
-  /* A little breathing room between the toolbar and the first row */
-  margin-top: 8px;
+  /* A little breathing room between the toolbar and the first row (the toolbar has its own padding too) */
+  margin-top: 4px;
   overflow: auto;
   overflow-x: hidden;
   position: relative;
@@ -1774,7 +1775,7 @@ footer li:first-child::before {
   background-color: var(--lightgray);
   border-color: var(--lightgray);
   border-radius: 6px 6px 0 0;
-  margin-bottom: 0;
+  margin-bottom: calc(-1 * var(--tool-bar-pad));
   position: relative;
   z-index: 1;
 }
@@ -2657,12 +2658,15 @@ footer li:first-child::before {
     display: none;
   }
   /* The find box loses its border too, keeping only the room; it comes back while the field has focus */
-  #tool-bar #find,
-  #tool-bar #find.meaning {
+  #tool-bar #find {
     border-color: transparent;
   }
   #tool-bar #find:focus-within {
     border-color: var(--trout);
+  }
+  /* Room is scarce: the sort buttons no longer wait for the row labels */
+  #tool-bar {
+    padding-left: 10px;
   }
   #tool-bar #toggle-view {
     margin-right: 14px;
@@ -2710,7 +2714,7 @@ footer li:first-child::before {
   #tool-bar {
     flex-wrap: wrap;
     height: auto;
-    min-height: 40px;
+    min-height: calc(40px + 2 * var(--tool-bar-pad));
   }
   #tool-bar > * {
     min-height: 40px;

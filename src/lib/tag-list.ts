@@ -170,6 +170,13 @@ export function mergeTagList(current: TagEntry[], imported: TagEntry[]): MergeRe
   return { list, added, described };
 }
 
+/** The list with a tag added (unchanged when the list has it already, ignoring case) */
+export function withTag(list: TagEntry[], tag: string): TagEntry[] {
+  const name = normalizeTag(tag);
+  if (!name || list.some((e) => tagKey(e.tag) === tagKey(name))) return list;
+  return [...list, { tag: name, description: '' }];
+}
+
 /** The list with one entry's description set (the entry is added when the list didn't have it) */
 export function withDescription(list: TagEntry[], tag: string, description: string): TagEntry[] {
   const key = tagKey(tag);

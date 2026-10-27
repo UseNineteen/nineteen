@@ -2990,6 +2990,20 @@ footer li:first-child::before {
 #tags-panel .tags-list.compact li {
   padding-bottom: 0;
 }
+/* Adding a tag to the list by name */
+#tags-panel .tags-new {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+#tags-panel .tags-new input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#tags-panel .tags-new .btn {
+  font-size: 13px;
+  padding: 4px 12px;
+}
 #tags-panel .tags-toggle {
   align-items: center;
   color: var(--trout);

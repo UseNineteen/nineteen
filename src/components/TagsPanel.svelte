@@ -104,6 +104,30 @@
     if (next !== tag.description) viz.describeTag(tag.label, next);
   }
 
+  // ---------- New tags ----------
+
+  let newTag = $state('');
+
+  /** Adds the typed tag to the list (unused until a data item gets it) and opens its description */
+  async function addNewTag() {
+    const name = normalizeTag(newTag);
+    if (!name) return;
+    if (!viz.addTag(name)) {
+      importError = `“${canonicalLabel(name)}” is in the list already.`;
+      return;
+    }
+    newTag = '';
+    importError = null;
+    filter = '';
+    await tick();
+    const added = catalog.find((t) => t.key === tagKey(name));
+    if (added) await startDescribe(added);
+  }
+
+  function canonicalLabel(tag: string): string {
+    return catalog.find((t) => t.key === tagKey(tag))?.label ?? tag;
+  }
+
   // ---------- The tag list: export and import ----------
 
   let fileInput = $state<HTMLInputElement>();
@@ -366,6 +390,17 @@
       </form>
     {/if}
 
+    <form
+      class="tags-new"
+      onsubmit={(e) => {
+        e.preventDefault();
+        addNewTag();
+      }}
+    >
+      <input type="text" bind:value={newTag} placeholder="New tag" aria-label="New tag" autocomplete="off" spellcheck="false" />
+      <button type="submit" class="btn" disabled={!newTag.trim()}>Add</button>
+    </form>
+
     {#if catalog.length}
       <div class="tags-tools">
         <input type="search" placeholder="Filter tags" aria-label="Filter tags" bind:value={filter} />
@@ -477,8 +512,8 @@
       </p>
     {:else}
       <p class="tags-hint">
-        No tags yet. Tag data items from a pinned viewer (click a box), search and choose <strong>Tag these…</strong>, or import a tag list
-        below.
+        No tags yet. Add one above, tag data items from a pinned viewer (click a box), search and choose <strong>Tag these…</strong>, or
+        import a tag list below.
       </p>
     {/if}
   </div>

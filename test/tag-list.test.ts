@@ -124,6 +124,18 @@ describe('the view’s tag list', () => {
     expect(viz.tagList.map((e) => e.tag)).toEqual(['Quality']);
   });
 
+  it('adds a tag by name, once', () => {
+    const viz = new Viz(data(), undefined);
+    expect(viz.addTag(' Quality ')).toBe(true);
+    expect(viz.addTag('quality')).toBe(false);
+    expect(viz.addTag('PRICE')).toBe(false);
+    expect(viz.tagEntries.map((t) => [t.label, t.count])).toEqual([
+      ['price', 2],
+      ['gift', 1],
+      ['Quality', 0],
+    ]);
+  });
+
   it('describes tags and keeps the list in the view state', () => {
     const viz = new Viz(data(), undefined);
     viz.describeTag('gift', 'for someone else');

@@ -109,7 +109,7 @@ your spreadsheet, CSV and HTML downloads.
   click it to write what the tag means (untick *Descriptions* above the list for a compact view). Descriptions appear beside the
   suggestions when you tag, and the AI tools are told what the tags mean. The tag list can hold tags no data item carries yet, so a team can agree on the tagging options first:
   **Import…** at the bottom of Manage tags reads a list (CSV, JSON or a text file with one tag per line, with an optional
-  description column), and **Export as** CSV, JSON or Text writes the current list with counts. Tags keep their spelling but
+  description column), **New tag** adds one by name, and **Export as** CSV, JSON or Text writes the current list with counts. Tags keep their spelling but
   match regardless of case; importing never removes a tag from your data
 
 ### Fields that Hold Lists

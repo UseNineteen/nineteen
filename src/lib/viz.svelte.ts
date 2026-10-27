@@ -6,7 +6,7 @@ import { MODELS } from './semantic/models';
 import type { Cut } from './semantic/passages';
 import { canFindByMeaning, SemanticSearch, type MeaningMatch } from './semantic/search.svelte';
 import { groupingItems, tagCatalog, tagKey, type TagInfo } from './tags';
-import { dedupeEntries, mergeTagList, withDescription, type MergeResult, type TagEntry, type TagListItem } from './tag-list';
+import { dedupeEntries, mergeTagList, withDescription, withTag, type MergeResult, type TagEntry, type TagListItem } from './tag-list';
 import { search } from './search';
 import { topTerms } from './terms';
 import { appSettings } from './settings.svelte';
@@ -424,6 +424,14 @@ export class Viz {
   }
 
   // ---------- The tag list ----------
+
+  /** Adds a tag to the list without tagging anything; false when it is there already (in the data or the list). */
+  addTag(tag: string): boolean {
+    const key = tagKey(tag);
+    if (!key || this.tagEntries.some((t) => t.key === key)) return false;
+    this.tagList = withTag(this.tagList, tag);
+    return true;
+  }
 
   /** Sets a tag's description (the tag joins the list if it wasn't there). */
   describeTag(tag: string, description: string): void {

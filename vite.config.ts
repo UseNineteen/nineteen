@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import { createHash } from 'node:crypto';
-import { cpSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { marked } from 'marked';
 import pkg from './package.json' with { type: 'json' };
@@ -45,8 +45,12 @@ function contentSecurityPolicy(): Plugin {
       }
       const policy = [
         "default-src 'none'",
-        // Plus Cloudflare Web Analytics (cookieless visit counts), which Cloudflare injects on usenineteen.com
-        `script-src ${hashes.join(' ')} https://static.cloudflareinsights.com`,
+        // 'self': the "Find by meaning" worker and the ONNX runtime, served next to the app; 'wasm-unsafe-eval'
+        // lets that runtime compile WebAssembly (it does not allow JavaScript eval). Plus Cloudflare Web
+        // Analytics (cookieless visit counts), which Cloudflare injects on usenineteen.com
+        `script-src ${hashes.join(' ')} 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com`,
+        // The worker, and the runtime's own helper workers (threads)
+        "worker-src 'self' blob:",
         "style-src 'unsafe-inline'",
         'font-src data:',
         // Images can appear inside data (autolinked image URLs in the viewer)
@@ -58,6 +62,34 @@ function contentSecurityPolicy(): Plugin {
         "object-src 'none'",
       ].join('; ');
       writeFileSync(file, html.replace(CSP_PLACEHOLDER, policy));
+    },
+  };
+}
+
+/**
+ * Copies the ONNX runtime (which runs the "Find by meaning" model) into dist/ort/, so it is served
+ * from our own origin like the rest of the app, never from a CDN. The model itself is not part of
+ * the build: the browser downloads it from Hugging Face on first use, after asking.
+ */
+function onnxRuntime(): Plugin {
+  let outDir = 'dist';
+  return {
+    name: 'nineteen-onnx-runtime',
+    apply: 'build',
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir);
+    },
+    closeBundle() {
+      const from = resolve('node_modules/onnxruntime-web/dist');
+      // The runtime asks for the "asyncify" build, or the plain one in Safari before 26 without WebGPU
+      // (checked in the built worker: it names no other variant)
+      for (const variant of ['', '.asyncify'])
+        for (const ext of ['wasm', 'mjs']) {
+          const name = `ort-wasm-simd-threaded${variant}.${ext}`;
+          cpSync(resolve(from, name), resolve(outDir, 'ort', name));
+        }
+      // The worker refers to these files by URL, so the bundler emits hashed copies too; wasmPaths points at ort/, so drop them
+      for (const name of readdirSync(outDir)) if (/^ort-wasm-.*\.(wasm|mjs)$/.test(name)) rmSync(resolve(outDir, name));
     },
   };
 }
@@ -118,7 +150,29 @@ function guidePages(): Plugin {
 export default defineConfig({
   // The app shows its version (package.json is the only place it is set)
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
-  plugins: [svelte(), viteSingleFile({ removeViteModuleLoader: true }), contentSecurityPolicy(), guidePages()],
+  plugins: [
+    svelte(),
+    // Inline the app itself; the "Find by meaning" worker stays a separate file, loaded only when used
+    viteSingleFile({
+      removeViteModuleLoader: true,
+      inlinePattern: ['**/index-*.js', '**/*.css'],
+      // The plugin's own setting inlines every asset, including the runtime's WebAssembly, into the worker
+      overrideConfig: {
+        build: {
+          assetsInlineLimit: (file) => !/\.(wasm|mjs)$/.test(file),
+          chunkSizeWarningLimit: 100_000_000,
+          cssCodeSplit: false,
+          assetsDir: '',
+        },
+      },
+    }),
+    contentSecurityPolicy(),
+    guidePages(),
+    onnxRuntime(),
+  ],
+  worker: { format: 'es' },
+  // The same cross-origin isolation headers as public/_headers sets on usenineteen.com, so the preview behaves like the site
+  preview: { headers: { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'credentialless' } },
   build: {
     target: 'es2022',
     assetsInlineLimit: Number.MAX_SAFE_INTEGER,

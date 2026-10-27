@@ -10,7 +10,8 @@
   import TagOptions from './TagOptions.svelte';
   import TagsPanel from './TagsPanel.svelte';
   import { datasetDetails, LIST_SEPARATORS, type ListSeparator } from '../lib/data';
-  import { saveView, serialize } from '../lib/persist';
+  import { DEFAULT_CLOSEST, saveView, serialize } from '../lib/persist';
+  import { MODELS } from '../lib/semantic/models';
   import { Popups } from '../lib/popups.svelte';
   import { addTerm } from '../lib/search';
   import { appSettings } from '../lib/settings.svelte';
@@ -424,6 +425,50 @@
         {#if viz.terms.length}
           <span class="term-hint">Shift-click to require both words (AND)</span>
         {/if}
+      </section>
+    </Dropdown>
+  {:else if open?.name === 'searchMode'}
+    <Dropdown anchor={open.anchor} offset={-35} label="Find by" onclose={close}>
+      {#snippet header()}Find by:{/snippet}
+      <section class="search-mode">
+        <label>
+          <input type="radio" name="search-mode" checked={!viz.meaningOn} onchange={() => viz.setSearchMode('text')} />
+          <span>
+            <strong>Text</strong>
+            <small>Words and phrases as typed: <em>dog food</em> finds either word, quotes find the phrase, AND needs both.</small>
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="search-mode" checked={viz.meaningOn} onchange={() => viz.setSearchMode('meaning')} />
+          <span>
+            <strong>Meaning</strong>
+            <small
+              >Data items with a sentence that means something similar, in whatever words, plus any that contain the exact phrase.</small
+            >
+          </span>
+        </label>
+        <div class="dropdown-field" class:disabled={!viz.meaningOn}>
+          <label for="search-closest">Show the closest</label>
+          <input
+            id="search-closest"
+            type="number"
+            min="1"
+            max={viz.dataset.items.length}
+            step="1"
+            value={viz.closest}
+            disabled={!viz.meaningOn}
+            onchange={(e) => {
+              const n = Math.round(Number(e.currentTarget.value));
+              viz.closest = Number.isFinite(n) && n > 0 ? Math.min(n, viz.dataset.items.length) : DEFAULT_CLOSEST;
+              e.currentTarget.value = String(viz.closest);
+            }}
+          />
+          <span>data items</span>
+        </div>
+        <p class="search-mode-note">
+          Meaning is judged by {MODELS[appSettings.meaningModel].label} ({MODELS[appSettings.meaningModel].languages}), a small model that
+          runs in your browser. Choose the model in Settings.
+        </p>
       </section>
     </Dropdown>
   {:else if open?.name === 'searchIn'}

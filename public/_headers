@@ -1,0 +1,7 @@
+# Cross-origin isolation lets "Find by meaning" use threads when it runs the model in WebAssembly
+# (browsers only allow SharedArrayBuffer on isolated pages). "credentialless" keeps cross-origin
+# images in the data and Cloudflare's analytics script loading, without credentials.
+# Cloudflare serves these headers; GitHub Pages ignores this file (there the fallback is single-threaded).
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless

@@ -72,9 +72,14 @@ export function highlightRanges(text: string, term: string): [number, number][] 
       }
     }
   }
-  ranges.sort((a, b) => a[0] - b[0] || b[1] - a[1]);
+  return mergeRanges(ranges);
+}
+
+/** Sorts character ranges and joins the ones that touch or overlap. */
+export function mergeRanges(ranges: [number, number][]): [number, number][] {
+  const sorted = [...ranges].sort((a, b) => a[0] - b[0] || b[1] - a[1]);
   const merged: [number, number][] = [];
-  for (const range of ranges) {
+  for (const range of sorted) {
     const last = merged[merged.length - 1];
     if (last && range[0] <= last[1]) last[1] = Math.max(last[1], range[1]);
     else merged.push([...range]);

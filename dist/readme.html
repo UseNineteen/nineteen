@@ -70,7 +70,7 @@ order). Each field keeps its own order until you open another file</li>
 <li>Links in your data become clickable, and links to images are shown as images</li>
 </ul>
 </li>
-<li><strong>Text search:</strong> The search bar (8) is directly above the visualization:<ul>
+<li><strong>Search:</strong> The search bar (8) is directly above the visualization:<ul>
 <li>Items that match your search stay in color. Everything else turns gray. Matching text is highlighted in the viewers</li>
 <li>The search box shows how many data items match (&quot;23 of 293&quot;), with <strong>Tag these…</strong> to tag them all at once (see &quot;Tagging Your Data&quot;)</li>
 <li>Search in one or more fields (9). By default search looks in all of them, but you can limit it</li>
@@ -83,6 +83,18 @@ order). Each field keeps its own order until you open another file</li>
 </ul>
 </li>
 <li>The drop-down (10) in the search bar lists the most frequent words. Click one to search for it, or shift-click to add it with AND</li>
+</ul>
+</li>
+<li><strong>Find by meaning:</strong> The &quot;by text&quot; button next to the search box switches the search to <strong>by meaning</strong>. Then a search like
+<em>worried about the price</em> finds the data items with a sentence that means something similar, in whatever words they use
+(&quot;the cost was more than I&#39;d planned on&quot;), plus any that contain the exact phrase. The viewer says why each one matched: its rank
+(&quot;#3 closest in meaning&quot;) and the sentence it matched by, which is highlighted:<ul>
+<li>Nineteen shows the 20 closest data items. Change that number in the &quot;by meaning&quot; menu</li>
+<li><strong>Find similar</strong> in a pinned viewer finds the data items closest in meaning to that one</li>
+<li>Meaning is judged by a small language model that runs inside your browser. The first time, Nineteen asks before your browser
+downloads it (about 70 MB) from Hugging Face; it is kept for next time, and Settings can remove it. Your data never leaves your
+browser. A model for English is the default; Settings offers a multilingual one (about 250 MB)</li>
+<li>Finding by meaning isn&#39;t in saved HTML files, which have only the text search</li>
 </ul>
 </li>
 <li><strong>Zoom:</strong> Use the buttons in the lower right (15) to return to actual size, fit the visualization to the window, stretch it to fit
@@ -165,8 +177,10 @@ or click the button again.</p>
 on, files you open later start stretched too</li>
 <li><em>Smallest</em> and <em>largest</em> width and height (4–40 px by default) limit box sizes when fitting and zooming. Stretch to fit uses the
 width and height limits separately; square boxes stay within both</li>
+<li><em>Find by meaning</em> chooses the model that judges meaning: <em>bge-small</em> for English (the default) or <em>multilingual-e5-small</em> for
+about 100 languages, with each one&#39;s download size. It also lists the models this browser has downloaded, with <em>Remove</em></li>
 <li><em>Classic Nineteen</em> (off by default) keeps to rows, Split by color and a legend, as in the original: the Columns choice under
-&quot;Grouped by&quot;, tagging and the AI tools are hidden</li>
+&quot;Grouped by&quot;, tagging, finding by meaning and the AI tools are hidden</li>
 <li>Tick <em>Remember settings on this device</em> to keep your settings in this browser</li>
 <li>Changes preview as you make them. <em>Save</em> keeps them; <em>Cancel</em>, Esc or clicking outside the dialog discards them</li>
 </ul>
@@ -207,6 +221,9 @@ data (page, referrer, browser and country only). The visualization has its own a
 HTML files contain no analytics</li>
 <li><strong>AI is opt-in.</strong> Data reaches an AI provider only when you press Send or Code in the AI panel, after confirming. It goes
 straight from your browser to Anthropic or OpenAI</li>
+<li><strong>Finding by meaning happens in your browser.</strong> The language model behind it is downloaded from Hugging Face once, after
+asking you, and kept in your browser&#39;s cache storage (Settings can remove it). Hugging Face sees the download the way any site
+sees one, and never your data: the model reads your data on your own computer</li>
 <li><strong>Remembered settings and keys are opt-in.</strong> Display settings and AI keys are stored in this browser&#39;s local storage only
 if you tick &quot;Remember … on this device&quot;</li>
 <li><strong>Session storage only.</strong> While a file is open, a copy of it and of your view settings is kept in your browser&#39;s session storage so both survive a reload.
@@ -215,8 +232,8 @@ Your browser deletes it when you close the tab</li>
 and Nineteen will tell you so. In that case, download the file and use &quot;Choose a file&quot; instead</li>
 <li><strong>Saved files</strong> are created in your browser and saved straight to your computer. A saved HTML file contains your data, so share it carefully</li>
 </ul>
-<p>The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app,
-plus Cloudflare&#39;s analytics script on usenineteen.com.</p>
+<p>The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app
+(including the model runtime it serves itself), plus Cloudflare&#39;s analytics script on usenineteen.com.</p>
 <h2>Have More Questions?</h2>
 <p>Email <a href="mailto:ted@pollari.org?subject=Nineteen">Ted Pollari</a> and/or <a href="mailto:kerwin@id.iit.edu?subject=Nineteen">Kim Erwin</a>, the creators of Nineteen. We&#39;d also love to hear how you&#39;re using Nineteen, if you find it useful!</p>
 <h2>Development</h2>
@@ -225,13 +242,16 @@ Spreadsheets are read with <a href="https://sheetjs.com">SheetJS</a> and CSV fil
 It has no server component.</p>
 <pre><code class="language-bash">npm install
 npm run dev       # local development server
-npm test          # unit tests (parsing, search, layout, colors, links, persistence)
+npm test          # unit tests (parsing, search, sentence splitting and scoring, layout, colors, links, persistence)
 npm run check     # type checking
 npm run build     # production build → dist/
 </code></pre>
 <p><code>npm run build</code> produces <code>dist/index.html</code>, the entire app in a single self-contained file (code, styles, fonts and icons inlined),
 plus <code>dist/shopping_decision_diary_extended.xlsx</code> for &quot;Try an example&quot;. Any static host works (GitHub Pages, Cloudflare Pages, Netlify, S3, …).
-The single-file build also powers &quot;Download HTML file&quot;: a saved copy is the same page with the data embedded.</p>
+The single-file build also powers &quot;Download HTML file&quot;: a saved copy is the same page with the data embedded.
+&quot;Find by meaning&quot; is the one part kept outside that file: its worker (<code>dist/worker-*.js</code>) and the ONNX runtime it runs the model
+with (<code>dist/ort/</code>) are served next to the app, and the model itself is downloaded from Hugging Face on first use.
+<code>public/_headers</code> sets the cross-origin isolation headers on usenineteen.com so the runtime can use threads where there is no WebGPU.</p>
 <p><code>dist/</code> is committed, so the repository always contains a working copy of the app. A pre-commit hook (<code>.githooks/pre-commit</code>)
 rebuilds it and stages it before every commit; <code>npm install</code> turns the hook on. The README screenshots are in <code>docs/screenshots/</code>.</p>
 <p>SheetJS is installed from the official SheetJS CDN, because the <code>xlsx</code> package on npm is no longer updated and has known vulnerabilities.</p>
@@ -250,6 +270,10 @@ rebuilds it and stages it before every commit; <code>npm install</code> turns th
 <tr>
 <td><code>src/lib/ai/</code></td>
 <td>AI features: data packaging, prompt templates, answer/citation parsing, auto-coding, provider clients (Anthropic SDK, OpenAI REST)</td>
+</tr>
+<tr>
+<td><code>src/lib/semantic/</code></td>
+<td>Find by meaning: the embedding worker (<a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>), sentence splitting and scoring, the model catalog</td>
 </tr>
 <tr>
 <td><code>src/components/</code></td>

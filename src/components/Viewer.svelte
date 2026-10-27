@@ -1,5 +1,5 @@
 <script module lang="ts">
-  export type ToolbarDropdown = 'terms' | 'searchIn' | 'viewerColumns';
+  export type ToolbarDropdown = 'terms' | 'searchMode' | 'searchIn' | 'viewerColumns';
 </script>
 
 <script lang="ts">
@@ -10,8 +10,10 @@
   import type { Popups } from '../lib/popups.svelte';
   import { appSettings } from '../lib/settings.svelte';
   import { ZOOM, zoomRange, type Viz } from '../lib/viz.svelte';
+  import MeaningBar from './MeaningBar.svelte';
   import SearchTagBar from './SearchTagBar.svelte';
   import { SearchTagging } from '../lib/search-tagging.svelte';
+  import { canFindByMeaning } from '../lib/semantic/search.svelte';
   import { ListReorder } from '../lib/reorder.svelte';
   import { dataItems } from '../lib/text';
 
@@ -36,6 +38,26 @@
   const st = $derived(new SearchTagging(viz));
   /** Width of the match count inside the search box, so typed text stops short of it */
   let countWidth = $state(0);
+  /** Finding by meaning is offered where the page can do it (not in a saved file), outside Classic Nineteen */
+  const canMeaning = $derived(canFindByMeaning() && !appSettings.classic);
+  const semantic = $derived(viz.semantic);
+  const percent = (fraction: number | null) => (fraction === null ? '' : ` ${Math.round(fraction * 100)}%`);
+  /** What finding by meaning is doing, shown in place of the match count until there is one */
+  const meaningStatus = $derived.by(() => {
+    if (!viz.meaningOn) return null;
+    switch (semantic.status) {
+      case 'asking':
+        return 'Download needed';
+      case 'loading':
+        return `Loading model${percent(semantic.progress)}`;
+      case 'indexing':
+        return `Reading data${percent(semantic.progress)}`;
+      case 'error':
+        return 'Not working';
+      default:
+        return semantic.finding ? 'Finding…' : null;
+    }
+  });
 
   /**
    * Vertical sizes use em (they follow the row font size); horizontal sizes use px (they follow
@@ -212,9 +234,10 @@
     void scale.y;
     void headerMode.extra;
     void viz.aiHighlight;
-    // The tagging row under the toolbar comes and goes
+    // The rows under the toolbar (tagging, the meaning download question) come and go
     void st.current;
     void st.tagging;
+    void semantic.status;
     tick().then(() => {
       const first = rowItemsEl?.querySelector('.row:not(.row-header)');
       if (!first || !wrapperEl) return;
@@ -322,19 +345,36 @@
       onclick={toggle('terms')}
     ></button>
     <div id="search">
-      <input
-        type="search"
-        id="search-field"
-        placeholder="Find"
-        aria-label="Find"
-        autocomplete="off"
-        spellcheck="false"
-        bind:value={viz.searchTerm}
-        style:padding-right={viz.matches ? `${countWidth + 30}px` : null}
-        onkeydown={(e) => e.key === 'Enter' && e.preventDefault()}
-      />
-      <!-- Only while the text actually searches (spaces alone, or a dangling AND, don't) -->
-      {#if viz.matches}
+      {#if viz.meaningOn && viz.similarTo !== null}
+        <!-- "Find similar": the data item takes the place of a typed search -->
+        <div class="search-similar" style:padding-right={viz.matches || meaningStatus ? `${countWidth + 30}px` : null}>
+          <span>Similar to file row {viz.similarTo}</span>
+          <button
+            type="button"
+            aria-label="Stop finding similar data items"
+            title="Back to a typed search"
+            onclick={() => viz.clearSimilar()}>&times;</button
+          >
+        </div>
+      {:else}
+        <input
+          type="search"
+          id="search-field"
+          placeholder={viz.meaningOn ? 'Find by meaning' : 'Find'}
+          aria-label={viz.meaningOn ? 'Find by meaning' : 'Find'}
+          autocomplete="off"
+          spellcheck="false"
+          bind:value={viz.searchTerm}
+          style:padding-right={viz.matches || meaningStatus ? `${countWidth + 30}px` : null}
+          onkeydown={(e) => e.key === 'Enter' && e.preventDefault()}
+        />
+      {/if}
+      <!-- Only while the text actually searches (spaces alone, or a dangling AND, don't), or meaning mode is getting ready -->
+      {#if meaningStatus}
+        <span class="search-count" bind:clientWidth={countWidth}>
+          <span class="search-count-text search-status">{meaningStatus}</span>
+        </span>
+      {:else if viz.matches}
         <span class="search-count" bind:clientWidth={countWidth}>
           <span class="search-count-text">{st.count} of {st.total}</span>
           {#if st.count > 0 && !st.tagging && !classic}
@@ -348,6 +388,20 @@
         </span>
       {/if}
     </div>
+    {#if canMeaning}
+      <button
+        type="button"
+        id="search-mode"
+        class="dropdown-arrow"
+        aria-expanded={open === 'searchMode'}
+        title={viz.meaningOn
+          ? 'Finding by meaning: data items with a sentence that means something similar, plus any containing the exact phrase'
+          : 'Finding by text: words and phrases as typed'}
+        onclick={toggle('searchMode')}
+      >
+        <span class="tool-word">by</span> <strong>{viz.meaningOn ? 'meaning' : 'text'}</strong>
+      </button>
+    {/if}
     <button type="button" id="search-in" class="dropdown-arrow" aria-expanded={open === 'searchIn'} onclick={toggle('searchIn')}>
       <span class="tool-word">within</span> <strong>{viz.scopeText}</strong>
     </button>
@@ -411,6 +465,7 @@
   <div class="viewer-body">
     <div class="viewer-main">
       <SearchTagBar {st} />
+      <MeaningBar {viz} />
       {#if viz.aiHighlight}
         <div class="ai-highlight-bar" role="status">
           Highlighting {dataItems(viz.aiHighlight.size)} cited by AI

@@ -1,6 +1,6 @@
 {
   "name": "nineteen",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A simple application to help qualitative researchers visualize their data. Runs entirely in the browser.",
   "private": true,
   "type": "module",
@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.1.0",
+    "@huggingface/transformers": "^4.3.1",
     "papaparse": "^5.7.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },

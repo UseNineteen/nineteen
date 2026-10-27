@@ -32,12 +32,15 @@ describe('parsers', () => {
     expect(detectFormat(fixture('data.csv'))).toBe('csv');
   });
 
-  it('parses the bundled example', () => {
+  it('parses the bundled examples', () => {
     const bytes = new Uint8Array(readFileSync(resolve(__dirname, '../public/shopping_decision_diary.xlsx')));
     const dataset = parseBytes('shopping_decision_diary.xlsx', bytes);
-    expect(dataset.items.length).toBe(234);
+    expect(dataset.items.length).toBe(117);
     expect(dataset.columns.length).toBe(10);
     expect(dataset.columns.slice(0, 2)).toEqual(['Participant', 'Segment']);
+    // The extended copy, which "Try an example" opens
+    const extended = new Uint8Array(readFileSync(resolve(__dirname, '../public/shopping_decision_diary_extended.xlsx')));
+    expect(parseBytes('shopping_decision_diary_extended.xlsx', extended).items.length).toBe(293);
   });
 
   it('names blank and duplicate headers', () => {

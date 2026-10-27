@@ -708,6 +708,55 @@ footer li:first-child::before {
 #tool-bar #search-field::placeholder {
   color: var(--gray);
 }
+/* What finding by meaning is doing, until there is a count */
+#tool-bar .search-count .search-status {
+  font-style: italic;
+}
+/* "Find similar": the data item takes the place of the typed search */
+#tool-bar .search-similar {
+  align-items: center;
+  background-color: white;
+  box-sizing: border-box;
+  display: flex;
+  gap: 6px;
+  inset: 0;
+  min-width: 0;
+  padding: 9px 0 5px;
+  position: absolute;
+}
+#tool-bar .search-similar span {
+  background: #eef6fd;
+  border: 1px solid #9cc7ee;
+  border-radius: 11px;
+  color: #0a3bb1;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  padding: 1px 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#tool-bar .search-similar button {
+  color: var(--gray);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+}
+#tool-bar .search-similar button:hover {
+  color: var(--trout);
+}
+/* Find by text or by meaning, between the search box and "within" */
+#tool-bar #search-mode {
+  font-size: 16px;
+  font-weight: normal;
+  margin: 5px 0;
+  padding: 0 16px 0 0;
+  white-space: nowrap;
+}
+#tool-bar #search-mode strong {
+  font-weight: 700;
+}
 #tool-bar #search-in {
   border-right: 1px solid var(--gray);
   font-size: 16px;
@@ -1290,6 +1339,40 @@ footer li:first-child::before {
   margin: 4px 15px 2px;
   text-transform: uppercase;
 }
+/* Find by: two choices with a line of explanation each, then how many closest data items to show */
+.dropdown .search-mode label {
+  line-height: 28px;
+  max-width: 340px;
+  padding: 2px 15px;
+  white-space: normal;
+}
+.dropdown .search-mode label small {
+  color: #7d838a;
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: -6px 0 4px 18px;
+}
+.dropdown .search-mode .dropdown-field {
+  padding-left: 33px;
+}
+.dropdown .search-mode .dropdown-field.disabled {
+  opacity: 0.6;
+}
+.dropdown .search-mode .dropdown-field input {
+  border: 1px solid var(--lightgray);
+  border-radius: 3px;
+  font-size: 13px;
+  padding: 2px 4px;
+  width: 56px;
+}
+.dropdown .search-mode-note {
+  color: #7d838a;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 6px 15px 2px;
+  max-width: 310px;
+}
 /* A labeled select inside a menu, such as a list column's separator */
 .dropdown .dropdown-field {
   align-items: center;
@@ -1531,6 +1614,37 @@ footer li:first-child::before {
 }
 .popup header .close:hover {
   opacity: 0.5;
+}
+.popup header .find-similar {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 11px;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: -2px 14px 0 0;
+  padding: 1px 9px;
+  white-space: nowrap;
+}
+.popup header .find-similar:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+/* How this data item matched a meaning search: its rank, and the sentence that matched */
+.popup .popup-meaning {
+  background: #eef6fd;
+  border: 1px solid #d6e8f8;
+  border-radius: 3px;
+  color: #0a3bb1;
+  font-size: 12.5px;
+  line-height: 1.4;
+  margin: 10px 0 0;
+  padding: 5px 8px;
+}
+.popup .popup-meaning-why {
+  color: #1f4f8f;
+  display: block;
 }
 .popup section {
   flex: 1 1 auto;
@@ -2043,6 +2157,34 @@ footer li:first-child::before {
   padding: 2px 10px;
   text-decoration: none;
 }
+/* Finding by meaning: the one question (download the model?) and any failure, styled like the tagging row */
+#viewer .meaning-bar > span {
+  flex: 1 1 320px;
+  padding: 2px 0;
+}
+#viewer .meaning-bar button.primary {
+  background: #3396e4;
+  border-color: #3396e4;
+  color: #ffffff;
+}
+#viewer .meaning-bar button.primary:hover {
+  background: #2a85cc;
+}
+#viewer .meaning-bar a {
+  color: inherit;
+}
+#viewer .meaning-bar.meaning-error {
+  background: #fdf0ee;
+  border-color: #f3c7c0;
+  color: #8a2d1f;
+}
+#viewer .meaning-bar.meaning-error button {
+  border-color: #e2a79c;
+  color: #8a2d1f;
+}
+#viewer .meaning-bar.meaning-error button:hover {
+  background: #f9e0dc;
+}
 #viewer .ai-highlight-bar button {
   appearance: none;
   background: none;
@@ -2180,6 +2322,16 @@ footer li:first-child::before {
 }
 .nineteen-dialog .settings-remember {
   margin: 14px 0 10px;
+}
+.nineteen-dialog .link-button {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--trout);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
 }
 .nineteen-dialog .settings-footer {
   border-top: 1px solid var(--lightgray);

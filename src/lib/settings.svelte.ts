@@ -5,6 +5,7 @@
  */
 
 import type { BoxLimits } from './layout';
+import { DEFAULT_MODEL, isModelId, type ModelId } from './semantic/models';
 
 const STORAGE_KEY = 'nineteen:settings';
 
@@ -17,12 +18,15 @@ export const DEFAULTS = {
   maxWidth: 40,
   minHeight: 4,
   maxHeight: 40,
+  meaningModel: DEFAULT_MODEL,
 } as const;
 
 export interface DisplaySettings extends BoxLimits {
-  /** Classic Nineteen: rows split by color at most, without the Columns choice, tagging or the AI tools */
+  /** Classic Nineteen: rows split by color at most, without the Columns choice, tagging, finding by meaning or the AI tools */
   classic: boolean;
   stretchByDefault: boolean;
+  /** The sentence-embedding model "Find by meaning" uses */
+  meaningModel: ModelId;
 }
 
 /** Settings remembered before width and height had separate limits */
@@ -49,6 +53,7 @@ class AppSettings implements BoxLimits {
   maxWidth = $state<number>(DEFAULTS.maxWidth);
   minHeight = $state<number>(DEFAULTS.minHeight);
   maxHeight = $state<number>(DEFAULTS.maxHeight);
+  meaningModel = $state<ModelId>(DEFAULTS.meaningModel);
   remember = $state(false);
 
   constructor() {
@@ -65,6 +70,7 @@ class AppSettings implements BoxLimits {
       this.maxHeight = sanitizeBox(stored.maxHeight ?? stored.maxBox, DEFAULTS.maxHeight);
       this.normalize('minWidth');
       this.normalize('minHeight');
+      this.meaningModel = isModelId(stored.meaningModel) ? stored.meaningModel : DEFAULTS.meaningModel;
       this.remember = true;
     } catch {
       // Storage unavailable: settings live in memory only
@@ -95,6 +101,7 @@ class AppSettings implements BoxLimits {
       maxWidth: this.maxWidth,
       minHeight: this.minHeight,
       maxHeight: this.maxHeight,
+      meaningModel: this.meaningModel,
       remember: this.remember,
     };
   }
@@ -106,6 +113,7 @@ class AppSettings implements BoxLimits {
     this.maxWidth = saved.maxWidth;
     this.minHeight = saved.minHeight;
     this.maxHeight = saved.maxHeight;
+    this.meaningModel = saved.meaningModel;
     this.remember = saved.remember;
   }
 
@@ -117,6 +125,7 @@ class AppSettings implements BoxLimits {
     this.maxWidth = DEFAULTS.maxWidth;
     this.minHeight = DEFAULTS.minHeight;
     this.maxHeight = DEFAULTS.maxHeight;
+    this.meaningModel = DEFAULTS.meaningModel;
   }
 
   /** Writes to localStorage when "remember" is on, and removes any saved copy when it is off. */

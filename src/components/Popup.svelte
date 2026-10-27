@@ -3,7 +3,8 @@
   import { splitTags, type DataItem } from '../lib/data';
   import { segments, type Piece } from '../lib/linkify';
   import type { PopupState, Popups } from '../lib/popups.svelte';
-  import { highlightRanges } from '../lib/search';
+  import { highlightRanges, mergeRanges } from '../lib/search';
+  import { canFindByMeaning } from '../lib/semantic/search.svelte';
   import { appSettings } from '../lib/settings.svelte';
   import type { Viz } from '../lib/viz.svelte';
 
@@ -22,6 +23,19 @@
   /** Classic Nineteen: no tag editing, so the tags column is listed like any other */
   const classic = $derived(appSettings.classic);
   const listed = $derived(viz.viewerColumns.filter((c) => classic || c !== tagColumn));
+  /** How this data item matched a meaning search, if it did: its rank and the sentence that matched */
+  const meaning = $derived(viz.meaningMatch(item));
+  const canMeaning = $derived(canFindByMeaning() && !classic);
+
+  /** Text to mark in a field: the search terms, and the sentence a meaning search matched */
+  function marked(column: string, text: string): [number, number][] {
+    const ranges = highlight ? highlightRanges(text, viz.textTerm) : [];
+    if (meaning?.passage && meaning.column === column) {
+      const at = text.indexOf(meaning.passage);
+      if (at >= 0) ranges.push([at, at + meaning.passage.length]);
+    }
+    return mergeRanges(ranges);
+  }
 
   /** Clicking a tag finds every row carrying it */
   function findTag(column: string, tag: string) {
@@ -68,9 +82,24 @@
   <!-- svelte-ignore a11y_no_static_element_interactions (pointer drag handle for pinned popups) -->
   <header onpointerdown={dragStart} onpointermove={dragMove} onpointerup={dragEnd} onpointercancel={dragEnd}>
     <strong>File row {item.id}</strong>
+    {#if popup.floating && canMeaning && viz.similarTo !== item.id}
+      <button class="find-similar" title="Show the data items closest in meaning to this one" onclick={() => viz.findSimilar(item.id)}
+        >Find similar</button
+      >
+    {/if}
     <button class="close" aria-label="Close" onclick={() => popups.close(popup.key)}>&times;</button>
   </header>
   <section>
+    {#if meaning}
+      <p class="popup-meaning">
+        {#if meaning.rank === 0}
+          <strong>Finding data items similar to this one</strong>
+        {:else}
+          <strong>#{meaning.rank} closest {viz.similarTo !== null ? `to file row ${viz.similarTo}` : 'in meaning'}</strong>
+          {#if meaning.passage}<span class="popup-meaning-why">by “{meaning.passage}” in {meaning.column}</span>{/if}
+        {/if}
+      </p>
+    {/if}
     {#if !classic && (popup.floating || tags.length)}
       <div class="popup-tags popup-tags-pinned">
         <strong>{tagColumn}</strong>
@@ -100,7 +129,7 @@
         <p>
           <strong>{column}</strong><br />
           <!-- prettier-ignore -->
-          <span class="value">{#each segments(text, highlight ? highlightRanges(text, viz.searchTerm) : []) as segment, i (i)}{#if segment.kind === 'image'}<img src={segment.src} alt={segment.alt} referrerpolicy="no-referrer" loading="lazy" />{:else if segment.kind === 'link'}<a href={segment.href} target="_blank" rel="noopener noreferrer">{@render pieces(segment.pieces)}</a>{:else}{@render pieces(segment.pieces)}{/if}{/each}</span>
+          <span class="value">{#each segments(text, marked(column, text)) as segment, i (i)}{#if segment.kind === 'image'}<img src={segment.src} alt={segment.alt} referrerpolicy="no-referrer" loading="lazy" />{:else if segment.kind === 'link'}<a href={segment.href} target="_blank" rel="noopener noreferrer">{@render pieces(segment.pieces)}</a>{:else}{@render pieces(segment.pieces)}{/if}{/each}</span>
         </p>
       {/if}
     {:else}

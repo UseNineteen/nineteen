@@ -12,6 +12,11 @@ import type { SortBy, SortDirection } from './layout';
 /** 'square': Best fit, 'stretch': Stretch to fit (boxes may become rectangles) */
 export type FitMode = 'none' | 'square' | 'stretch';
 
+/** Find by text (the search grammar) or by meaning (a sentence-embedding model) */
+export type SearchMode = 'text' | 'meaning';
+/** How many of the closest data items a meaning search shows, unless the user changes it */
+export const DEFAULT_CLOSEST = 20;
+
 export interface ViewState {
   /**
    * Rows and column bands, each a column or null for none (at least one is set). Views saved
@@ -33,6 +38,11 @@ export interface ViewState {
   viewerColumns: string[];
   searchTerm: string;
   searchScope: string[];
+  /** Absent in views saved before finding by meaning existed: by text */
+  searchMode?: SearchMode;
+  /** "Find similar": the data item searched from, in place of the term */
+  similarTo?: number | null;
+  closest?: number;
   legendCollapsed: boolean;
   /** Columns treated as comma-separated tags */
   tagColumns?: string[];

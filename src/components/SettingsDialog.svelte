@@ -2,6 +2,7 @@
   import { untrack } from 'svelte';
   import Modal from './Modal.svelte';
   import type { FitMode } from '../lib/persist';
+  import { cachedDownloads, downloadSize, MODELS, removeDownloads, type Download } from '../lib/semantic/models';
   import { BOX_LIMITS, DEFAULTS, appSettings } from '../lib/settings.svelte';
   import type { Viz } from '../lib/viz.svelte';
 
@@ -28,9 +29,21 @@
     automatic: true,
   };
 
+  /** Model files this browser has downloaded for "Find by meaning" (looked up each time the dialog opens) */
+  let downloads = $state<Download[]>([]);
+  let removed = $state(false);
+
+  async function removeModels() {
+    await removeDownloads();
+    downloads = [];
+    removed = true;
+  }
+
   // Taken once per opening (untracked, or live edits would overwrite what Cancel restores)
   $effect(() => {
     if (!open) return;
+    removed = false;
+    cachedDownloads().then((list) => (downloads = list));
     untrack(() => {
       saved = appSettings.snapshot();
       savedView = {
@@ -129,6 +142,40 @@
       </p>
     </fieldset>
 
+    {#if !appSettings.classic}
+      <fieldset>
+        <legend>Find by meaning</legend>
+        {#each Object.values(MODELS) as model (model.id)}
+          <label class="settings-check">
+            <input type="radio" name="meaning-model" value={model.id} bind:group={appSettings.meaningModel} />
+            <span>
+              <strong>{model.label}</strong>
+              <small>
+                {model.languages[0].toUpperCase() + model.languages.slice(1)}. Download: about {downloadSize(model, 'fp16')} MB, or {downloadSize(
+                  model,
+                  'q8',
+                )} MB where it runs without the graphics card.
+              </small>
+            </span>
+          </label>
+        {/each}
+        <p class="settings-hint">
+          The model is downloaded from Hugging Face the first time you find by meaning, after asking you, and kept by your browser. It reads
+          your data on your own computer; nothing is sent anywhere.
+        </p>
+        <p class="settings-hint">
+          {#if downloads.length}
+            Downloaded: {downloads.map((d) => `${d.model.label} (${downloadSize(d.model, d.variant)} MB)`).join(', ')}.
+            <button type="button" class="link-button" onclick={removeModels}>Remove</button>
+          {:else if removed}
+            Removed. A model in use keeps working until you reload the page.
+          {:else}
+            No model downloaded yet.
+          {/if}
+        </p>
+      </fieldset>
+    {/if}
+
     <fieldset>
       <legend>Features</legend>
       <label class="settings-check">
@@ -136,7 +183,8 @@
         <span>
           <strong>Classic Nineteen</strong>
           <small>
-            Rows, split by color and a legend, as in the original. Hides the Columns choice under “Grouped by”, tagging and the AI tools.
+            Rows, split by color and a legend, as in the original. Hides the Columns choice under “Grouped by”, tagging, finding by meaning
+            and the AI tools.
           </small>
         </span>
       </label>

@@ -46,8 +46,9 @@
   </p>
 
   <p>
-    Your display settings (box size options) are kept only in the page’s memory and reset when you reload or close it, unless you tick
-    “Remember settings on this device”. In that case they are stored in this browser’s local storage, and unticking the option removes them.
+    Your settings (box size options, the model for finding by meaning) are kept only in the page’s memory and reset when you reload or close
+    it, unless you tick “Remember settings on this device”. In that case they are stored in this browser’s local storage, and unticking the
+    option removes them.
   </p>
 
   <h2>Hosted files</h2>
@@ -80,6 +81,16 @@
   <p>
     Your API key is kept only in the page’s memory, unless you choose “Remember key on this device”. In that case it is stored in this
     browser’s local storage until you choose “Forget my keys”. It is only ever sent to the provider it belongs to.
+  </p>
+
+  <h2>Finding by meaning (optional)</h2>
+  <p>
+    “Find by meaning” in the search box uses a small language model that runs inside your browser. The first time you turn it on, Nineteen
+    asks before your browser downloads the model (about 70 MB, or about 250 MB for the multilingual model) from
+    <a href="https://huggingface.co" target="_blank" rel="noopener noreferrer">Hugging Face</a>. Hugging Face sees that download the way any
+    site sees one: your browser type and network address, nothing about you or your file. Your browser keeps the model in its cache storage
+    so it isn’t downloaded again; “Remove” in Settings deletes it. Your data is never sent anywhere: the model reads it on your own
+    computer. Saved HTML files don’t include this feature.
   </p>
 
   <h2>Saved files</h2>

@@ -48,7 +48,7 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 	- You can have several viewers open at once. Drag them by their title bar to arrange them, and drag the corner to resize them
 	- The "Show in viewer" menu (12) controls which fields the viewer shows
 	- Links in your data become clickable, and links to images are shown as images
-- **Text search:** The search bar (8) is directly above the visualization:
+- **Search:** The search bar (8) is directly above the visualization:
 	- Items that match your search stay in color. Everything else turns gray. Matching text is highlighted in the viewers
 	- The search box shows how many data items match ("23 of 293"), with **Tag these…** to tag them all at once (see "Tagging Your Data")
 	- Search in one or more fields (9). By default search looks in all of them, but you can limit it
@@ -59,6 +59,16 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 		- Searching for *dog AND food* ('AND' must be capitalized) finds only items containing both "dog" and "food", though not necessarily together
 		- An asterisk matches any single character: *re\*d* matches both "read" and "reed"
 	- The drop-down (10) in the search bar lists the most frequent words. Click one to search for it, or shift-click to add it with AND
+- **Find by meaning:** The "by text" button next to the search box switches the search to **by meaning**. Then a search like
+  *worried about the price* finds the data items with a sentence that means something similar, in whatever words they use
+  ("the cost was more than I'd planned on"), plus any that contain the exact phrase. The viewer says why each one matched: its rank
+  ("#3 closest in meaning") and the sentence it matched by, which is highlighted:
+	- Nineteen shows the 20 closest data items. Change that number in the "by meaning" menu
+	- **Find similar** in a pinned viewer finds the data items closest in meaning to that one
+	- Meaning is judged by a small language model that runs inside your browser. The first time, Nineteen asks before your browser
+	  downloads it (about 70 MB) from Hugging Face; it is kept for next time, and Settings can remove it. Your data never leaves your
+	  browser. A model for English is the default; Settings offers a multilingual one (about 250 MB)
+	- Finding by meaning isn't in saved HTML files, which have only the text search
 - **Zoom:** Use the buttons in the lower right (15) to return to actual size, fit the visualization to the window, stretch it to fit
   (see "Fitting the View" below), or zoom in and out
 - **Save (11):** Save a standalone HTML file or a PNG image of the visualization, or download the data itself
@@ -146,8 +156,10 @@ or click the button again.
   on, files you open later start stretched too
 - *Smallest* and *largest* width and height (4–40 px by default) limit box sizes when fitting and zooming. Stretch to fit uses the
   width and height limits separately; square boxes stay within both
+- *Find by meaning* chooses the model that judges meaning: *bge-small* for English (the default) or *multilingual-e5-small* for
+  about 100 languages, with each one's download size. It also lists the models this browser has downloaded, with *Remove*
 - *Classic Nineteen* (off by default) keeps to rows, Split by color and a legend, as in the original: the Columns choice under
-  "Grouped by", tagging and the AI tools are hidden
+  "Grouped by", tagging, finding by meaning and the AI tools are hidden
 - Tick *Remember settings on this device* to keep your settings in this browser
 - Changes preview as you make them. *Save* keeps them; *Cancel*, Esc or clicking outside the dialog discards them
 
@@ -190,6 +202,9 @@ You can use Nineteen with confidential data.
   HTML files contain no analytics
 - **AI is opt-in.** Data reaches an AI provider only when you press Send or Code in the AI panel, after confirming. It goes
   straight from your browser to Anthropic or OpenAI
+- **Finding by meaning happens in your browser.** The language model behind it is downloaded from Hugging Face once, after
+  asking you, and kept in your browser's cache storage (Settings can remove it). Hugging Face sees the download the way any site
+  sees one, and never your data: the model reads your data on your own computer
 - **Remembered settings and keys are opt-in.** Display settings and AI keys are stored in this browser's local storage only
   if you tick "Remember … on this device"
 - **Session storage only.** While a file is open, a copy of it and of your view settings is kept in your browser's session storage so both survive a reload.
@@ -198,8 +213,8 @@ You can use Nineteen with confidential data.
   and Nineteen will tell you so. In that case, download the file and use "Choose a file" instead
 - **Saved files** are created in your browser and saved straight to your computer. A saved HTML file contains your data, so share it carefully
 
-The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app,
-plus Cloudflare's analytics script on usenineteen.com.
+The app enforces this with a strict Content Security Policy: the only code allowed to run is the code that ships with the app
+(including the model runtime it serves itself), plus Cloudflare's analytics script on usenineteen.com.
 
 ## Have More Questions?
 Email [Ted Pollari](mailto:ted@pollari.org?subject=Nineteen) and/or [Kim Erwin](mailto:kerwin@id.iit.edu?subject=Nineteen), the creators of Nineteen. We'd also love to hear how you're using Nineteen, if you find it useful!
@@ -213,7 +228,7 @@ It has no server component.
 ```bash
 npm install
 npm run dev       # local development server
-npm test          # unit tests (parsing, search, layout, colors, links, persistence)
+npm test          # unit tests (parsing, search, sentence splitting and scoring, layout, colors, links, persistence)
 npm run check     # type checking
 npm run build     # production build → dist/
 ```
@@ -221,6 +236,9 @@ npm run build     # production build → dist/
 `npm run build` produces `dist/index.html`, the entire app in a single self-contained file (code, styles, fonts and icons inlined),
 plus `dist/shopping_decision_diary_extended.xlsx` for "Try an example". Any static host works (GitHub Pages, Cloudflare Pages, Netlify, S3, …).
 The single-file build also powers "Download HTML file": a saved copy is the same page with the data embedded.
+"Find by meaning" is the one part kept outside that file: its worker (`dist/worker-*.js`) and the ONNX runtime it runs the model
+with (`dist/ort/`) are served next to the app, and the model itself is downloaded from Hugging Face on first use.
+`public/_headers` sets the cross-origin isolation headers on usenineteen.com so the runtime can use threads where there is no WebGPU.
 
 `dist/` is committed, so the repository always contains a working copy of the app. A pre-commit hook (`.githooks/pre-commit`)
 rebuilds it and stages it before every commit; `npm install` turns the hook on. The README screenshots are in `docs/screenshots/`.
@@ -233,6 +251,7 @@ SheetJS is installed from the official SheetJS CDN, because the `xlsx` package o
 | --- | --- |
 | `src/lib/` | Framework-free logic: file parsing, value/date interpretation, search, layout, palette, persistence, PNG and HTML export |
 | `src/lib/ai/` | AI features: data packaging, prompt templates, answer/citation parsing, auto-coding, provider clients (Anthropic SDK, OpenAI REST) |
+| `src/lib/semantic/` | Find by meaning: the embedding worker ([Transformers.js](https://huggingface.co/docs/transformers.js)), sentence splitting and scoring, the model catalog |
 | `src/components/` | Svelte UI: import page, visualization, legend, toolbar, dropdowns, viewer popups |
 | `src/styles/app.css` | Styles ported from the original Stylus sources |
 | `test/` | Vitest suite, including the search cases from the original test suite |

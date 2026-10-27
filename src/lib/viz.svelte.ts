@@ -1,7 +1,8 @@
 import { colorScale, type Swatch } from './colors';
 import { computeLayout, zoomBounds, type SortBy, type SortDirection } from './layout';
 import { displayLabel, NO_TAGS_LABEL, type Dataset, type DataItem, type ListSeparator } from './data';
-import type { FitMode, ViewState } from './persist';
+import { DEFAULT_CLOSEST, type FitMode, type SearchMode, type ViewState } from './persist';
+import { canFindByMeaning, SemanticSearch, type MeaningMatch } from './semantic/search.svelte';
 import { groupingItems, tagCatalog, type TagInfo } from './tags';
 import { search } from './search';
 import { topTerms } from './terms';
@@ -45,6 +46,14 @@ export class Viz {
   viewerColumns = $state<string[]>([]);
   searchTerm = $state('');
   searchScope = $state<string[]>([]);
+  /** Find by text (words and phrases as typed) or by meaning (sentences that mean something similar) */
+  searchMode = $state<SearchMode>('text');
+  /** "Find similar": the data item whose closest items are shown, in place of a typed search */
+  similarTo = $state<number | null>(null);
+  /** How many of the closest data items a meaning search shows (exact text matches come on top) */
+  closest = $state(DEFAULT_CLOSEST);
+  /** The model and vectors behind finding by meaning; it does nothing until meaning mode is used */
+  semantic = new SemanticSearch();
   legendCollapsed = $state(false);
   /** Color label of the hovered block, used to highlight its legend entry */
   hoveredColor = $state<string | null>(null);
@@ -112,7 +121,32 @@ export class Viz {
     }),
   );
   colors = $derived.by(() => colorScale(this.layout.legend.map((g) => g.label)));
-  matches = $derived.by(() => search(this.dataset.items, this.searchTerm, this.searchScope, this.listColumns));
+  /** Meaning mode, where this page can offer it (not in a saved file, and not in Classic Nineteen) */
+  meaningOn = $derived(this.searchMode === 'meaning' && canFindByMeaning() && !appSettings.classic);
+  /** Identifies the current meaning search, so results from an earlier one are never shown for it */
+  meaningKey = $derived.by(() => {
+    const query = this.similarTo !== null ? `item:${this.similarTo}` : `text:${this.searchTerm.trim()}`;
+    return `${query}|${this.closest}|${this.semantic.indexVersion}`;
+  });
+  /**
+   * What the text search looks for. By meaning, the search is a sentence, not a list of words, so
+   * its exact matches are the data items containing it as a phrase (not everything with "the" in it).
+   */
+  textTerm = $derived.by(() => {
+    const term = this.searchTerm.trim();
+    if (!this.meaningOn || !term) return this.searchTerm;
+    return /^".*"$/.test(term) ? term : `"${term}"`;
+  });
+  /** Matching ids, or null when nothing is searched. By meaning: the closest items plus any exact text matches. */
+  matches = $derived.by(() => {
+    const exact = search(this.dataset.items, this.textTerm, this.searchScope, this.listColumns);
+    if (!this.meaningOn) return exact;
+    if (this.similarTo === null && !this.searchTerm.trim()) return null;
+    const ids = new Set(exact ?? []);
+    const results = this.semantic.results;
+    if (results && results.key === this.meaningKey) for (const id of results.matches.keys()) ids.add(id);
+    return ids;
+  });
   /** High-frequency words; only computed when the word list is opened */
   terms = $derived.by(() => topTerms(this.dataset.items, this.searchScope));
 
@@ -145,6 +179,9 @@ export class Viz {
     this.viewerColumns = view?.viewerColumns?.filter(has) ?? [...columns];
     this.searchTerm = view?.searchTerm ?? '';
     this.searchScope = view?.searchScope?.filter(has) ?? [...columns];
+    this.searchMode = view?.searchMode === 'meaning' ? 'meaning' : 'text';
+    this.similarTo = this.searchMode === 'meaning' && dataset.items.some((item) => item.id === view?.similarTo) ? view!.similarTo! : null;
+    this.closest = Number.isInteger(view?.closest) && view!.closest! > 0 ? view!.closest! : DEFAULT_CLOSEST;
     this.legendCollapsed = view?.legendCollapsed ?? false;
     this.tagColumns = view?.tagColumns?.filter(has) ?? columns.filter((c) => /^tags$/i.test(c));
     this.listSeparators = view?.listSeparators ?? {};
@@ -503,6 +540,32 @@ export class Viz {
     return this.matches?.has(item.id) ?? false;
   }
 
+  // ---------- Finding by meaning ----------
+
+  setSearchMode(mode: SearchMode): void {
+    this.searchMode = mode;
+    if (mode === 'text') this.similarTo = null;
+  }
+
+  /** Shows the data items closest in meaning to one data item. */
+  findSimilar(itemId: number): void {
+    this.searchMode = 'meaning';
+    this.searchTerm = '';
+    this.similarTo = itemId;
+  }
+
+  /** Back to the typed search (still by meaning). */
+  clearSimilar(): void {
+    this.similarTo = null;
+  }
+
+  /** How a data item matched the current meaning search, if it did */
+  meaningMatch(item: DataItem): MeaningMatch | null {
+    if (!this.meaningOn) return null;
+    const results = this.semantic.results;
+    return results && results.key === this.meaningKey ? (results.matches.get(item.id) ?? null) : null;
+  }
+
   /** Text for the "within …" search scope button */
   get scopeText(): string {
     const n = this.searchScope.length;
@@ -529,6 +592,9 @@ export class Viz {
       viewerColumns: [...this.viewerColumns],
       searchTerm: this.searchTerm,
       searchScope: [...this.searchScope],
+      searchMode: this.searchMode,
+      similarTo: this.similarTo,
+      closest: this.closest,
       legendCollapsed: this.legendCollapsed,
       tagColumns: [...this.tagColumns],
       listSeparators: { ...this.listSeparators },

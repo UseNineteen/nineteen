@@ -67,6 +67,15 @@
         line-height: 1.2;
         margin: 0 0 16px;
       }
+      h2.release {
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 15px;
+        letter-spacing: 0.06em;
+        margin: 48px 0 -28px;
+        padding-bottom: 8px;
+        text-transform: uppercase;
+      }
       ul {
         list-style: none;
         margin: 0;
@@ -187,6 +196,35 @@
         color-coding, sorting, split view, counts, search, the high-frequency word list, pinnable viewers, zoom, and
         saving as HTML or PNG. The features below are new.
       </p>
+
+      <section id="meaning">
+        <h2>Version 2.1: Find by meaning</h2>
+        <ul>
+          <li>
+            <strong>Search by meaning, not just by words:</strong>
+            <span>The "by text" button next to the search box switches it to <em>by meaning</em>. Then "worried about the price" also finds "the cost was more than I'd planned on": the data items with a sentence that means something similar, in whatever words they use, plus any that contain the exact phrase. Nineteen shows the 20 closest; change that in the menu.</span>
+          </li>
+          <li>
+            <strong>See why each one matched:</strong>
+            <span>The viewer says how close a data item came ("#3 closest in meaning") and highlights the sentence it matched by, so you can judge the match yourself. <em>Tag these…</em> works on the matches as before.</span>
+          </li>
+          <li>
+            <strong>Find similar:</strong>
+            <span>A pinned viewer has a <em>Find similar</em> button that finds the data items closest in meaning to that one.</span>
+          </li>
+          <li>
+            <strong>Private, like everything else:</strong>
+            <span>Meaning is judged by a small language model that runs inside your browser. The first time, Nineteen asks before your browser downloads it (about 70 MB, from Hugging Face); it is kept for next time, and Settings can remove it. Your data never leaves your browser. A model for English is the default; Settings offers a multilingual one.</span>
+          </li>
+        </ul>
+        <figure>
+          <img src="screenshots/whats-new/meaning.png" alt="Finding by meaning: the search “worried about the price” with its closest data items in color, and a viewer showing the sentence one of them matched by" loading="lazy" />
+          <figcaption>Finding by meaning: the closest data items stay in color, and the viewer shows the sentence each one matched by.</figcaption>
+        </figure>
+        <p class="classic-note">Finding by meaning can be hidden with <a href="#classic">Classic Nineteen</a> in Settings. Saved HTML files have the text search only.</p>
+      </section>
+
+      <h2 class="release">Version 2.0</h2>
 
       <section>
         <h2>Rows, columns and color</h2>
@@ -370,7 +408,7 @@
         <ul>
           <li>
             <strong>The original tool is still available:</strong>
-            <span>A setting that keeps to rows, Split by color and a legend, as in the original Nineteen. It hides the Columns choice under "Grouped by", tagging and the AI tools. Off by default; find it under Features in Settings.</span>
+            <span>A setting that keeps to rows, Split by color and a legend, as in the original Nineteen. It hides the Columns choice under "Grouped by", tagging, finding by meaning and the AI tools. Off by default; find it under Features in Settings.</span>
           </li>
         </ul>
       </section>

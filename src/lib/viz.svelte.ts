@@ -140,7 +140,8 @@ export class Viz {
   });
   /**
    * What the text search looks for. By meaning, the search is a sentence, not a list of words, so
-   * its exact matches are the data items containing it as a phrase (not everything with "the" in it).
+   * its text hits are the data items containing it as a phrase (not everything with "the" in it),
+   * as whole words ("hose" is not in "chose"; the meaning side covers variants).
    */
   textTerm = $derived.by(() => {
     const term = this.searchTerm.trim();
@@ -149,7 +150,7 @@ export class Viz {
   });
   /** Matching ids, or null when nothing is searched. By meaning: the closest items plus any exact text matches. */
   matches = $derived.by(() => {
-    const exact = search(this.dataset.items, this.textTerm, this.searchScope, this.listColumns);
+    const exact = search(this.dataset.items, this.textTerm, this.searchScope, this.listColumns, this.meaningOn);
     if (!this.meaningOn) return exact;
     if (this.similarTo === null && !this.searchTerm.trim()) return null;
     const ids = new Set(exact ?? []);
@@ -570,6 +571,11 @@ export class Viz {
   /** Back to the typed search (still by meaning). */
   clearSimilar(): void {
     this.similarTo = null;
+  }
+
+  /** The phrase a meaning search also looks for as text (the typed search, without its quotes) */
+  get phrase(): string {
+    return this.searchTerm.trim().replace(/^"(.*)"$/, '$1');
   }
 
   /** How a data item matched the current meaning search, if it did */

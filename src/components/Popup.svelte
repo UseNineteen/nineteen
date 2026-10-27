@@ -25,11 +25,13 @@
   const listed = $derived(viz.viewerColumns.filter((c) => classic || c !== tagColumn));
   /** How this data item matched a meaning search, if it did: its rank and the sentence that matched */
   const meaning = $derived(viz.meaningMatch(item));
+  /** Or it is a text hit of a meaning search: it contains the phrase */
+  const textHit = $derived(!meaning && viz.meaningOn && highlight && viz.phrase !== '');
   const canMeaning = $derived(canFindByMeaning() && !classic);
 
   /** Text to mark in a field: the search terms, and the sentence a meaning search matched */
   function marked(column: string, text: string): [number, number][] {
-    const ranges = highlight ? highlightRanges(text, viz.textTerm) : [];
+    const ranges = highlight ? highlightRanges(text, viz.textTerm, viz.meaningOn) : [];
     if (meaning?.passage && meaning.column === column) {
       const at = text.indexOf(meaning.passage);
       if (at >= 0) ranges.push([at, at + meaning.passage.length]);
@@ -90,7 +92,9 @@
     <button class="close" aria-label="Close" onclick={() => popups.close(popup.key)}>&times;</button>
   </header>
   <section>
-    {#if meaning}
+    {#if textHit}
+      <p class="popup-meaning"><strong>Contains “{viz.phrase}”</strong></p>
+    {:else if meaning}
       <p class="popup-meaning">
         {#if meaning.rank === 0}
           <strong>Finding data items similar to this one</strong>

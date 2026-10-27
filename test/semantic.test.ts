@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDataset } from '../src/lib/data';
 import { closestByPassage, distinctTexts, dot, meanVector, passagesOf, sentences, topScores } from '../src/lib/semantic/passages';
 import { cachedDownloads, downloadSize, isModelId, MODELS, modelFileUrl } from '../src/lib/semantic/models';
-import { mergeRanges } from '../src/lib/search';
+import { highlightRanges, mergeRanges, search } from '../src/lib/search';
 
 describe('sentences', () => {
   it('splits on sentence ends and keeps abbreviations together', () => {
@@ -116,6 +116,31 @@ describe('models', () => {
 
   it('lists nothing where there is no cache storage', async () => {
     expect(await cachedDownloads()).toEqual([]);
+  });
+});
+
+describe('whole-word text hits', () => {
+  const dataset = buildDataset('t.csv', [
+    { Note: 'I chose a coat' },
+    { Note: 'The hose leaked; prices rose' },
+    { Note: 'a price, then price' },
+  ]);
+  const all = dataset.columns;
+
+  it('matches whole words only when asked', () => {
+    expect(search(dataset.items, '"hose"', all)?.size).toBe(2);
+    expect([...search(dataset.items, '"hose"', all, new Map(), true)!]).toEqual([2]);
+    expect([...search(dataset.items, '"price"', all, new Map(), true)!]).toEqual([3]);
+    expect(search(dataset.items, 'café', all, new Map(), true)).toEqual(new Set());
+  });
+
+  it('highlights whole words only when asked', () => {
+    expect(highlightRanges('I chose a hose', '"hose"')).toEqual([
+      [3, 7],
+      [10, 14],
+    ]);
+    expect(highlightRanges('I chose a hose', '"hose"', true)).toEqual([[10, 14]]);
+    expect(highlightRanges('a price, then price', 'price', true)).toHaveLength(2);
   });
 });
 

@@ -61,8 +61,8 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 	- The drop-down (10) in the search bar lists the most frequent words. Click one to search for it, or shift-click to add it with AND
 - **Find by meaning:** The "by text" button next to the search box switches the search to **by meaning**. Then a search like
   *worried about the price* finds the data items with a sentence that means something similar, in whatever words they use
-  ("the cost was more than I'd planned on"), plus any that contain the exact phrase. The viewer says why each one matched: its rank
-  ("#3 closest in meaning") and the sentence it matched by, which is highlighted:
+  ("the cost was more than I'd planned on"), plus any that contain the exact phrase as whole words. The viewer says why each one
+  matched: its rank ("#3 closest in meaning") and the sentence it matched by, which is highlighted, or "Contains" for a phrase hit:
 	- Nineteen shows the 20 closest data items. In the "by meaning" menu, change that number, or show every data item with at
 	  least a chosen similarity score (0 to 1; the viewer shows each match's score, and the menu suggests a cut-off for the model)
 	- **Find similar** in a pinned viewer finds the data items closest in meaning to that one

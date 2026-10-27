@@ -50,7 +50,7 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 	- Links in your data become clickable, and links to images are shown as images
 - **Text search:** The search bar (8) is directly above the visualization:
 	- Items that match your search stay in color. Everything else turns gray. Matching text is highlighted in the viewers
-	- The search box shows how many data items match ("23 of 234"), with **Tag these…** to tag them all at once (see "Tagging Your Data")
+	- The search box shows how many data items match ("23 of 117"), with **Tag these…** to tag them all at once (see "Tagging Your Data")
 	- Search in one or more fields (9). By default search looks in all of them, but you can limit it
 	- Multi-word searches:
 		- Searching for *dog food* finds items containing 'dog' *or* 'food' (either word is enough)

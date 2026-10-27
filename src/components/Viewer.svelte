@@ -355,7 +355,7 @@
       <div id="search">
         {#if viz.meaningOn && viz.similarTo !== null}
           <!-- "Find similar": the data item takes the place of a typed search -->
-          <div class="search-similar" style:padding-right={viz.matches || meaningStatus ? `${countWidth + 30}px` : null}>
+          <div class="search-similar" style:--count-width={viz.matches || meaningStatus ? `${countWidth}px` : null}>
             <span>Similar to file row {viz.similarTo}</span>
             <button
               type="button"
@@ -373,7 +373,7 @@
             autocomplete="off"
             spellcheck="false"
             bind:value={viz.searchTerm}
-            style:padding-right={viz.matches || meaningStatus ? `${countWidth + 30}px` : null}
+            style:--count-width={viz.matches || meaningStatus ? `${countWidth}px` : null}
             onkeydown={(e) => e.key === 'Enter' && e.preventDefault()}
           />
         {/if}

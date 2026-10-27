@@ -686,8 +686,9 @@ footer li:first-child::before {
 #tool-bar #search-field {
   background-color: white;
   box-sizing: border-box;
-  /* Centered, so the text and the clear button sit on the count's baseline */
+  /* Centered, so the text and the clear button sit on the count's baseline; typed text stops short of the match count */
   padding: 4px 0;
+  padding-right: calc(var(--count-width, -30px) + 30px);
   position: absolute;
   inset: 0;
   width: 100%;
@@ -736,8 +737,13 @@ footer li:first-child::before {
   }
 }
 @container search (max-width: 150px) {
-  #tool-bar .search-count-text {
+  /* Too narrow for a count at all: the field keeps its room, with the clear button's corner */
+  #tool-bar .search-count {
     display: none;
+  }
+  #tool-bar #search-field,
+  #tool-bar .search-similar {
+    padding-right: 22px;
   }
 }
 #tool-bar #search-field::placeholder {
@@ -757,6 +763,7 @@ footer li:first-child::before {
   inset: 0;
   min-width: 0;
   padding: 3px 0 1px;
+  padding-right: calc(var(--count-width, -30px) + 30px);
   position: absolute;
 }
 #tool-bar .search-similar span {

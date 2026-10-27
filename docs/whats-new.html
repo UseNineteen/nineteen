@@ -68,13 +68,20 @@
         margin: 0 0 16px;
       }
       h2.release {
-        border-bottom: 1px solid var(--line);
-        color: var(--muted);
-        font-size: 15px;
+        border-bottom: 2px solid var(--trout);
+        color: var(--trout);
+        font-size: 17px;
         letter-spacing: 0.06em;
-        margin: 48px 0 -28px;
+        margin: 52px 0 -28px;
         padding-bottom: 8px;
         text-transform: uppercase;
+      }
+      h2.release small {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        margin-left: 10px;
       }
       ul {
         list-style: none;
@@ -185,7 +192,7 @@
       <div class="inner">
         <div class="brand">nineteen</div>
         <h1>What's new in Nineteen</h1>
-        <p>Major features added in the latest release.</p>
+        <p>What each release added, newest first.</p>
         <a class="open-app" href="./">Open Nineteen →</a>
       </div>
     </header>
@@ -197,8 +204,10 @@
         saving as HTML or PNG. The features below are new.
       </p>
 
+      <h2 class="release" id="v2-1">Version 2.1 <small>October 2026</small></h2>
+
       <section id="meaning">
-        <h2>Version 2.1: Find by meaning</h2>
+        <h2>Find by meaning</h2>
         <ul>
           <li>
             <strong>Search by meaning, not just by words:</strong>
@@ -213,10 +222,6 @@
             <span>A pinned viewer has a <em>Find similar</em> button that finds the data items closest in meaning to that one.</span>
           </li>
           <li>
-            <strong>Tag lists and descriptions:</strong>
-            <span>Manage tags now holds a description for each tag: click the line under a tag to write what it means. Descriptions appear with the suggestions when you tag, and the AI tools are told what the tags mean. Export the tag list as CSV, JSON or text, and import one to set up the tagging options before coding begins, including tags no data item carries yet.</span>
-          </li>
-          <li>
             <strong>Private, like everything else:</strong>
             <span>Meaning is judged by a small language model that runs inside your browser. The first time, Nineteen asks before your browser downloads it (about 70 MB, from Hugging Face); it is kept for next time, and Settings can remove it. Your data never leaves your browser. A model for English is the default; Settings offers a multilingual one.</span>
           </li>
@@ -228,7 +233,29 @@
         <p class="classic-note">Finding by meaning can be hidden with <a href="#classic">Classic Nineteen</a> in Settings. Saved HTML files have the text search only.</p>
       </section>
 
-      <h2 class="release">Version 2.0</h2>
+      <section id="tag-list">
+        <h2>Tag lists and descriptions</h2>
+        <ul>
+          <li>
+            <strong>Describe your tags:</strong>
+            <span>Manage tags holds a description for each tag. Click the line under a tag to write what it means, or untick <em>Descriptions</em> for a compact list. Descriptions appear with the suggestions when you tag, and the AI tools are told what the tags mean.</span>
+          </li>
+          <li>
+            <strong>Set up the tagging options first:</strong>
+            <span>Add a tag by name in Manage tags before any data item carries it, or import a whole tag list (CSV, JSON or a text file with one tag per line). Unused tags wait in the list until they are applied, and importing never removes a tag from your data.</span>
+          </li>
+          <li>
+            <strong>Export the tag list:</strong>
+            <span>Save it as CSV, JSON or text, with each tag's description and count, to share a codebook with collaborators or carry it to the next study. Tags keep their spelling and match regardless of case.</span>
+          </li>
+        </ul>
+        <figure class="narrow">
+          <img src="screenshots/whats-new/tag-list.png" alt="The Manage tags panel with a description under each tag, an unused tag from an imported list, and the Import and Export controls" loading="lazy" />
+          <figcaption>Manage tags with descriptions, a tag no data item carries yet, and the tag list's Import and Export.</figcaption>
+        </figure>
+      </section>
+
+      <h2 class="release" id="v2-0">Version 2.0 <small>October 2026</small></h2>
 
       <section>
         <h2>Rows, columns and color</h2>

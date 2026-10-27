@@ -92,6 +92,20 @@
 
   <div class="settings-body">
     <fieldset>
+      <legend>Features</legend>
+      <label class="settings-check">
+        <input type="checkbox" bind:checked={appSettings.classic} />
+        <span>
+          <strong>Classic Nineteen</strong>
+          <small>
+            Rows, split by color and a legend, as in the original. Hides the Columns choice under “Grouped by”, tagging, finding by meaning
+            and the AI tools.
+          </small>
+        </span>
+      </label>
+    </fieldset>
+
+    <fieldset>
       <legend>Box size</legend>
 
       <label class="settings-check">
@@ -175,20 +189,6 @@
         </p>
       </fieldset>
     {/if}
-
-    <fieldset>
-      <legend>Features</legend>
-      <label class="settings-check">
-        <input type="checkbox" bind:checked={appSettings.classic} />
-        <span>
-          <strong>Classic Nineteen</strong>
-          <small>
-            Rows, split by color and a legend, as in the original. Hides the Columns choice under “Grouped by”, tagging, finding by meaning
-            and the AI tools.
-          </small>
-        </span>
-      </label>
-    </fieldset>
 
     <label class="settings-check settings-remember">
       <input type="checkbox" bind:checked={appSettings.remember} />

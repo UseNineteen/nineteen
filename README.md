@@ -153,14 +153,14 @@ or click the button again.
 
 <img src="docs/screenshots/settings.png" alt="Settings dialog" title="Settings">
 
+- *Classic Nineteen* (at the top, off by default) keeps to rows, Split by color and a legend, as in the original: the Columns choice under
+  "Grouped by", tagging, finding by meaning and the AI tools are hidden
 - *Stretch to fit* is the same switch as the Stretch to fit button: turning on one turns on the other. With *Remember settings*
   on, files you open later start stretched too
 - *Smallest* and *largest* width and height (4–40 px by default) limit box sizes when fitting and zooming. Stretch to fit uses the
   width and height limits separately; square boxes stay within both
 - *Find by meaning* chooses the model that judges meaning: *bge-small* for English (the default) or *multilingual-e5-small* for
   about 100 languages, with each one's download size. It also lists the models this browser has downloaded, with *Remove*
-- *Classic Nineteen* (off by default) keeps to rows, Split by color and a legend, as in the original: the Columns choice under
-  "Grouped by", tagging, finding by meaning and the AI tools are hidden
 - Tick *Remember settings on this device* to keep your settings in this browser
 - Changes preview as you make them. *Save* keeps them; *Cancel*, Esc or clicking outside the dialog discards them
 

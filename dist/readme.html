@@ -50,7 +50,7 @@ by another (see &quot;Rows, Columns and Color&quot; below)</li>
 <img src="docs/screenshots/visualization.png" alt="Visualization view" title="Nineteen's visualization view"><h3>A Usable Example</h3>
 <ul>
 <li><strong>Try a demo from the main page of Nineteen:</strong> Click the &quot;Try an example&quot; link (A) on <a href="https://usenineteen.com">Nineteen&#39;s main page</a></li>
-<li><strong>See the example file:</strong> You can download a copy of the <a href="shopping_decision_diary.xlsx">data file</a> used for the example</li>
+<li><strong>See the example file:</strong> You can download a copy of the <a href="public/shopping_decision_diary_extended.xlsx?raw=true">data file</a> used for the example</li>
 </ul>
 <h3>Additional Features to Discover</h3>
 <p>Nineteen never changes your data, so feel free to explore the interface. Additional features include:</p>
@@ -72,7 +72,7 @@ order). Each field keeps its own order until you open another file</li>
 </li>
 <li><strong>Text search:</strong> The search bar (8) is directly above the visualization:<ul>
 <li>Items that match your search stay in color. Everything else turns gray. Matching text is highlighted in the viewers</li>
-<li>The search box shows how many data items match (&quot;23 of 117&quot;), with <strong>Tag these…</strong> to tag them all at once (see &quot;Tagging Your Data&quot;)</li>
+<li>The search box shows how many data items match (&quot;23 of 293&quot;), with <strong>Tag these…</strong> to tag them all at once (see &quot;Tagging Your Data&quot;)</li>
 <li>Search in one or more fields (9). By default search looks in all of them, but you can limit it</li>
 <li>Multi-word searches:<ul>
 <li>Searching for <em>dog food</em> finds items containing &#39;dog&#39; <em>or</em> &#39;food&#39; (either word is enough)</li>
@@ -230,7 +230,7 @@ npm run check     # type checking
 npm run build     # production build → dist/
 </code></pre>
 <p><code>npm run build</code> produces <code>dist/index.html</code>, the entire app in a single self-contained file (code, styles, fonts and icons inlined),
-plus <code>dist/shopping_decision_diary.xlsx</code> for &quot;Try an example&quot;. Any static host works (GitHub Pages, Cloudflare Pages, Netlify, S3, …).
+plus <code>dist/shopping_decision_diary_extended.xlsx</code> for &quot;Try an example&quot;. Any static host works (GitHub Pages, Cloudflare Pages, Netlify, S3, …).
 The single-file build also powers &quot;Download HTML file&quot;: a saved copy is the same page with the data embedded.</p>
 <p><code>dist/</code> is committed, so the repository always contains a working copy of the app. A pre-commit hook (<code>.githooks/pre-commit</code>)
 rebuilds it and stages it before every commit; <code>npm install</code> turns the hook on. The README screenshots are in <code>docs/screenshots/</code>.</p>

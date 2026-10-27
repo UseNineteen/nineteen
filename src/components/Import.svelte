@@ -20,7 +20,7 @@
     : location.protocol === 'file:'
       ? 'https://usenineteen.com/readme.html'
       : './readme.html';
-  const SAMPLE_URL = './shopping_decision_diary.xlsx';
+  const SAMPLE_URL = './shopping_decision_diary_extended.xlsx';
   const WHATS_NEW_URL = './whats-new.html';
   /** When this release came out; the "New" badge shows until NEW_UNTIL so it never looks stale */
   const RELEASED = 'Oct 2026';

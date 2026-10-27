@@ -134,7 +134,7 @@
     try {
       const response = await fetch(href);
       if (!response.ok) throw new Error('The example file could not be loaded.');
-      await finish(id, 'shopping_decision_diary.xlsx', new Uint8Array(await response.arrayBuffer()), true);
+      await finish(id, href.slice(href.lastIndexOf('/') + 1), new Uint8Array(await response.arrayBuffer()), true);
     } catch (error) {
       fail(id, error);
     }

@@ -630,8 +630,8 @@ footer li:first-child::before {
 }
 /*
  * The find group: the word list, the field and its two settings in one bordered box, so the
- * settings read as the field's rather than as more toolbar buttons. It takes the room it needs
- * (up to a limit, so the settings stay next to the text) and is followed by the toolbar's divider.
+ * settings read as the field's rather than as more toolbar buttons. It takes all the room the
+ * other controls leave, as the field always did, and is followed by the toolbar's divider.
  */
 #tool-bar #find {
   background-color: var(--white);
@@ -640,7 +640,6 @@ footer li:first-child::before {
   display: flex;
   flex: 1 1 auto;
   margin: 5px 41px 5px 0;
-  max-width: 640px;
   min-width: 0;
   position: relative;
 }

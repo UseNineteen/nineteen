@@ -368,8 +368,8 @@
           <input
             type="search"
             id="search-field"
-            placeholder={viz.meaningOn ? 'Find by meaning' : 'Find'}
-            aria-label={viz.meaningOn ? 'Find by meaning' : 'Find'}
+            placeholder={viz.meaningOn ? 'Find similar meanings' : 'Find matching text'}
+            aria-label={viz.meaningOn ? 'Find similar meanings' : 'Find matching text'}
             autocomplete="off"
             spellcheck="false"
             bind:value={viz.searchTerm}

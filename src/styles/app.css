@@ -686,7 +686,8 @@ footer li:first-child::before {
 #tool-bar #search-field {
   background-color: white;
   box-sizing: border-box;
-  padding: 6px 0 2px;
+  /* Centered, so the text and the clear button sit on the count's baseline */
+  padding: 4px 0;
   position: absolute;
   inset: 0;
   width: 100%;

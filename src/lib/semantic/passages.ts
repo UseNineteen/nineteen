@@ -81,6 +81,9 @@ export interface Scored {
   score: number;
   passage: string;
   column: string;
+  /** For "Find similar": the sentence of the data item it started from that the passage is closest to */
+  anchorPassage?: string;
+  anchorColumn?: string;
 }
 
 /** How many results to show: the closest so many, or every one scoring at least so much */

@@ -69,7 +69,8 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
   matched: its rank ("#3 closest in meaning") and the sentence it matched by, which is highlighted, or "Contains" for a phrase hit:
 	- Nineteen shows the 20 closest data items. In the "by meaning" menu, change that number, or show every data item with at
 	  least a chosen similarity score (0 to 1; the viewer shows each match's score, and the menu suggests a cut-off for the model)
-	- **Find similar** in a pinned viewer finds the data items closest in meaning to that one
+	- **Find similar** in a pinned viewer finds the data items closest in meaning to that one. Each match's viewer names the pair of
+	  sentences that are closest: its own, and the one in the original it is like
 	- Meaning is judged by a small language model that runs inside your browser. The first time, Nineteen asks before your browser
 	  downloads it (about 70 MB) from Hugging Face; it is kept for next time, and Settings can remove it. Your data never leaves your
 	  browser. A model for English is the default; Settings offers a multilingual one (about 250 MB)

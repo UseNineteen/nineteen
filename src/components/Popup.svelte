@@ -101,7 +101,12 @@
         {:else}
           <strong>#{meaning.rank} closest {viz.similarTo !== null ? `to file row ${viz.similarTo}` : 'in meaning'}</strong>
           <span class="popup-meaning-score">· similarity {meaning.score.toFixed(2)}</span>
-          {#if meaning.passage}<span class="popup-meaning-why">by “{meaning.passage}” in {meaning.column}</span>{/if}
+          {#if meaning.passage}
+            <span class="popup-meaning-why">
+              by “{meaning.passage}” in {meaning.column}{#if meaning.anchorPassage === meaning.passage}, also in file row {viz.similarTo}{:else if meaning.anchorPassage},
+                like “{meaning.anchorPassage}” in file row {viz.similarTo}{/if}
+            </span>
+          {/if}
         {/if}
       </p>
     {/if}

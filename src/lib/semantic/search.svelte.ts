@@ -20,6 +20,9 @@ export interface MeaningMatch {
   /** The passage that made the match, and the field it is in */
   passage: string;
   column: string;
+  /** For "Find similar": the sentence of the starting data item that the passage is closest to, and its field */
+  anchorPassage?: string;
+  anchorColumn?: string;
 }
 
 export interface MeaningResults {
@@ -233,7 +236,16 @@ export class SemanticSearch {
       }
       const matches = new Map<number, MeaningMatch>();
       if ('itemId' in query) matches.set(query.itemId, { rank: 0, score: 1, passage: '', column: '' });
-      scored.forEach((s, i) => matches.set(s.itemId, { rank: i + 1, score: s.score, passage: s.passage, column: s.column }));
+      scored.forEach((s, i) =>
+        matches.set(s.itemId, {
+          rank: i + 1,
+          score: s.score,
+          passage: s.passage,
+          column: s.column,
+          anchorPassage: s.anchorPassage,
+          anchorColumn: s.anchorColumn,
+        }),
+      );
       this.results = { key, matches };
     } catch (error) {
       this.#fail(error);
@@ -242,7 +254,10 @@ export class SemanticSearch {
     }
   }
 
-  /** Items by the similarity of their whole text to one item's, each explained by its passage closest to that item */
+  /**
+   * Items by the similarity of their whole text to one item's, each explained by the pair of
+   * sentences (one of its own, one of the starting item's) that are closest to each other
+   */
   #similar(itemId: number, cut: Cut): Scored[] {
     const anchor = this.#itemVectors.get(itemId);
     if (!anchor) return [];
@@ -251,15 +266,23 @@ export class SemanticSearch {
       if (id !== itemId) scored.push({ itemId: id, score: dot(anchor, vector), passage: '', column: '' });
     }
     const top = topScores(scored, cut);
+    const anchorPassages = (this.#passagesByItem.get(itemId) ?? [])
+      .map((p) => ({ ...p, vector: this.#vectors.get(p.text) }))
+      .filter((p): p is Passage & { vector: Float32Array } => p.vector !== undefined);
     for (const entry of top) {
       let best = -Infinity;
       for (const passage of this.#passagesByItem.get(entry.itemId) ?? []) {
         const vector = this.#vectors.get(passage.text);
-        const score = vector ? dot(anchor, vector) : -Infinity;
-        if (score > best) {
-          best = score;
-          entry.passage = passage.text;
-          entry.column = passage.column;
+        if (!vector) continue;
+        for (const other of anchorPassages) {
+          const score = dot(other.vector, vector);
+          if (score > best) {
+            best = score;
+            entry.passage = passage.text;
+            entry.column = passage.column;
+            entry.anchorPassage = other.text;
+            entry.anchorColumn = other.column;
+          }
         }
       }
     }

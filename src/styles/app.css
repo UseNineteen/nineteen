@@ -1382,6 +1382,21 @@ footer li:first-child::before {
   padding: 2px 15px;
   white-space: normal;
 }
+.dropdown .radio-menu .legend-counts {
+  align-items: baseline;
+  border-top: 1px solid var(--lightgray);
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 8px;
+}
+.dropdown .radio-menu .legend-counts.disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.dropdown .radio-menu .legend-counts small {
+  margin-left: 0;
+}
 .dropdown .radio-menu label small {
   color: #7d838a;
   display: block;

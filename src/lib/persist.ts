@@ -33,6 +33,8 @@ export interface ViewState {
   automatic: boolean;
   /** Views saved before percentages existed hold a boolean: true is 'count' */
   counts: CountsMode | boolean;
+  /** The legend shows each color's count or share too (absent in views saved before it was a choice: yes) */
+  legendCounts?: boolean;
   split: boolean;
   zoom: number;
   /** Optional so files saved before fit modes existed still open */

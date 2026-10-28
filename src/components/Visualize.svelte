@@ -545,6 +545,18 @@
             </span>
           </label>
         {/if}
+        <label class="settings-check legend-counts" class:disabled={viz.counts === 'none'}>
+          <input
+            type="checkbox"
+            checked={viz.legendCounts}
+            disabled={viz.counts === 'none'}
+            onchange={(e) => (viz.legendCounts = e.currentTarget.checked)}
+          />
+          <span>
+            Counts in the legend
+            <small>Each color's count, or its share of all data items.</small>
+          </span>
+        </label>
       </section>
     </Dropdown>
   {:else if open?.name === 'viewerColumns'}

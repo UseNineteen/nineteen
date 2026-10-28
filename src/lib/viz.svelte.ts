@@ -35,6 +35,8 @@ export class Viz {
   automatic = $state(true);
   counts = $state<CountsMode>('none');
   /** What the counts actually show: column % needs column bands (the menu's choice is kept for when they return) */
+  /** Whether the legend shows each color's count or share while counts are on */
+  legendCounts = $state(true);
   countsShown = $derived<CountsMode>(this.counts === 'column' && this.columnKey === null ? 'count' : this.counts);
   zoom = $state(1);
   /** Fitting stays on (through resizes and regrouping) until the user zooms by hand */
@@ -202,6 +204,7 @@ export class Viz {
     // Saved before columns were their own choice: "split" meant columns by the color column
     if (view && !('columnKey' in view) && !this.automatic && view.split) this.columnKey = this.colorKey;
     this.counts = view?.counts === true ? 'count' : !view?.counts ? 'none' : view.counts;
+    this.legendCounts = view?.legendCounts ?? true;
     this.zoom = view?.zoom ?? 1;
     this.fit = view?.fit ?? (appSettings.stretchByDefault ? 'stretch' : 'none');
     this.sortBy = view?.sortBy ?? 'value';
@@ -663,6 +666,7 @@ export class Viz {
       colorKey: this.colorKey,
       automatic: this.automatic,
       counts: this.counts,
+      legendCounts: this.legendCounts,
       zoom: this.zoom,
       fit: this.fit,
       sortBy: this.sortBy,

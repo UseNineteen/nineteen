@@ -14,9 +14,9 @@
 
   let { viz }: Props = $props();
 
-  const showCounts = $derived(viz.countsShown !== 'none' && !viz.split);
-  /** With "row %" on, each color's share of all data items */
-  const countText = (count: number) => (viz.countsShown === 'row' ? percent(count, viz.layout.items.length) : String(count));
+  const showCounts = $derived(viz.countsShown !== 'none' && viz.legendCounts);
+  /** Each color's count, or with percentages on, its share of all data items */
+  const countText = (count: number) => (viz.countsShown === 'count' ? String(count) : percent(count, viz.layout.items.length));
   /**
    * Line the first entry up with the first data row: the collapse toggle sits directly above the
    * list (level with the band labels in split view), and the list starts below it and the first

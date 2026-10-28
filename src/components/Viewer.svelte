@@ -301,13 +301,7 @@
   style:--band-total-margin={BAND.totalMargin}
   style:--band-line-height={BAND.lineHeight}
 >
-  <!-- The sort buttons line up with the first column of boxes: the toolbar starts where the row labels end -->
-  <form
-    id="tool-bar"
-    style:--sort-offset={px(labelWidth * scale.y + GEOMETRY.gutter * scale.x)}
-    onsubmit={(e) => e.preventDefault()}
-    aria-label="Visualization tools"
-  >
+  <form id="tool-bar" onsubmit={(e) => e.preventDefault()} aria-label="Visualization tools">
     <button
       type="button"
       class="block-sort sort-value"

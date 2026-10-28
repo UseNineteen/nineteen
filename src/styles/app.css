@@ -566,9 +566,8 @@ footer li:first-child::before {
   display: flex;
   flex: 0 0 auto;
   color: var(--trout);
+  /* The sort buttons sit at the left edge of the visualization, where the row labels begin */
   padding: var(--tool-bar-pad) 10px;
-  /* The sort buttons start where the first column of boxes does (--sort-offset is set by the viewer) */
-  padding-left: max(10px, var(--sort-offset, 10px));
   height: calc(40px + 2 * var(--tool-bar-pad));
   width: 100%;
 }
@@ -2660,8 +2659,8 @@ footer li:first-child::before {
 
 /* ---------- Compact toolbar when the viewer is narrow ---------- */
 
-@container viewer (max-width: 1080px) {
-  /* Icons only; each button keeps its name in a tooltip and for screen readers */
+@container viewer (max-width: 1200px) {
+  /* Icons only; each button keeps its name in a tooltip and for screen readers (with names, the full set of controls needs about 1,180px) */
   #tool-bar .tool-label {
     display: none;
   }
@@ -2671,10 +2670,6 @@ footer li:first-child::before {
   }
   #tool-bar #find:focus-within {
     border-color: var(--trout);
-  }
-  /* Room is scarce: the sort buttons no longer wait for the row labels */
-  #tool-bar {
-    padding-left: 10px;
   }
   #tool-bar #toggle-view {
     margin-right: 14px;
@@ -2701,7 +2696,8 @@ footer li:first-child::before {
     width: 34px;
   }
 }
-@container viewer (max-width: 640px) {
+/* Narrower still: the find box's settings drop their first word (icons only, the controls need about 720px with “by meaning” showing) */
+@container viewer (max-width: 740px) {
   #tool-bar .tool-word {
     display: none;
   }
@@ -2717,8 +2713,8 @@ footer li:first-child::before {
   }
 }
 
-/* Very narrow: tighter spacing, and the buttons wrap onto a second line rather than being cut off */
-@container viewer (max-width: 560px) {
+/* Very narrow: tighter spacing, and the buttons wrap onto a second line rather than being cut off (one line needs about 630px with “by meaning” showing) */
+@container viewer (max-width: 640px) {
   #tool-bar {
     flex-wrap: wrap;
     height: auto;
@@ -2743,6 +2739,19 @@ footer li:first-child::before {
   }
   #tool-bar #tags-toggle {
     margin-right: 4px;
+  }
+}
+
+/* A phone with the legend open: the find box's settings move onto a second line inside the box */
+@container viewer (max-width: 360px) {
+  #tool-bar #find {
+    flex-wrap: wrap;
+  }
+  #tool-bar #search {
+    flex-basis: calc(100% - 56px);
+  }
+  #tool-bar #search-mode {
+    border-left: none;
   }
 }
 

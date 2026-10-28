@@ -1,5 +1,5 @@
 import { colorScale, type Swatch } from './colors';
-import { computeLayout, zoomBounds, type SortBy, type SortDirection } from './layout';
+import { computeLayout, zoomBounds, type CountsMode, type SortBy, type SortDirection } from './layout';
 import { displayLabel, NO_TAGS_LABEL, type Dataset, type DataItem, type ListSeparator } from './data';
 import { DEFAULT_CLOSEST, type FitMode, type MeaningCut, type SearchMode, type ViewState } from './persist';
 import { MODELS } from './semantic/models';
@@ -33,7 +33,9 @@ export class Viz {
   colorKey = $state('');
   /** When true the color column follows the grouping ("Automatic") */
   automatic = $state(true);
-  counts = $state(false);
+  counts = $state<CountsMode>('none');
+  /** What the counts actually show: column % needs column bands (the menu's choice is kept for when they return) */
+  countsShown = $derived<CountsMode>(this.counts === 'column' && this.columnKey === null ? 'count' : this.counts);
   zoom = $state(1);
   /** Fitting stays on (through resizes and regrouping) until the user zooms by hand */
   fit = $state<FitMode>('none');
@@ -199,7 +201,7 @@ export class Viz {
     this.colorKey = !this.automatic && has(view?.colorKey) ? view.colorKey : this.groupKey;
     // Saved before columns were their own choice: "split" meant columns by the color column
     if (view && !('columnKey' in view) && !this.automatic && view.split) this.columnKey = this.colorKey;
-    this.counts = view?.counts ?? false;
+    this.counts = view?.counts === true ? 'count' : !view?.counts ? 'none' : view.counts;
     this.zoom = view?.zoom ?? 1;
     this.fit = view?.fit ?? (appSettings.stretchByDefault ? 'stretch' : 'none');
     this.sortBy = view?.sortBy ?? 'value';

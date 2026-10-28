@@ -6,7 +6,7 @@ import { buildDataset, rollup } from '../src/lib/data';
 import { compareValues, parseValue } from '../src/lib/values';
 import { addTerm, highlightRanges, search } from '../src/lib/search';
 import { colorsFor, darker } from '../src/lib/colors';
-import { boxScale, computeLayout, columnX, countSlot, GEOMETRY, gridWidth, rowY, zoomBounds } from '../src/lib/layout';
+import { boxScale, computeLayout, columnX, countSlot, GEOMETRY, gridWidth, percent, rowY, zoomBounds } from '../src/lib/layout';
 import { detectFormat, parseBytes } from '../src/lib/parse';
 import { resolveHostedUrl } from '../src/lib/hosted';
 import { segments } from '../src/lib/linkify';
@@ -193,7 +193,7 @@ describe('layout', () => {
     { P: 'Ann', S: 'x' },
   ];
   const dataset = buildDataset('t', rows);
-  const base = { rowKey: 'P', columnKey: null, colorKey: 'S', counts: false, sortBy: 'value', sortDirection: 'ascending' } as const;
+  const base = { rowKey: 'P', columnKey: null, colorKey: 'S', counts: 'none', sortBy: 'value', sortDirection: 'ascending' } as const;
 
   it('stacks items by group, sorted by color then file order', () => {
     const layout = computeLayout(dataset.items, base);
@@ -208,7 +208,7 @@ describe('layout', () => {
   });
 
   it('splits into color bands', () => {
-    const layout = computeLayout(dataset.items, { ...base, columnKey: 'S', counts: true });
+    const layout = computeLayout(dataset.items, { ...base, columnKey: 'S', counts: 'count' });
     const slot = countSlot(1);
     // band x: widest group has 2 + the 1.5-column gap → band y starts at column 3.5, after one count slot
     expect(layout.positions.get(3)).toEqual({ x: columnX(3.5), cx: slot, y: rowY(2) });
@@ -217,7 +217,7 @@ describe('layout', () => {
   });
 
   it('adds a header row of values, with band totals when counts are on', () => {
-    const layout = computeLayout(dataset.items, { ...base, columnKey: 'S', counts: true });
+    const layout = computeLayout(dataset.items, { ...base, columnKey: 'S', counts: 'count' });
     expect(layout.rowOffset).toBe(1);
     expect(layout.rowCount).toBe(3); // header, Ann, Bob
     expect(layout.headers.map((h) => [h.label, h.total, h.y])).toEqual([
@@ -227,8 +227,8 @@ describe('layout', () => {
   });
 
   it('widens only the bands given extra label space, shifting later bands', () => {
-    const plain = computeLayout(dataset.items, { ...base, columnKey: 'S', counts: true });
-    const widened = computeLayout(dataset.items, { ...base, columnKey: 'S', counts: true, bandPads: [30, 0] });
+    const plain = computeLayout(dataset.items, { ...base, columnKey: 'S', counts: 'count' });
+    const widened = computeLayout(dataset.items, { ...base, columnKey: 'S', counts: 'count', bandPads: [30, 0] });
     expect(widened.headers.map((h) => [h.pad, h.cwidth - plain.headers[0].cwidth])).toEqual([
       [30, 30],
       [0, 0],
@@ -253,7 +253,7 @@ describe('layout', () => {
       { P: 'Ann', D: 'Tue', S: 'y' },
       { P: 'Bob', D: 'Mon', S: 'y' },
     ]).items;
-    const layout = computeLayout(items, { ...base, columnKey: 'D', counts: true });
+    const layout = computeLayout(items, { ...base, columnKey: 'D', counts: 'count' });
     expect(layout.bands.map((b) => b.label)).toEqual(['Mon', 'Tue']);
     expect(layout.legend.map((g) => g.label)).toEqual(['x', 'y']);
     expect(layout.headers.map((h) => [h.label, h.total])).toEqual([
@@ -288,7 +288,7 @@ describe('layout', () => {
       ...base,
       rowKey: null,
       columnKey: 'S',
-      counts: true,
+      counts: 'count',
       sortBy: 'count',
       sortDirection: 'ascending',
     });
@@ -472,7 +472,7 @@ describe('custom value order', () => {
     { S: 'Satisfied' },
   ];
   const dataset = buildDataset('s.csv', rows);
-  const base = { rowKey: 'S', columnKey: null, colorKey: 'S', counts: false, sortBy: 'value', sortDirection: 'ascending' } as const;
+  const base = { rowKey: 'S', columnKey: null, colorKey: 'S', counts: 'none', sortBy: 'value', sortDirection: 'ascending' } as const;
   const scale = ['Not at all satisfied', 'Not satisfied', 'Satisfied', 'Extremely satisfied'];
 
   it('orders the legend (and so its colors) by a dragged order', () => {
@@ -499,5 +499,31 @@ describe('custom value order', () => {
     expect(computeLayout(dataset.items, { ...base, rowOrder: scale, sortBy: 'count', sortDirection: 'descending' }).groups[0].label).toBe(
       'Satisfied',
     );
+  });
+});
+
+describe('percentages', () => {
+  it('formats shares as whole percents', () => {
+    expect([percent(1, 3), percent(1, 300), percent(0, 5), percent(4, 4)]).toEqual(['33%', '<1%', '0%', '100%']);
+  });
+
+  it('shows each cell as a share of its row or its column', () => {
+    const items = buildDataset('t.csv', [
+      { P: 'a', S: 'x' },
+      { P: 'a', S: 'y' },
+      { P: 'a', S: 'y' },
+      { P: 'b', S: 'x' },
+    ]).items;
+    const base = { rowKey: 'P', columnKey: 'S', colorKey: 'S', sortBy: 'value', sortDirection: 'ascending' } as const;
+    const text = (counts: 'row' | 'column' | 'count') =>
+      Object.fromEntries(computeLayout(items, { ...base, counts }).counts.map((c) => [c.key.replace('\u0000', '/'), c.text]));
+    expect(text('row')).toEqual({ 'x/a': '33%', 'y/a': '67%', 'x/b': '100%' });
+    expect(text('column')).toEqual({ 'x/a': '50%', 'y/a': '100%', 'x/b': '50%' });
+    expect(text('count')).toEqual({ 'x/a': '1', 'y/a': '2', 'x/b': '1' });
+    // Column totals stay counts: the base of each column percentage
+    expect(computeLayout(items, { ...base, counts: 'column' }).headers.map((h) => h.total)).toEqual(['2', '2']);
+    // Without columns, column % falls back to counts and row % is the share of all data items
+    expect(computeLayout(items, { ...base, columnKey: null, counts: 'column' }).counts.map((c) => c.text)).toEqual(['3', '1']);
+    expect(computeLayout(items, { ...base, columnKey: null, counts: 'row' }).counts.map((c) => c.text)).toEqual(['75%', '25%']);
   });
 });

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { LABEL_FONT } from '../lib/band-labels';
-  import { GEOMETRY, LEGEND, legendWidth } from '../lib/layout';
+  import { GEOMETRY, LEGEND, legendWidth, percent } from '../lib/layout';
   import { ListReorder } from '../lib/reorder.svelte';
   import type { Viz } from '../lib/viz.svelte';
   import { onMount } from 'svelte';
@@ -14,7 +14,9 @@
 
   let { viz }: Props = $props();
 
-  const showCounts = $derived(viz.counts && !viz.split);
+  const showCounts = $derived(viz.countsShown !== 'none' && !viz.split);
+  /** With "row %" on, each color's share of all data items */
+  const countText = (count: number) => (viz.countsShown === 'row' ? percent(count, viz.layout.items.length) : String(count));
   /**
    * Line the first entry up with the first data row: the collapse toggle sits directly above the
    * list (level with the band labels in split view), and the list starts below it and the first
@@ -40,7 +42,7 @@
       0,
       ...viz.layout.legend.map((entry) => {
         const label = measureCtx.measureText(viz.label(entry.label, viz.colorKey)).width;
-        const count = showCounts ? LEGEND.countGap + measureCtx.measureText(String(entry.count)).width : 0;
+        const count = showCounts ? LEGEND.countGap + measureCtx.measureText(countText(entry.count)).width : 0;
         return LEGEND.swatch + LEGEND.swatchGap + grip + label + count;
       }),
     );
@@ -117,7 +119,7 @@
         <span class="grip" aria-hidden="true"></span>
         <span class="label">{viz.label(entry.label, viz.colorKey)}</span>
         {#if showCounts}
-          <span class="count">{entry.count}</span>
+          <span class="count">{countText(entry.count)}</span>
         {/if}
       </li>
     {/each}

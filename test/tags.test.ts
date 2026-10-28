@@ -64,7 +64,7 @@ describe('grouping by tags', () => {
       rowKey: 'Tags',
       columnKey: null,
       colorKey: 'Tags',
-      counts: false,
+      counts: 'none',
       sortBy: 'value',
       sortDirection: 'ascending',
     });

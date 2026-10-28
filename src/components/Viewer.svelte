@@ -1,11 +1,11 @@
 <script module lang="ts">
-  export type ToolbarDropdown = 'terms' | 'searchMode' | 'searchIn' | 'viewerColumns';
+  export type ToolbarDropdown = 'terms' | 'searchMode' | 'searchIn' | 'counts' | 'viewerColumns';
 </script>
 
 <script lang="ts">
   import { onMount, tick, untrack, type Snippet } from 'svelte';
   import { displayLabel, type DataItem } from '../lib/data';
-  import { boxScale, GEOMETRY } from '../lib/layout';
+  import { boxScale, GEOMETRY, type CountsMode } from '../lib/layout';
   import { BAND, decideBandLabels, HEADER_FONT_MAX, HEADER_ROW, LABEL_FONT, ONE_LINE, type MeasureLabel } from '../lib/band-labels';
   import type { Popups } from '../lib/popups.svelte';
   import { appSettings } from '../lib/settings.svelte';
@@ -92,6 +92,8 @@
   /** Band labels start with a swatch when the bands are the color column's values */
   const bandSwatches = $derived(viz.columnKey === viz.colorKey);
   const classic = $derived(appSettings.classic);
+  const COUNTS_LABELS: Record<CountsMode, string> = { none: 'Show counts', count: 'Counts', row: 'Row %', column: 'Column %' };
+  const countsLabel = $derived(COUNTS_LABELS[viz.countsShown]);
 
   // ---------- Reordering rows by dragging their labels ----------
 
@@ -426,12 +428,13 @@
     <button
       type="button"
       id="toggle-counts"
-      aria-pressed={viz.counts}
-      aria-label="{viz.counts ? 'Hide' : 'Show'} counts"
-      title="{viz.counts ? 'Hide' : 'Show'} counts"
-      onclick={() => (viz.counts = !viz.counts)}
+      class="dropdown-arrow"
+      aria-expanded={open === 'counts'}
+      aria-label="Counts: {countsLabel}"
+      title="Counts, or each count as a share of its row or its column"
+      onclick={toggle('counts')}
     >
-      <span class="count-icon">#</span> <span class="count-label tool-label">{viz.counts ? 'Hide' : 'Show'} counts</span>
+      <span class="count-icon">#</span> <span class="count-label tool-label">{countsLabel}</span>
     </button>
     <button
       type="button"

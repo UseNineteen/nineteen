@@ -48,6 +48,16 @@ export const LEGEND_PITCH = LEGEND.entryLine + LEGEND.entryGapTop + LEGEND.entry
 
 /** 'custom': a dragged order of values (rows, or legend entries); values it doesn't mention follow, A–Z */
 export type SortBy = 'value' | 'count' | 'custom';
+
+/** What the count labels show: nothing, counts, or each count as a share of its row or of its column */
+export type CountsMode = 'none' | 'count' | 'row' | 'column';
+
+/** A count as a whole percentage of a base: "<1%" below one, "0%" for none */
+export function percent(count: number, base: number): string {
+  if (!base || count === 0) return '0%';
+  const value = (100 * count) / base;
+  return value < 1 ? '<1%' : `${Math.round(value)}%`;
+}
 export type SortDirection = 'ascending' | 'descending';
 
 export interface LayoutOptions {
@@ -56,7 +66,8 @@ export interface LayoutOptions {
   /** Column bands: one per value of this column; null for rows only. At least one of the two is set. */
   columnKey: string | null;
   colorKey: string;
-  counts: boolean;
+  /** Column % needs column bands: without them it shows counts */
+  counts: CountsMode;
   sortBy: SortBy;
   sortDirection: SortDirection;
   /** Extra height for the band header row when its labels are turned (scale-1 px) */
@@ -172,8 +183,10 @@ export function gridWidth(largestBand: number): number {
 }
 
 export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
-  const { rowKey, columnKey, colorKey, counts } = options;
+  const { rowKey, columnKey, colorKey } = options;
   const split = columnKey !== null;
+  const counts: CountsMode = options.counts === 'column' && !split ? 'count' : options.counts;
+  const showCounts = counts !== 'none';
   const keys = [rowKey, columnKey, colorKey].filter((k): k is string => k !== null);
   const items = [...all].sort(itemComparator(...keys));
   const groups = rowKey ? sortGroups(rollup(items, rowKey), options.sortBy, options.sortDirection, options.rowOrder) : [];
@@ -209,7 +222,7 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
 
   // Count labels get a slot wide enough for their longest number (without rows, the band totals say it all)
   const largest = split ? Math.max(0, ...bandWidths) : Math.max(0, ...groups.map((g) => g.count));
-  const slot = counts && rowKey ? countSlot(String(largest).length) : 0;
+  const slot = showCounts && rowKey ? countSlot(counts === 'count' ? String(largest).length : '100%'.length) : 0;
   // Label-space offset of each band: count slots and any widening of earlier bands
   const pads = split ? bands.map((_, i) => Math.max(0, options.bandPads?.[i] ?? 0)) : [];
   const textBefore: number[] = [];
@@ -237,14 +250,20 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
   }
 
   const countLabels: CountLabel[] = [];
-  if (counts && rowKey) {
+  if (showCounts && rowKey) {
+    const groupCount = new Map(groups.map((g) => [g.label, g.count]));
     if (split) {
       for (const pair of rollup(items, columnKey, rowKey)) {
         const row = pair.items[0].raw[rowKey];
         const band = bandIndex.get(pair.label)!;
         countLabels.push({
           key: `${pair.label}\u0000${row}`,
-          text: String(pair.count),
+          text:
+            counts === 'row'
+              ? percent(pair.count, groupCount.get(row) ?? 0)
+              : counts === 'column'
+                ? percent(pair.count, bands[band].count)
+                : String(pair.count),
           x: columnX(bandOffsets[band] + pair.count),
           cx: textBefore[band],
           y: groupY(rowIndex.get(row)!),
@@ -254,7 +273,8 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
       for (const group of groups) {
         countLabels.push({
           key: group.label,
-          text: String(group.count),
+          // Without columns, "row %" is each row's share of all data items
+          text: counts === 'row' ? percent(group.count, items.length) : String(group.count),
           x: columnX(group.count),
           cx: 0,
           y: groupY(rowIndex.get(group.label)!),
@@ -266,7 +286,7 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
   const headers: BandHeader[] = bands.map((band, i) => ({
     key: band.label,
     label: band.label,
-    total: counts ? String(band.count) : null,
+    total: showCounts ? String(band.count) : null,
     x: columnX(bandOffsets[i]),
     cx: textBefore[i],
     y: rowY(1),

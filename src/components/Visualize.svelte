@@ -419,7 +419,7 @@
   {:else if open?.name === 'searchMode'}
     <Dropdown anchor={open.anchor} offset={-35} label="Find by" onclose={close}>
       {#snippet header()}Find by:{/snippet}
-      <section class="search-mode">
+      <section class="search-mode radio-menu">
         <label>
           <input type="radio" name="search-mode" checked={!viz.meaningOn} onchange={() => viz.setSearchMode('text')} />
           <span>
@@ -508,6 +508,45 @@
       onchange={(selected) => (viz.searchScope = selected)}
       onclose={close}
     />
+  {:else if open?.name === 'counts'}
+    <Dropdown anchor={open.anchor} label="Counts" onclose={close}>
+      {#snippet header()}Counts:{/snippet}
+      <section class="radio-menu">
+        <label>
+          <input type="radio" name="counts" checked={viz.counts === 'none'} onchange={() => (viz.counts = 'none')} />
+          <span><strong>Hide counts</strong></span>
+        </label>
+        <label>
+          <input type="radio" name="counts" checked={viz.counts === 'count'} onchange={() => (viz.counts = 'count')} />
+          <span>
+            <strong>Show counts</strong>
+            <small>How many data items each row, cell and column holds.</small>
+          </span>
+        </label>
+        {#if !appSettings.classic}
+          <label>
+            <input type="radio" name="counts" checked={viz.counts === 'row'} onchange={() => (viz.counts = 'row')} />
+            <span>
+              <strong>Show row %</strong>
+              <small>Each cell as a share of its row. Without columns, each row's share of all data items.</small>
+            </span>
+          </label>
+          <label class:disabled={viz.columnKey === null} title={viz.columnKey === null ? 'Choose columns first' : undefined}>
+            <input
+              type="radio"
+              name="counts"
+              checked={viz.counts === 'column'}
+              disabled={viz.columnKey === null}
+              onchange={() => (viz.counts = 'column')}
+            />
+            <span>
+              <strong>Show column %</strong>
+              <small>Each cell as a share of its column.</small>
+            </span>
+          </label>
+        {/if}
+      </section>
+    </Dropdown>
   {:else if open?.name === 'viewerColumns'}
     <ColumnPicker
       anchor={open.anchor}

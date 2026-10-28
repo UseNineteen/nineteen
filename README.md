@@ -40,7 +40,9 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
   it and press Alt + ↑/↓, to put rows in your own order, such as
   *Not at all satisfied → Extremely satisfied*. The alphabetical sort button (3) then shows a ★, and cycles A–Z → Z–A → ★ (your
   order). Each field keeps its own order until you open another file
-- **Counting:** The "Show counts" button (5) shows how many items are in each group
+- **Counting:** The "Show counts" menu (5) shows how many items are in each row, and in each cell and column of a split view.
+  It can show each cell as a percentage of its row (**Row %**) or of its column (**Column %**) instead; without columns, Row %
+  is each row's share of all data items. Column totals stay as counts, so the base of each percentage is on screen
 - **Splitting:** Once you've chosen a "color by" field, the "Split" button (6) separates each row into color bands
   (see "Split View and the Legend" below)
 - **Detailed viewer:** Hover over any item in the visualization to see all of the data from that row of your file (7):

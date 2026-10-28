@@ -811,7 +811,6 @@ footer li:first-child::before {
   padding: 0;
   text-align: left;
   white-space: nowrap;
-  width: 105px;
 }
 #tool-bar #toggle-counts .count-icon {
   color: var(--gray);
@@ -1376,14 +1375,14 @@ footer li:first-child::before {
   margin: 4px 15px 2px;
   text-transform: uppercase;
 }
-/* Find by: two choices with a line of explanation each, then how many closest data items to show */
-.dropdown .search-mode label {
+/* A menu of choices with a line of explanation each (Find by, Counts) */
+.dropdown .radio-menu label {
   line-height: 28px;
   max-width: 340px;
   padding: 2px 15px;
   white-space: normal;
 }
-.dropdown .search-mode label small {
+.dropdown .radio-menu label small {
   color: #7d838a;
   display: block;
   font-size: 12px;
@@ -2686,7 +2685,8 @@ footer li:first-child::before {
     margin-right: 14px;
     padding-left: 20px;
   }
-  #tool-bar #viewer-columns.dropdown-arrow::after {
+  #tool-bar #viewer-columns.dropdown-arrow::after,
+  #tool-bar #toggle-counts.dropdown-arrow::after {
     padding-left: 0.2em;
   }
   #tool-bar #tags-toggle,

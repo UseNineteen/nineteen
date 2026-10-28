@@ -1,5 +1,5 @@
 import { buildDataset, type Dataset, type ListSeparator } from './data';
-import type { SortBy, SortDirection } from './layout';
+import type { CountsMode, SortBy, SortDirection } from './layout';
 import type { TagEntry } from './tag-list';
 
 /**
@@ -31,7 +31,8 @@ export interface ViewState {
   groupKey: string;
   colorKey: string;
   automatic: boolean;
-  counts: boolean;
+  /** Views saved before percentages existed hold a boolean: true is 'count' */
+  counts: CountsMode | boolean;
   split: boolean;
   zoom: number;
   /** Optional so files saved before fit modes existed still open */

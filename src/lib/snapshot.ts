@@ -1,5 +1,5 @@
 import { datasetDetails } from './data';
-import { HEADER_ROW, LINE_HEIGHT, SWATCH, TOTAL_GAP, TURNED_MAX } from './band-labels';
+import { BAND, HEADER_ROW, LINE_HEIGHT, SWATCH, TOTAL_GAP, TURNED_MAX } from './band-labels';
 import { GEOMETRY, LEGEND, LEGEND_PITCH, legendWidth, rowTop } from './layout';
 import { wrapText } from './wrap';
 import type { Viz } from './viz.svelte';
@@ -175,15 +175,27 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     ctx.font = `400 ${font}px ${FONT}`;
     const totalWidth = header.total ? ctx.measureText(header.total).width + TOTAL_GAP : 0;
     ctx.font = `500 ${font}px ${FONT}`;
-    const room = header.width + header.cwidth - swatchWidth - totalWidth;
+    // As on screen, the total is the label's last word (drawn separately, in gray, after the last line)
+    const label = header.total ? `${text} ${header.total}` : text;
+    const room = header.width + header.cwidth - swatchWidth - (header.total ? BAND.totalMargin : 0);
     // Lines of text, bottom line last; the row's bottom edge is where the boxes begin
     let lines: string[];
     if (mode === 'turn') lines = [ellipsize(ctx, text, TURNED_MAX - swatchWidth - totalWidth)];
     else if (mode === 'wrap') {
-      const wrapped = wrapText(text, room, (t) => ctx.measureText(t).width, viz.headerLines);
+      const wrapped = wrapText(label, room, (t) => ctx.measureText(t).width, viz.headerLines);
       lines = wrapped.lines;
       if (!wrapped.complete) lines[lines.length - 1] = ellipsize(ctx, lines[lines.length - 1] + '…', room);
-    } else lines = [ellipsize(ctx, text, room)];
+    } else lines = [ellipsize(ctx, label, room)];
+    // Take the total off the last line, to draw it in its own color right after the text
+    let totalAfter = '';
+    if (header.total && mode !== 'turn') {
+      const last = lines[lines.length - 1];
+      const suffix = ` ${header.total}`;
+      if (last === header.total) lines[lines.length - 1] = '';
+      else if (last.endsWith(suffix)) lines[lines.length - 1] = last.slice(0, -suffix.length);
+      else lines[lines.length - 1] = ellipsize(ctx, last, room - totalWidth);
+      totalAfter = lines[lines.length - 1] ? ' ' : '';
+    }
 
     ctx.save();
     const bottom = plotTop + 20 + extra;
@@ -204,14 +216,10 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     ctx.fillStyle = '#47535e';
     lines.forEach((line, n) => ctx.fillText(line, swatchWidth, n * LINE_HEIGHT + size / 2));
     if (header.total) {
-      const lastWidth = ctx.measureText(lines[lines.length - 1]).width;
+      const lastWidth = ctx.measureText(lines[lines.length - 1] + totalAfter).width;
       ctx.font = `400 ${font}px ${FONT}`;
       ctx.fillStyle = '#a3a8ae';
-      ctx.fillText(
-        header.total,
-        swatchWidth + (mode === 'wrap' ? Math.max(...lines.map((l) => ctx.measureText(l).width)) : lastWidth) + TOTAL_GAP,
-        lastY + size / 2,
-      );
+      ctx.fillText(header.total, swatchWidth + lastWidth + (mode === 'turn' ? TOTAL_GAP : BAND.totalMargin), lastY + size / 2);
     }
     ctx.restore();
   }

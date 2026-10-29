@@ -82,12 +82,14 @@ export function decideBandLabels(
     const text = labelOf(header);
     const total = header.total ? measure(header.total, 400) + TOTAL_GAP : 0;
     longest = Math.max(longest, swatchWidth + measureLabel(text) + total);
-    const room = header.width * boxAspect + (header.cwidth - header.pad) - swatchWidth - total - 4;
-    const wrapped = wrapText(text, room, measureLabel, MAX_LINES);
+    // The total is the label's last word, so it wraps with the text and sits at the end of its last line
+    const label = header.total ? `${text} ${header.total}` : text;
+    const room = header.width * boxAspect + (header.cwidth - header.pad) - swatchWidth - (header.total ? BAND.totalMargin : 0) - 4;
+    const wrapped = wrapText(label, room, measureLabel, MAX_LINES);
     const tooNarrow = room <= 0 || wrapped.brokenWord || (!wrapped.complete && wrapped.shown < TURN_BELOW);
     // Extra width that would let it wrap in full (+2px for rounding)
-    const deficit = tooNarrow ? Math.ceil(minWrapWidth(text, measureLabel, MAX_LINES) - room + 2) : 0;
-    return { text, room, deficit, lines: wrapped.lines.length };
+    const deficit = tooNarrow ? Math.ceil(minWrapWidth(label, measureLabel, MAX_LINES) - room + 2) : 0;
+    return { text: label, room, deficit, lines: wrapped.lines.length };
   });
 
   const narrow = bands.filter((b) => b.deficit > 0).length;

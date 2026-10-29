@@ -1163,8 +1163,7 @@ footer li:first-child::before {
   line-height: calc(var(--band-line-height) * 1em / 13);
   white-space: normal;
 }
-#viewer .band-header.wrapped .band-swatch,
-#viewer .band-header.wrapped .band-total {
+#viewer .band-header.wrapped .band-swatch {
   margin-bottom: calc(3em / 13);
 }
 /* Turned labels (columns too narrow even to wrap): all at once, 90°, pivoting on the band's bottom-left corner */
@@ -1190,9 +1189,8 @@ footer li:first-child::before {
   width: calc(var(--band-swatch) * 1em / 13);
 }
 #viewer .band-total {
-  /* Like the legend and row counts; never trimmed, the value text gives way instead */
+  /* The label's last word, in the legend and row counts' gray, so it reads as this band's */
   color: var(--gray);
-  flex: 0 0 auto;
   font-weight: 400;
   margin-left: calc(var(--band-total-margin) * 1em / 13);
 }

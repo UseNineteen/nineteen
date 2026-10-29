@@ -605,8 +605,9 @@
                   {#if swatch}<span class="band-swatch" style:background-color={swatch.fill} style:border-color={swatch.stroke}
                     ></span>{/if}<span
                     class="band-text"
-                    style:-webkit-line-clamp={headerMode.mode === 'wrap' ? headerMode.lines : undefined}>{text}</span
-                  >{#if header.total}<span class="band-total">{header.total}</span>{/if}
+                    style:-webkit-line-clamp={headerMode.mode === 'wrap' ? headerMode.lines : undefined}
+                    >{text}{#if header.total}{' '}<span class="band-total">{header.total}</span>{/if}</span
+                  >
                 </div>
               </div>
             {/each}

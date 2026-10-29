@@ -177,7 +177,7 @@ export async function renderSnapshot(viz: Viz): Promise<Blob> {
     ctx.font = `500 ${font}px ${FONT}`;
     // As on screen, the total is the label's last word (drawn separately, in gray, after the last line)
     const label = header.total ? `${text} ${header.total}` : text;
-    const room = header.width + header.cwidth - swatchWidth - (header.total ? BAND.totalMargin : 0);
+    const room = header.width + header.cwidth - swatchWidth - BAND.endPad;
     // Lines of text, bottom line last; the row's bottom edge is where the boxes begin
     let lines: string[];
     if (mode === 'turn') lines = [ellipsize(ctx, text, TURNED_MAX - swatchWidth - totalWidth)];

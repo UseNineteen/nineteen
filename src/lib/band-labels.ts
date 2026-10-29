@@ -48,6 +48,8 @@ export const BAND = {
   totalMargin: 4,
   /** Line height of wrapped labels (.band-text) */
   lineHeight: LINE_HEIGHT,
+  /** Air at the end of each label, before the next band's (.band-label padding-right) */
+  endPad: 12,
 } as const;
 /** The swatch with its gap: where the text starts */
 export const SWATCH = BAND.swatch + BAND.gap;
@@ -84,7 +86,7 @@ export function decideBandLabels(
     longest = Math.max(longest, swatchWidth + measureLabel(text) + total);
     // The total is the label's last word, so it wraps with the text and sits at the end of its last line
     const label = header.total ? `${text} ${header.total}` : text;
-    const room = header.width * boxAspect + (header.cwidth - header.pad) - swatchWidth - (header.total ? BAND.totalMargin : 0) - 4;
+    const room = header.width * boxAspect + (header.cwidth - header.pad) - swatchWidth - BAND.endPad - 4;
     const wrapped = wrapText(label, room, measureLabel, MAX_LINES);
     const tooNarrow = room <= 0 || wrapped.brokenWord || (!wrapped.complete && wrapped.shown < TURN_BELOW);
     // Extra width that would let it wrap in full (+2px for rounding)

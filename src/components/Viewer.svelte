@@ -302,6 +302,7 @@
   style:--band-swatch={BAND.swatch}
   style:--band-total-margin={BAND.totalMargin}
   style:--band-line-height={BAND.lineHeight}
+  style:--band-end-pad={BAND.endPad}
 >
   <form id="tool-bar" onsubmit={(e) => e.preventDefault()} aria-label="Visualization tools">
     <button

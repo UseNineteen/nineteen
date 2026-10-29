@@ -485,6 +485,17 @@ describe('custom value order', () => {
     expect(computeLayout(dataset.items, { ...base, legendOrder: scale }).legend.map((g) => g.label)).toEqual(scale);
   });
 
+  it('orders the boxes within a row by the legend order too', () => {
+    const items = buildDataset('t.csv', [
+      { P: 'a', S: 'y' },
+      { P: 'a', S: 'x' },
+      { P: 'a', S: 'z' },
+    ]).items;
+    const options = { rowKey: 'P', columnKey: null, colorKey: 'S', counts: 'none', sortBy: 'value', sortDirection: 'ascending' } as const;
+    expect(computeLayout(items, options).items.map((i) => i.raw.S)).toEqual(['x', 'y', 'z']);
+    expect(computeLayout(items, { ...options, legendOrder: ['z', 'x', 'y'] }).items.map((i) => i.raw.S)).toEqual(['z', 'x', 'y']);
+  });
+
   it('puts values the order does not mention after it, in their natural order', () => {
     const layout = computeLayout(dataset.items, { ...base, legendOrder: ['Satisfied'] });
     expect(layout.legend.map((g) => g.label)).toEqual(['Satisfied', 'Extremely satisfied', 'Not at all satisfied', 'Not satisfied']);

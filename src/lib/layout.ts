@@ -187,10 +187,22 @@ export function computeLayout(all: DataItem[], options: LayoutOptions): Layout {
   const split = columnKey !== null;
   const counts: CountsMode = options.counts === 'column' && !split ? 'count' : options.counts;
   const showCounts = counts !== 'none';
-  const keys = [rowKey, columnKey, colorKey].filter((k): k is string => k !== null);
-  const items = [...all].sort(itemComparator(...keys));
+  const placeKeys = [rowKey, columnKey].filter((k): k is string => k !== null);
+  /** By row and column values only (ties stay ties, unlike itemComparator, which falls back to file order) */
+  const byPlace = (a: DataItem, b: DataItem) => {
+    for (const key of placeKeys) {
+      const order = compareValues(a.parsed[key], b.parsed[key]);
+      if (order) return order;
+    }
+    return 0;
+  };
+  const legend = sortGroups(rollup([...all].sort(itemComparator(colorKey)), colorKey), 'custom', 'ascending', options.legendOrder);
+  // Within a row (or cell), boxes follow the legend's order, dragged or natural
+  const colorRank = new Map(legend.map((g, i) => [g.label, i]));
+  const items = [...all].sort(
+    (a, b) => byPlace(a, b) || (colorRank.get(a.raw[colorKey]) ?? 0) - (colorRank.get(b.raw[colorKey]) ?? 0) || a.id - b.id,
+  );
   const groups = rowKey ? sortGroups(rollup(items, rowKey), options.sortBy, options.sortDirection, options.rowOrder) : [];
-  const legend = sortGroups(rollup(items, colorKey), 'custom', 'ascending', options.legendOrder);
   // Bands keep their values' (or dragged) order; without rows, the sort buttons order them instead
   const bands = split
     ? rowKey

@@ -1192,7 +1192,6 @@ footer li:first-child::before {
   /* The label's last word, in the legend and row counts' gray, so it reads as this band's */
   color: var(--gray);
   font-weight: 400;
-  margin-left: calc(var(--band-total-margin) * 1em / 13);
 }
 #viewer .row.row-header,
 #viewer .row.row-plain {

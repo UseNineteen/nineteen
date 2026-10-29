@@ -606,7 +606,7 @@
                     ></span>{/if}<span
                     class="band-text"
                     style:-webkit-line-clamp={headerMode.mode === 'wrap' ? headerMode.lines : undefined}
-                    >{text}{#if header.total}&#32;<span class="band-total">{header.total}</span>{/if}</span
+                    >{text}{#if header.total}<span class="band-total">{` ${header.total}`}</span>{/if}</span
                   >
                 </div>
               </div>

@@ -159,23 +159,24 @@
     {#if !appSettings.classic}
       <fieldset>
         <legend>Find by meaning</legend>
+        <p class="settings-hint">Which language model judges meaning:</p>
         {#each Object.values(MODELS) as model (model.id)}
           <label class="settings-check">
             <input type="radio" name="meaning-model" value={model.id} bind:group={appSettings.meaningModel} />
             <span>
               <strong>{model.label}</strong>
               <small>
-                {model.languages[0].toUpperCase() + model.languages.slice(1)}. Download: about {downloadSize(model, 'fp16')} MB, or {downloadSize(
+                {model.languages[0].toUpperCase() + model.languages.slice(1)}. Download size: {downloadSize(model, 'fp16')} MB, or {downloadSize(
                   model,
                   'q8',
-                )} MB where it runs without the graphics card.
+                )} MB for the slower non-GPU version.
               </small>
             </span>
           </label>
         {/each}
         <p class="settings-hint">
-          The model is downloaded from Hugging Face the first time you find by meaning, after asking you, and kept by your browser. It reads
-          your data on your own computer; nothing is sent anywhere.
+          The model you choose is downloaded from Hugging Face the first time you find by meaning, after asking you, and kept by your
+          browser. It reads your data on your own computer; nothing is sent anywhere.
         </p>
         <p class="settings-hint">
           {#if downloads.length}

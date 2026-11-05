@@ -47,7 +47,8 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 - **Splitting:** Once you've chosen a "color by" field, the "Split" button (6) separates each row into color bands
   (see "Split View and the Legend" below)
 - **Detailed viewer:** Hover over any item in the visualization to see all of the data from that row of your file (7):
-	- Click the item to pin its viewer open (click it again to un-pin it)
+	- Click the item to pin its viewer open (click it again to un-pin it). The viewer also stays open while your pointer is inside it,
+	  and using a control in it (adding a tag, Find similar) pins it
 	- You can have several viewers open at once. Drag them by their title bar to arrange them, and drag the corner to resize them
 	- The "Show in viewer" menu (12) controls which fields the viewer shows
 	- Links in your data become clickable, and links to images are shown as images
@@ -69,7 +70,7 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
   matched: its rank ("#3 closest in meaning") and the sentence it matched by, which is highlighted, or "Contains" for a phrase hit:
 	- Nineteen shows the 20 closest data items. In the "by meaning" menu, change that number, or show every data item with at
 	  least a chosen similarity score (0 to 1; the viewer shows each match's score, and the menu suggests a cut-off for the model)
-	- **Find similar** in a pinned viewer finds the data items closest in meaning to that one. Each match's viewer names the pair of
+	- **Find similar** in a viewer finds the data items closest in meaning to that one. Each match's viewer names the pair of
 	  sentences that are closest: its own, and the one in the original it is like
 	- Meaning is judged by a small language model that runs inside your browser. The first time, Nineteen asks before your browser
 	  downloads it (about 70 MB) from Hugging Face; it is kept for next time, and Settings can remove it. Your data never leaves your
@@ -82,7 +83,7 @@ Nineteen never changes your data, so feel free to explore the interface. Additio
 - **Settings (13)**, **Analyze with AI (14)** and **Manage tags (16)** are described below
 
 ### Tagging Your Data
-Pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
+Hover over or pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
 or click × to remove one. The tag box stays at the top of the viewer while you scroll through a long entry, so you can tag as you
 read. Tags are kept in a "Tags" field, created the first time you tag a data item and sorted alphabetically, so they are saved with
 your spreadsheet, CSV and HTML downloads.

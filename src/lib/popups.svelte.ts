@@ -5,7 +5,8 @@
  * Clicking the block again un-pins it.
  */
 
-export const POPUP = { width: 340, height: 450, hideDelay: 50 } as const;
+/** hideDelay: long enough to move the pointer from the box into its viewer (which keeps it open) */
+export const POPUP = { width: 340, height: 450, hideDelay: 160 } as const;
 
 export interface PopupState {
   key: number;

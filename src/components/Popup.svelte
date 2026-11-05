@@ -63,6 +63,11 @@
   function dragEnd() {
     dragging = null;
   }
+
+  /** A hover viewer becomes pinned when one of its controls is used, so it stays put */
+  function pin() {
+    if (!popup.floating) popups.toggleFloating(item.id);
+  }
 </script>
 
 <!-- prettier-ignore -->
@@ -84,9 +89,14 @@
   <!-- svelte-ignore a11y_no_static_element_interactions (pointer drag handle for pinned popups) -->
   <header onpointerdown={dragStart} onpointermove={dragMove} onpointerup={dragEnd} onpointercancel={dragEnd}>
     <strong>File row {item.id}</strong>
-    {#if popup.floating && canMeaning && viz.similarTo !== item.id}
-      <button class="find-similar" title="Show the data items closest in meaning to this one" onclick={() => viz.findSimilar(item.id)}
-        >Find similar</button
+    {#if canMeaning && viz.similarTo !== item.id}
+      <button
+        class="find-similar"
+        title="Show the data items closest in meaning to this one"
+        onclick={() => {
+          pin();
+          viz.findSimilar(item.id);
+        }}>Find similar</button
       >
     {/if}
     <button class="close" aria-label="Close" onclick={() => popups.close(popup.key)}>&times;</button>
@@ -110,13 +120,14 @@
         {/if}
       </p>
     {/if}
-    {#if !classic && (popup.floating || tags.length)}
-      <div class="popup-tags popup-tags-pinned">
+    {#if !classic}
+      <!-- Tagging works from the hover viewer too; the first touch pins it, so the viewer stays while you type -->
+      <div class="popup-tags popup-tags-pinned" onfocusin={pin}>
         <strong>{tagColumn}</strong>
         <TagEditor
           id="tags-{popup.key}"
           {tags}
-          editable={popup.floating}
+          editable
           suggestions={viz.tagEntries.map((t) => ({ label: t.label, description: t.description }))}
           separator={viz.separatorOf(tagColumn)}
           onchange={(next) => viz.setTags(item.id, next)}

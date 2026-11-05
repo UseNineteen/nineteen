@@ -67,7 +67,8 @@ the legend</em> adds each color&#39;s count, or its share of all data items, to 
 <li><strong>Splitting:</strong> Once you&#39;ve chosen a &quot;color by&quot; field, the &quot;Split&quot; button (6) separates each row into color bands
 (see &quot;Split View and the Legend&quot; below)</li>
 <li><strong>Detailed viewer:</strong> Hover over any item in the visualization to see all of the data from that row of your file (7):<ul>
-<li>Click the item to pin its viewer open (click it again to un-pin it)</li>
+<li>Click the item to pin its viewer open (click it again to un-pin it). The viewer also stays open while your pointer is inside it,
+and using a control in it (adding a tag, Find similar) pins it</li>
 <li>You can have several viewers open at once. Drag them by their title bar to arrange them, and drag the corner to resize them</li>
 <li>The &quot;Show in viewer&quot; menu (12) controls which fields the viewer shows</li>
 <li>Links in your data become clickable, and links to images are shown as images</li>
@@ -95,7 +96,7 @@ and the search works <strong>by meaning</strong>. Then a search like
 matched: its rank (&quot;#3 closest in meaning&quot;) and the sentence it matched by, which is highlighted, or &quot;Contains&quot; for a phrase hit:<ul>
 <li>Nineteen shows the 20 closest data items. In the &quot;by meaning&quot; menu, change that number, or show every data item with at
 least a chosen similarity score (0 to 1; the viewer shows each match&#39;s score, and the menu suggests a cut-off for the model)</li>
-<li><strong>Find similar</strong> in a pinned viewer finds the data items closest in meaning to that one. Each match&#39;s viewer names the pair of
+<li><strong>Find similar</strong> in a viewer finds the data items closest in meaning to that one. Each match&#39;s viewer names the pair of
 sentences that are closest: its own, and the one in the original it is like</li>
 <li>Meaning is judged by a small language model that runs inside your browser. The first time, Nineteen asks before your browser
 downloads it (about 70 MB) from Hugging Face; it is kept for next time, and Settings can remove it. Your data never leaves your
@@ -110,7 +111,7 @@ browser. A model for English is the default; Settings offers a multilingual one 
 <li><strong>Settings (13)</strong>, <strong>Analyze with AI (14)</strong> and <strong>Manage tags (16)</strong> are described below</li>
 </ul>
 <h3>Tagging Your Data</h3>
-<p>Pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
+<p>Hover over or pin a viewer (click an item) to tag that data item (A). Type a tag and press Enter or a comma, pick an existing tag from the suggestions,
 or click × to remove one. The tag box stays at the top of the viewer while you scroll through a long entry, so you can tag as you
 read. Tags are kept in a &quot;Tags&quot; field, created the first time you tag a data item and sorted alphabetically, so they are saved with
 your spreadsheet, CSV and HTML downloads.</p>

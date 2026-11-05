@@ -1,4 +1,4 @@
-import { PROVIDERS, type ProviderId } from './providers';
+import { PROVIDERS, preferredOpenAIModel, type ProviderId } from './providers';
 
 /**
  * AI provider settings. API keys are kept in memory only, unless the user
@@ -39,8 +39,70 @@ class AISettings {
     }
   }
 
+  /** Models the provider listed for the key (filled by a check) */
+  modelLists = $state<Record<ProviderId, string[]>>({ anthropic: [], openai: [] });
+  /** The last check's outcome for the current provider */
+  status = $state<{ text: string; error: boolean } | null>(null);
+  checking = $state(false);
+  #checkTimer: ReturnType<typeof setTimeout> | null = null;
+  #checkRun = 0;
+
   get key(): string {
     return this.keys[this.provider].trim();
+  }
+
+  setProvider(id: ProviderId): void {
+    this.provider = id;
+    this.status = null;
+    this.persist();
+    if (this.key) this.check();
+  }
+
+  /** A check a moment after the key was typed or pasted, so it is validated as soon as it is entered */
+  scheduleCheck(): void {
+    if (this.#checkTimer) clearTimeout(this.#checkTimer);
+    this.status = null;
+    this.#checkTimer = setTimeout(() => this.check(), 700);
+  }
+
+  /** Asks the provider for its model list with the key: a connection test that sends no data */
+  async check(): Promise<void> {
+    if (this.#checkTimer) clearTimeout(this.#checkTimer);
+    this.#checkTimer = null;
+    if (!this.key) {
+      this.status = null;
+      return;
+    }
+    const run = ++this.#checkRun;
+    const id = this.provider;
+    const provider = PROVIDERS[id];
+    this.checking = true;
+    this.status = null;
+    try {
+      const list = await provider.listModels(this.key);
+      if (run !== this.#checkRun) return;
+      this.modelLists[id] = list;
+      const model = this.models[id].trim();
+      if (!model) {
+        this.models[id] =
+          id === 'openai' ? preferredOpenAIModel(list) : list.includes(provider.defaultModel) ? provider.defaultModel : (list[0] ?? '');
+        this.status = { text: 'Key works.', error: false };
+      } else if (!list.includes(model)) {
+        // A typed model is kept: aliases such as "claude-opus-5-5" work for requests without appearing in the list
+        this.status = {
+          text: `Key works. “${model}” isn’t in ${provider.company}’s model list; it stays in case it’s an alias.`,
+          error: false,
+        };
+      } else {
+        this.status = { text: 'Key works.', error: false };
+      }
+      this.persist();
+    } catch (error) {
+      if (run !== this.#checkRun) return;
+      this.status = { text: (error as Error).message, error: true };
+    } finally {
+      if (run === this.#checkRun) this.checking = false;
+    }
   }
 
   get model(): string {

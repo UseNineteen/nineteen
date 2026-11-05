@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import Modal from './Modal.svelte';
+  import ProviderSettings from './ai/ProviderSettings.svelte';
   import type { FitMode } from '../lib/persist';
   import { cachedDownloads, downloadSize, MODELS, removeDownloads, type Download } from '../lib/semantic/models';
   import { BOX_LIMITS, DEFAULTS, appSettings } from '../lib/settings.svelte';
@@ -9,10 +10,12 @@
   interface Props {
     viz: Viz;
     open: boolean;
+    /** A section (element id) to scroll into view when the dialog opens */
+    section?: string | null;
     onclose: () => void;
   }
 
-  let { viz, open, onclose }: Props = $props();
+  let { viz, open, section = null, onclose }: Props = $props();
 
   /** Values when the dialog opened; restored when it is dismissed without saving */
   let saved = appSettings.snapshot();
@@ -44,6 +47,10 @@
     if (!open) return;
     removed = false;
     cachedDownloads().then((list) => (downloads = list));
+    if (section) {
+      const id = section;
+      setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }), 0);
+    }
     untrack(() => {
       saved = appSettings.snapshot();
       savedView = {
@@ -188,6 +195,11 @@
             No model downloaded yet.
           {/if}
         </p>
+      </fieldset>
+      <fieldset id="settings-ai">
+        <legend>AI connection</legend>
+        <p class="settings-hint">For Ask and Auto-code in Analyze with AI. These take effect at once; Save and Cancel don't change them.</p>
+        <ProviderSettings />
       </fieldset>
     {/if}
 

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import Answer from './Answer.svelte';
-  import ProviderSettings from './ProviderSettings.svelte';
   import {
     acceptCodings,
     batches,
@@ -30,9 +29,11 @@
     viz: Viz;
     popups: Popups;
     onclose: () => void;
+    /** Opens Settings at the AI connection section */
+    onsettings: () => void;
   }
 
-  let { viz, popups, onclose }: Props = $props();
+  let { viz, popups, onclose, onsettings }: Props = $props();
 
   type Tab = 'copy' | 'ask' | 'code';
   let tab = $state<Tab>('copy');
@@ -351,6 +352,22 @@
   <div class="ai-body">
     <!-- What this tab does, before any of its controls -->
     <section class="ai-section ai-intro" aria-live="polite">
+      {#if tab !== 'copy'}
+        <!-- The connection, first: set up in Settings -->
+        <p class="ai-connection" class:ai-connection-off={!aiSettings.ready}>
+          {#if aiSettings.ready}
+            Using <strong>{provider.label}</strong> · <code>{aiSettings.model}</code>
+            {#if aiSettings.checking}
+              · <span class="ai-status">checking the key…</span>
+            {:else if aiSettings.status?.error}
+              · <span class="ai-status error">{aiSettings.status.text}</span>
+            {/if}
+            · <button type="button" class="link-button" onclick={onsettings}>Change in Settings</button>
+          {:else}
+            No AI connection yet. <button type="button" class="link-button" onclick={onsettings}>Set one up in Settings</button>
+          {/if}
+        </p>
+      {/if}
       {#if tab === 'copy'}
         <p>
           Build a prompt with your data and paste it into Claude, ChatGPT, or any AI assistant you already use.
@@ -430,163 +447,148 @@
           <pre>{preview}</pre>
         </details>
       </section>
-    {:else}
-      <section class="ai-section">
-        <details class="ai-provider" open={!aiSettings.ready}>
-          <summary>
-            {#if aiSettings.ready}
-              Using {provider.label} · <code>{aiSettings.model}</code>
-            {:else}
-              Connect your {provider.company} account
-            {/if}
-          </summary>
-          <ProviderSettings />
-        </details>
-      </section>
-
-      {#if tab === 'ask'}
-        <section class="ai-section ai-ask">
-          {#if turns.length === 0 && !asking}
-            <p class="ai-hint">Ask a question about the shared data, or start with:</p>
-            <div class="ai-chips">
-              {#each TEMPLATES.filter((t) => t.id !== 'custom') as t (t.id)}
-                <button type="button" class="ai-chip" disabled={!aiSettings.ready} onclick={() => ask(t.build(view))}>{t.label}</button>
-              {/each}
-            </div>
-          {/if}
-
-          <div class="ai-conversation" bind:this={conversationEl} aria-live="polite">
-            {#each turns as turn, i (i)}
-              {#if turn.role === 'user'}
-                <div class="ai-question">{turn.content}</div>
-              {:else if turn.error}
-                <p class="ai-error" role="alert">{turn.content}</p>
-              {:else}
-                {@const rows = citedRows(turn.content)}
-                <Answer text={turn.content} oncite={cite} />
-                <div class="ai-answer-tools">
-                  {#if rows.length > 1}
-                    <button type="button" class="link-button" onclick={() => cite(rows)}>Highlight all {rows.length} cited rows</button>
-                  {/if}
-                  <button type="button" class="link-button" onclick={() => navigator.clipboard.writeText(turn.content)}>Copy answer</button>
-                </div>
-              {/if}
+    {:else if tab === 'ask'}
+      <section class="ai-section ai-ask">
+        {#if turns.length === 0 && !asking}
+          <p class="ai-hint">Ask a question about the shared data, or start with:</p>
+          <div class="ai-chips">
+            {#each TEMPLATES.filter((t) => t.id !== 'custom') as t (t.id)}
+              <button type="button" class="ai-chip" disabled={!aiSettings.ready} onclick={() => ask(t.build(view))}>{t.label}</button>
             {/each}
-            {#if asking}
-              {#if streaming}
-                <Answer text={streaming} oncite={cite} />
-              {:else}
-                <p class="ai-hint ai-thinking">Thinking…</p>
-              {/if}
-            {/if}
           </div>
+        {/if}
 
-          <form
-            class="ai-compose"
-            onsubmit={(e) => {
-              e.preventDefault();
-              ask(question);
-            }}
-          >
-            <textarea
-              rows="3"
-              bind:value={question}
-              placeholder={aiSettings.ready ? 'Ask about your data…' : 'Add an API key above to ask questions'}
-              disabled={!aiSettings.ready}
-              aria-label="Question"
-              onkeydown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  ask(question);
-                }
-              }}
-            ></textarea>
-            <div class="ai-row">
-              {#if asking}
-                <button type="button" class="btn" onclick={stopAsk}>Stop</button>
-              {:else}
-                <button type="submit" class="btn btn-primary" disabled={!aiSettings.ready || !question.trim()}>Send</button>
-              {/if}
-              {#if turns.length}
-                <button type="button" class="link-button" onclick={clearConversation}>New conversation</button>
-              {/if}
-            </div>
-            <p class="ai-hint">
-              Each question sends the shared data ({formatTokens(tokens)}) to {provider.company}. Answers can be wrong, so check them
-              against the cited rows.
-            </p>
-          </form>
-        </section>
-      {:else}
-        <section class="ai-section ai-code">
-          <label class="ai-field">
-            <span class="ai-label">What are you coding for? (optional)</span>
-            <input type="text" bind:value={goal} placeholder="e.g. Why people did or didn’t buy" />
-          </label>
-          <label class="ai-field">
-            <span class="ai-label">Categories (one per line, optionally “Name: definition”)</span>
-            <textarea rows="6" bind:value={categoryText} placeholder={CATEGORY_PLACEHOLDER}></textarea>
-          </label>
-          <div class="ai-row">
-            <button type="button" class="btn" disabled={!aiSettings.ready || busy} onclick={suggest}>Suggest categories</button>
-            <span class="ai-hint">{categories.length} categories + “{UNCODED}”</span>
-          </div>
-          <label class="ai-field">
-            <span class="ai-label">New field name</span>
-            <input type="text" bind:value={columnName} />
-          </label>
-          <label class="ai-check">
-            <input type="checkbox" bind:checked={includeReasons} />
-            <span>Also add a field with the AI’s reason for each data item</span>
-          </label>
-          {#if replaces.length}
-            <p class="ai-hint ai-warning" role="status">
-              <strong>Replaces {replaces.map((c) => `“${c}”`).join(' and ')}.</strong>
-              Every value now in {replaces.length === 1 ? 'that field' : 'those fields'} will be overwritten. Choose another name to keep
-              {replaces.length === 1 ? 'it' : 'them'}.
-            </p>
-          {/if}
-          <div class="ai-row">
-            {#if coding}
-              <button type="button" class="btn" onclick={stopCoding}>Stop</button>
+        <div class="ai-conversation" bind:this={conversationEl} aria-live="polite">
+          {#each turns as turn, i (i)}
+            {#if turn.role === 'user'}
+              <div class="ai-question">{turn.content}</div>
+            {:else if turn.error}
+              <p class="ai-error" role="alert">{turn.content}</p>
             {:else}
-              <button
-                type="button"
-                class="btn btn-primary"
-                disabled={!aiSettings.ready || !categories.length || !columnName.trim() || busy}
-                onclick={runCoding}>{replaces.length ? 'Replace and code' : 'Code'} {items.length} data items</button
-              >
+              {@const rows = citedRows(turn.content)}
+              <Answer text={turn.content} oncite={cite} />
+              <div class="ai-answer-tools">
+                {#if rows.length > 1}
+                  <button type="button" class="link-button" onclick={() => cite(rows)}>Highlight all {rows.length} cited rows</button>
+                {/if}
+                <button type="button" class="link-button" onclick={() => navigator.clipboard.writeText(turn.content)}>Copy answer</button>
+              </div>
+            {/if}
+          {/each}
+          {#if asking}
+            {#if streaming}
+              <Answer text={streaming} oncite={cite} />
+            {:else}
+              <p class="ai-hint ai-thinking">Thinking…</p>
+            {/if}
+          {/if}
+        </div>
+
+        <form
+          class="ai-compose"
+          onsubmit={(e) => {
+            e.preventDefault();
+            ask(question);
+          }}
+        >
+          <textarea
+            rows="3"
+            bind:value={question}
+            placeholder={aiSettings.ready ? 'Ask about your data…' : 'Add an API key in Settings to ask questions'}
+            disabled={!aiSettings.ready}
+            aria-label="Question"
+            onkeydown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                ask(question);
+              }
+            }}
+          ></textarea>
+          <div class="ai-row">
+            {#if asking}
+              <button type="button" class="btn" onclick={stopAsk}>Stop</button>
+            {:else}
+              <button type="submit" class="btn btn-primary" disabled={!aiSettings.ready || !question.trim()}>Send</button>
+            {/if}
+            {#if turns.length}
+              <button type="button" class="link-button" onclick={clearConversation}>New conversation</button>
             {/if}
           </div>
-          {#if coding}
-            <div class="ai-progress" role="status">
-              <span>{coding.label} {coding.total > 1 ? `${coding.done} of ${coding.total} batches` : ''}</span>
-              <div class="progress-bar"><div class="progress-bar-fill" style:width="{(coding.done / coding.total) * 100}%"></div></div>
-            </div>
-          {/if}
-          {#if codeError}
-            <p class="ai-error" role="alert">{codeError}</p>
-          {/if}
-          {#if codeResult}
-            <div class="ai-result" role="status">
-              <p>
-                <strong>Added “{codeResult.column}”</strong>: {codeResult.coded} of {codeResult.total} data items coded{codeResult.partial
-                  ? ' (stopped early)'
-                  : ''}. The view is now color-coded by it.
-              </p>
-              <ul>
-                {#each codeResult.counts as [name, count] (name)}
-                  <li><span>{name}</span> <span class="text-muted">{count}</span></li>
-                {/each}
-              </ul>
-              <p class="ai-hint">AI coding can be wrong. Hover over items to check the reason given for each row.</p>
-            </div>
-          {/if}
           <p class="ai-hint">
-            Sends the shared fields of every data item ({formatTokens(tokens)} in total, split into batches) to {provider.company}.
+            Each question sends the shared data ({formatTokens(tokens)}) to {provider.company}. Answers can be wrong, so check them against
+            the cited rows.
           </p>
-        </section>
-      {/if}
+        </form>
+      </section>
+    {:else}
+      <section class="ai-section ai-code">
+        <label class="ai-field">
+          <span class="ai-label">What are you coding for? (optional)</span>
+          <input type="text" bind:value={goal} placeholder="e.g. Why people did or didn’t buy" />
+        </label>
+        <label class="ai-field">
+          <span class="ai-label">Categories (one per line, optionally “Name: definition”)</span>
+          <textarea rows="6" bind:value={categoryText} placeholder={CATEGORY_PLACEHOLDER}></textarea>
+        </label>
+        <div class="ai-row">
+          <button type="button" class="btn" disabled={!aiSettings.ready || busy} onclick={suggest}>Suggest categories</button>
+          <span class="ai-hint">{categories.length} categories + “{UNCODED}”</span>
+        </div>
+        <label class="ai-field">
+          <span class="ai-label">New field name</span>
+          <input type="text" bind:value={columnName} />
+        </label>
+        <label class="ai-check">
+          <input type="checkbox" bind:checked={includeReasons} />
+          <span>Also add a field with the AI’s reason for each data item</span>
+        </label>
+        {#if replaces.length}
+          <p class="ai-hint ai-warning" role="status">
+            <strong>Replaces {replaces.map((c) => `“${c}”`).join(' and ')}.</strong>
+            Every value now in {replaces.length === 1 ? 'that field' : 'those fields'} will be overwritten. Choose another name to keep
+            {replaces.length === 1 ? 'it' : 'them'}.
+          </p>
+        {/if}
+        <div class="ai-row">
+          {#if coding}
+            <button type="button" class="btn" onclick={stopCoding}>Stop</button>
+          {:else}
+            <button
+              type="button"
+              class="btn btn-primary"
+              disabled={!aiSettings.ready || !categories.length || !columnName.trim() || busy}
+              onclick={runCoding}>{replaces.length ? 'Replace and code' : 'Code'} {items.length} data items</button
+            >
+          {/if}
+        </div>
+        {#if coding}
+          <div class="ai-progress" role="status">
+            <span>{coding.label} {coding.total > 1 ? `${coding.done} of ${coding.total} batches` : ''}</span>
+            <div class="progress-bar"><div class="progress-bar-fill" style:width="{(coding.done / coding.total) * 100}%"></div></div>
+          </div>
+        {/if}
+        {#if codeError}
+          <p class="ai-error" role="alert">{codeError}</p>
+        {/if}
+        {#if codeResult}
+          <div class="ai-result" role="status">
+            <p>
+              <strong>Added “{codeResult.column}”</strong>: {codeResult.coded} of {codeResult.total} data items coded{codeResult.partial
+                ? ' (stopped early)'
+                : ''}. The view is now color-coded by it.
+            </p>
+            <ul>
+              {#each codeResult.counts as [name, count] (name)}
+                <li><span>{name}</span> <span class="text-muted">{count}</span></li>
+              {/each}
+            </ul>
+            <p class="ai-hint">AI coding can be wrong. Hover over items to check the reason given for each row.</p>
+          </div>
+        {/if}
+        <p class="ai-hint">
+          Sends the shared fields of every data item ({formatTokens(tokens)} in total, split into batches) to {provider.company}.
+        </p>
+      </section>
     {/if}
   </div>
 

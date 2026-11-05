@@ -54,6 +54,8 @@
   });
   let aiOpen = $state(false);
   let settingsOpen = $state(false);
+  /** The Settings section to scroll to when opened from elsewhere (the AI panel's connection link) */
+  let settingsSection = $state<string | null>(null);
   /** Column whose List display options dialog is open */
   let tagOptionsFor = $state<string | null>(null);
   // Both panels are mounted on first open, then kept (hidden) so a conversation, an Undo message
@@ -236,6 +238,7 @@
         aria-expanded={settingsOpen}
         onclick={() => {
           close();
+          settingsSection = null;
           settingsOpen = true;
         }}>Settings</button
       >
@@ -263,7 +266,16 @@
           {/if}
           {#if aiMounted}
             <div class="side-dock" hidden={!aiOpen}>
-              <AIPanel {viz} {popups} onclose={() => (aiOpen = false)} />
+              <AIPanel
+                {viz}
+                {popups}
+                onclose={() => (aiOpen = false)}
+                onsettings={() => {
+                  close();
+                  settingsSection = 'settings-ai';
+                  settingsOpen = true;
+                }}
+              />
             </div>
           {/if}
         {/snippet}
@@ -571,7 +583,7 @@
   {/if}
 
   <TagOptions {viz} column={tagOptionsFor} onclose={() => (tagOptionsFor = null)} />
-  <SettingsDialog {viz} open={settingsOpen} onclose={() => (settingsOpen = false)} />
+  <SettingsDialog {viz} open={settingsOpen} section={settingsSection} onclose={() => (settingsOpen = false)} />
 
   <div id="popups">
     {#each popups.list as popup (popup.key)}

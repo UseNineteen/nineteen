@@ -1,47 +1,11 @@
 <script lang="ts">
-  import { PROVIDERS, preferredOpenAIModel, type ProviderId } from '../../lib/ai/providers';
+  import { PROVIDERS } from '../../lib/ai/providers';
   import { aiSettings } from '../../lib/ai/settings.svelte';
 
-  let models = $state<Record<ProviderId, string[]>>({ anthropic: [], openai: [] });
-  let status = $state<{ text: string; error: boolean } | null>(null);
-  let checking = $state(false);
-
   const provider = $derived(PROVIDERS[aiSettings.provider]);
-
-  async function check() {
-    if (!aiSettings.key) return;
-    checking = true;
-    status = null;
-    const id = aiSettings.provider;
-    try {
-      const list = await provider.listModels(aiSettings.key);
-      models[id] = list;
-      const model = aiSettings.models[id].trim();
-      if (!model) {
-        aiSettings.models[id] =
-          id === 'openai' ? preferredOpenAIModel(list) : list.includes(provider.defaultModel) ? provider.defaultModel : (list[0] ?? '');
-        status = { text: 'Key works.', error: false };
-      } else if (!list.includes(model)) {
-        // A typed model is kept: aliases such as "claude-opus-5-5" work for requests without appearing in the list
-        status = { text: `Key works. “${model}” isn’t in ${provider.company}’s model list; it stays in case it’s an alias.`, error: false };
-      } else {
-        status = { text: 'Key works.', error: false };
-      }
-      aiSettings.persist();
-    } catch (error) {
-      status = { text: (error as Error).message, error: true };
-    } finally {
-      checking = false;
-    }
-  }
-
-  function changeProvider(id: ProviderId) {
-    aiSettings.provider = id;
-    status = null;
-    aiSettings.persist();
-  }
 </script>
 
+<!-- The AI connection: provider, key, model. Lives in Settings; the key is checked as soon as it is entered. -->
 <div class="ai-settings">
   <div class="ai-field">
     <span class="ai-label">AI provider</span>
@@ -52,7 +16,7 @@
           role="radio"
           aria-checked={aiSettings.provider === p.id}
           class:active={aiSettings.provider === p.id}
-          onclick={() => changeProvider(p.id)}>{p.label} <small>({p.company})</small></button
+          onclick={() => aiSettings.setProvider(p.id)}>{p.label} <small>({p.company})</small></button
         >
       {/each}
     </div>
@@ -66,12 +30,13 @@
       spellcheck="false"
       placeholder="{provider.keyPrefix}…"
       bind:value={aiSettings.keys[aiSettings.provider]}
-      onchange={check}
+      oninput={() => aiSettings.scheduleCheck()}
+      onchange={() => aiSettings.check()}
     />
   </label>
   <p class="ai-hint">
     <a href={provider.keyUrl} target="_blank" rel="noopener noreferrer">Get a key from {provider.company}</a>. Usage is billed to your {provider.company}
-    account.
+    account. The key is checked as soon as you enter it, by asking {provider.company} for its model list; no data is sent.
   </p>
 
   <label class="ai-field">
@@ -80,23 +45,25 @@
       list="ai-models-{aiSettings.provider}"
       autocomplete="off"
       spellcheck="false"
-      placeholder={aiSettings.provider === 'openai' ? 'Check your key to list models' : provider.defaultModel}
+      placeholder={aiSettings.provider === 'openai' ? 'Enter a key to list models' : provider.defaultModel}
       bind:value={aiSettings.models[aiSettings.provider]}
       onchange={() => aiSettings.persist()}
     />
     <datalist id="ai-models-{aiSettings.provider}">
-      {#each models[aiSettings.provider] as id (id)}
+      {#each aiSettings.modelLists[aiSettings.provider] as id (id)}
         <option value={id}></option>
       {/each}
     </datalist>
   </label>
 
   <div class="ai-row">
-    <button type="button" class="btn" disabled={!aiSettings.key || checking} onclick={check}>
-      {checking ? 'Checking…' : 'Check key & list models'}
+    <button type="button" class="btn" disabled={!aiSettings.key || aiSettings.checking} onclick={() => aiSettings.check()}>
+      {aiSettings.checking ? 'Checking…' : aiSettings.status ? 'Check again' : 'Check key'}
     </button>
-    {#if status}
-      <span class="ai-status" class:error={status.error} role="status">{status.text}</span>
+    {#if aiSettings.checking}
+      <span class="ai-status" role="status">Checking the key…</span>
+    {:else if aiSettings.status}
+      <span class="ai-status" class:error={aiSettings.status.error} role="status">{aiSettings.status.text}</span>
     {/if}
   </div>
 

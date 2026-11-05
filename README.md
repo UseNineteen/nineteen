@@ -172,6 +172,8 @@ or click the button again.
   width and height limits separately; square boxes stay within both
 - *Find by meaning* chooses the model that judges meaning: *bge-small* for English (the default) or *multilingual-e5-small* for
   about 100 languages, with each one's download size. It also lists the models this browser has downloaded, with *Remove*
+- *AI connection* holds the provider (Claude or ChatGPT), API key and model that Ask and Auto-code use (see "Analyze with AI"
+  below). The key is checked as soon as you enter it. These apply at once, outside Save and Cancel
 - Tick *Remember settings on this device* to keep your settings in this browser
 - Changes preview as you make them. *Save* keeps them; *Cancel*, Esc or clicking outside the dialog discards them
 
@@ -192,7 +194,8 @@ can see: all data items or only your current search matches, and which fields. U
 - **Copy prompt:** Pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
   an executive summary, or your own question). Then copy the prompt, with your data, to paste into Claude, ChatGPT or any
   assistant you already use, or download it as a file. **Nineteen sends nothing.**
-- **Ask:** Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key. Answers cite data items by
+- **Ask:** Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key, entered under *AI connection* in
+  Settings (the top of the Ask and Auto-code panes says which connection is in use). Answers cite data items by
   their row in your file, like [Row 12]. Click a citation to highlight those items in the visualization and open their viewer
 - **Auto-code:** Have the AI assign every data item to one of your categories, or let it suggest categories first. The result
   is added as a new field (with an optional "reason" field), so you can group, color, split and search by it like any other.

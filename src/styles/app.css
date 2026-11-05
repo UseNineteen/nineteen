@@ -1907,7 +1907,8 @@ footer li:first-child::before {
 #ai-panel .ai-intro p + p {
   margin-top: 6px;
 }
-#ai-panel .ai-hint {
+#ai-panel .ai-hint,
+.nineteen-dialog .ai-hint {
   color: #7d838a;
   font-size: 12.5px;
   margin: 6px 0;
@@ -1920,11 +1921,13 @@ footer li:first-child::before {
   color: var(--trout);
   font-weight: 500;
 }
-#ai-panel .ai-field {
+#ai-panel .ai-field,
+.nineteen-dialog .ai-field {
   display: block;
   margin: 10px 0 4px;
 }
-#ai-panel .ai-label {
+#ai-panel .ai-label,
+.nineteen-dialog .ai-label {
   display: block;
   font-size: 12.5px;
   font-weight: 500;
@@ -1953,7 +1956,8 @@ footer li:first-child::before {
   border-color: var(--gray);
   outline: none;
 }
-#ai-panel .ai-row {
+#ai-panel .ai-row,
+.nineteen-dialog .ai-row {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -1978,19 +1982,22 @@ footer li:first-child::before {
   padding: 0;
   text-decoration: underline;
 }
-#ai-panel .ai-check {
+#ai-panel .ai-check,
+.nineteen-dialog .ai-check {
   align-items: baseline;
   cursor: pointer;
   display: flex;
   gap: 6px;
   margin: 6px 0;
 }
-#ai-panel .ai-segmented {
+#ai-panel .ai-segmented,
+.nineteen-dialog .ai-segmented {
   display: flex;
   border: 2px solid var(--lightgray);
   border-radius: 3px;
 }
-#ai-panel .ai-segmented button {
+#ai-panel .ai-segmented button,
+.nineteen-dialog .ai-segmented button {
   appearance: none;
   background: none;
   border: none;
@@ -1999,17 +2006,21 @@ footer li:first-child::before {
   font-size: 13px;
   padding: 6px 6px 4px;
 }
-#ai-panel .ai-segmented button + button {
+#ai-panel .ai-segmented button + button,
+.nineteen-dialog .ai-segmented button + button {
   border-left: 2px solid var(--lightgray);
 }
-#ai-panel .ai-segmented button.active {
+#ai-panel .ai-segmented button.active,
+.nineteen-dialog .ai-segmented button.active {
   background: var(--trout);
   color: var(--white);
 }
-#ai-panel .ai-segmented button:disabled {
+#ai-panel .ai-segmented button:disabled,
+.nineteen-dialog .ai-segmented button:disabled {
   opacity: 0.4;
 }
-#ai-panel .ai-segmented small {
+#ai-panel .ai-segmented small,
+.nineteen-dialog .ai-segmented small {
   font-size: 11px;
   opacity: 0.75;
 }
@@ -2034,14 +2045,29 @@ footer li:first-child::before {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-#ai-panel .ai-provider code {
+/* The connection line at the top of Ask and Auto-code */
+#ai-panel .ai-connection {
+  color: #7d838a;
+  font-size: 12.5px;
+  margin: 0 0 8px;
+}
+#ai-panel .ai-connection code {
   font-size: 12px;
 }
-#ai-panel .ai-status {
+#ai-panel .ai-connection-off {
+  color: var(--trout);
+  font-weight: 500;
+}
+.nineteen-dialog .ai-settings .btn {
+  font-size: 13px;
+}
+#ai-panel .ai-status,
+.nineteen-dialog .ai-status {
   color: #2f7d4e;
   font-size: 12.5px;
 }
 #ai-panel .ai-status.error,
+.nineteen-dialog .ai-status.error,
 #ai-panel .ai-error {
   color: #b3261e;
 }

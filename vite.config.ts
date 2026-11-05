@@ -78,9 +78,26 @@ function onnxRuntime(): Plugin {
   let outDir = 'dist';
   return {
     name: 'nineteen-onnx-runtime',
-    apply: 'build',
     configResolved(config) {
       outDir = resolve(config.root, config.build.outDir);
+    },
+    // In development the files are served straight from the package, with the isolation headers the site sends
+    configureServer(server) {
+      const from = resolve('node_modules/onnxruntime-web/dist');
+      server.middlewares.use((req, res, next) => {
+        const match = /^\/ort\/(ort-wasm-[\w.-]+\.(wasm|mjs))(\?.*)?$/.exec(req.url ?? '');
+        if (!match) return next();
+        let body: Buffer;
+        try {
+          body = readFileSync(resolve(from, match[1]));
+        } catch {
+          return next();
+        }
+        res.setHeader('Content-Type', match[2] === 'wasm' ? 'application/wasm' : 'text/javascript');
+        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+        res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+        res.end(body);
+      });
     },
     closeBundle() {
       const from = resolve('node_modules/onnxruntime-web/dist');
@@ -207,7 +224,8 @@ export default defineConfig({
     onnxRuntime(),
   ],
   worker: { format: 'es' },
-  // The same cross-origin isolation headers as public/_headers sets on usenineteen.com, so the preview behaves like the site
+  // The same cross-origin isolation headers as public/_headers sets on usenineteen.com, so dev and preview behave like the site
+  server: { headers: { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'credentialless' } },
   preview: { headers: { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'credentialless' } },
   build: {
     target: 'es2022',

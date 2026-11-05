@@ -35,8 +35,8 @@
 
   let { viz, popups, onclose, onsettings }: Props = $props();
 
-  type Tab = 'copy' | 'ask' | 'code';
-  let tab = $state<Tab>('copy');
+  type Tab = 'analyze' | 'code';
+  let tab = $state<Tab>('analyze');
 
   // ---------- Data to share ----------
 
@@ -95,7 +95,7 @@
     action?.();
   }
 
-  // ---------- Copy prompt (nothing leaves the browser) ----------
+  // ---------- The prompt: copied, downloaded (nothing leaves the browser) or sent ----------
 
   let templateId = $state('themes');
   let extra = $state('');
@@ -186,6 +186,11 @@
       askController = null;
       scrollDown();
     }
+  }
+
+  /** "Send": the built prompt opens the conversation (follow-ups go through the compose box) */
+  function send() {
+    ask(instructions);
   }
 
   function stopAsk() {
@@ -344,41 +349,34 @@
   </header>
 
   <nav class="ai-tabs" aria-label="AI tools">
-    <button type="button" class:active={tab === 'copy'} aria-pressed={tab === 'copy'} onclick={() => (tab = 'copy')}>Copy prompt</button>
-    <button type="button" class:active={tab === 'ask'} aria-pressed={tab === 'ask'} onclick={() => (tab = 'ask')}>Ask</button>
+    <button type="button" class:active={tab === 'analyze'} aria-pressed={tab === 'analyze'} onclick={() => (tab = 'analyze')}
+      >Analyze</button
+    >
     <button type="button" class:active={tab === 'code'} aria-pressed={tab === 'code'} onclick={() => (tab = 'code')}>Auto-code</button>
   </nav>
 
   <div class="ai-body">
     <!-- What this tab does, before any of its controls -->
     <section class="ai-section ai-intro" aria-live="polite">
-      {#if tab !== 'copy'}
-        <!-- The connection, first: set up in Settings -->
-        <p class="ai-connection" class:ai-connection-off={!aiSettings.ready}>
-          {#if aiSettings.ready}
-            Using <strong>{provider.label}</strong> · <code>{aiSettings.model}</code>
-            {#if aiSettings.checking}
-              · <span class="ai-status">checking the key…</span>
-            {:else if aiSettings.status?.error}
-              · <span class="ai-status error">{aiSettings.status.text}</span>
-            {/if}
-            · <button type="button" class="link-button" onclick={onsettings}>Change in Settings</button>
-          {:else}
-            No AI connection yet. <button type="button" class="link-button" onclick={onsettings}>Set one up in Settings</button>
+      <!-- The connection, first: set up in Settings -->
+      <p class="ai-connection" class:ai-connection-off={!aiSettings.ready}>
+        {#if aiSettings.ready}
+          Using <strong>{provider.label}</strong> · <code>{aiSettings.model}</code>
+          {#if aiSettings.checking}
+            · <span class="ai-status">checking the key…</span>
+          {:else if aiSettings.status?.error}
+            · <span class="ai-status error">{aiSettings.status.text}</span>
           {/if}
-        </p>
-      {/if}
-      {#if tab === 'copy'}
+          · <button type="button" class="link-button" onclick={onsettings}>Change in Settings</button>
+        {:else}
+          No AI connection yet. <button type="button" class="link-button" onclick={onsettings}>Set one up in Settings</button>
+        {/if}
+      </p>
+      {#if tab === 'analyze'}
         <p>
-          Build a prompt with your data and paste it into Claude, ChatGPT, or any AI assistant you already use.
-          <strong>Nineteen doesn’t send anything.</strong>
+          Build a prompt from your data. Copy it into Claude, ChatGPT or any assistant you already use (Nineteen sends nothing), or send it
+          to your connected AI and get answers that cite the data items they draw on.
         </p>
-      {:else if tab === 'ask'}
-        <p>
-          Ask Claude or ChatGPT questions about your data, using your own API key. Answers cite the data items they draw on; click a
-          citation to see them in the visualization.
-        </p>
-        <p class="ai-hint">Your browser sends the shared data straight to the provider, never through a Nineteen server.</p>
       {:else}
         <p>
           Have the AI assign every data item to one of your categories (or let it suggest some). The result is added as a new field you can
@@ -417,7 +415,7 @@
       <p class="ai-hint">{items.length} data items × {columns.length} fields · {formatTokens(tokens)}</p>
     </section>
 
-    {#if tab === 'copy'}
+    {#if tab === 'analyze'}
       <section class="ai-section">
         <label class="ai-field">
           <span class="ai-label">What should the AI do?</span>
@@ -430,96 +428,109 @@
         <p class="ai-hint">{template.hint}</p>
         <label class="ai-field">
           <span class="ai-label">{templateId === 'custom' ? 'Your question or instructions' : 'Anything to add? (optional)'}</span>
-          <textarea rows="3" bind:value={extra} placeholder="e.g. Focus on reasons people didn’t buy"></textarea>
+          <textarea
+            rows="3"
+            bind:value={extra}
+            placeholder="e.g. Focus on reasons people didn’t buy"
+            onkeydown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && aiSettings.ready && instructions) {
+                e.preventDefault();
+                send();
+              }
+            }}
+          ></textarea>
         </label>
-        <div class="ai-row">
-          <button type="button" class="btn btn-primary" onclick={copy}>{copied ? 'Copied!' : 'Copy to clipboard'}</button>
+        <!-- Where the prompt goes: the clipboard or a file (nothing sent), or the connected AI -->
+        <div class="ai-row ai-destinations">
+          <button type="button" class="btn" onclick={copy}>{copied ? 'Copied!' : 'Copy prompt'}</button>
           <a class="btn" href={downloadUrl} download="{viz.dataset.name.replace(/\.[^.]+$/, '')}-ai-prompt.md">Download as file</a>
+          {#if asking}
+            <button type="button" class="btn" onclick={stopAsk}>Stop</button>
+          {:else}
+            <button
+              type="button"
+              class="btn btn-primary"
+              disabled={!aiSettings.ready || !instructions}
+              title={aiSettings.ready
+                ? `Send the prompt and the shared data to ${provider.company}`
+                : 'Set up an AI connection in Settings to send'}
+              onclick={send}>Send to {provider.label}</button
+            >
+          {/if}
         </div>
         <p class="ai-hint">
-          Then open
-          <a href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Claude</a> or
-          <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a> and paste it in. Check your organization’s rules
-          before pasting confidential data into an AI service.
+          Copying or downloading sends nothing: paste the prompt into
+          <a href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Claude</a>,
+          <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a> or another assistant yourself. Sending
+          transmits the shared data ({formatTokens(tokens)}) to {provider.company}, after asking you the first time. Check your
+          organization’s rules before sharing confidential data with an AI service.
         </p>
         <details class="ai-preview">
           <summary>Preview prompt</summary>
           <pre>{preview}</pre>
         </details>
       </section>
-    {:else if tab === 'ask'}
-      <section class="ai-section ai-ask">
-        {#if turns.length === 0 && !asking}
-          <p class="ai-hint">Ask a question about the shared data, or start with:</p>
-          <div class="ai-chips">
-            {#each TEMPLATES.filter((t) => t.id !== 'custom') as t (t.id)}
-              <button type="button" class="ai-chip" disabled={!aiSettings.ready} onclick={() => ask(t.build(view))}>{t.label}</button>
+
+      {#if turns.length || asking}
+        <section class="ai-section ai-ask">
+          <div class="ai-conversation" bind:this={conversationEl} aria-live="polite">
+            {#each turns as turn, i (i)}
+              {#if turn.role === 'user'}
+                <div class="ai-question">{turn.content}</div>
+              {:else if turn.error}
+                <p class="ai-error" role="alert">{turn.content}</p>
+              {:else}
+                {@const rows = citedRows(turn.content)}
+                <Answer text={turn.content} oncite={cite} />
+                <div class="ai-answer-tools">
+                  {#if rows.length > 1}
+                    <button type="button" class="link-button" onclick={() => cite(rows)}>Highlight all {rows.length} cited rows</button>
+                  {/if}
+                  <button type="button" class="link-button" onclick={() => navigator.clipboard.writeText(turn.content)}>Copy answer</button>
+                </div>
+              {/if}
             {/each}
-          </div>
-        {/if}
-
-        <div class="ai-conversation" bind:this={conversationEl} aria-live="polite">
-          {#each turns as turn, i (i)}
-            {#if turn.role === 'user'}
-              <div class="ai-question">{turn.content}</div>
-            {:else if turn.error}
-              <p class="ai-error" role="alert">{turn.content}</p>
-            {:else}
-              {@const rows = citedRows(turn.content)}
-              <Answer text={turn.content} oncite={cite} />
-              <div class="ai-answer-tools">
-                {#if rows.length > 1}
-                  <button type="button" class="link-button" onclick={() => cite(rows)}>Highlight all {rows.length} cited rows</button>
-                {/if}
-                <button type="button" class="link-button" onclick={() => navigator.clipboard.writeText(turn.content)}>Copy answer</button>
-              </div>
-            {/if}
-          {/each}
-          {#if asking}
-            {#if streaming}
-              <Answer text={streaming} oncite={cite} />
-            {:else}
-              <p class="ai-hint ai-thinking">Thinking…</p>
-            {/if}
-          {/if}
-        </div>
-
-        <form
-          class="ai-compose"
-          onsubmit={(e) => {
-            e.preventDefault();
-            ask(question);
-          }}
-        >
-          <textarea
-            rows="3"
-            bind:value={question}
-            placeholder={aiSettings.ready ? 'Ask about your data…' : 'Add an API key in Settings to ask questions'}
-            disabled={!aiSettings.ready}
-            aria-label="Question"
-            onkeydown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                ask(question);
-              }
-            }}
-          ></textarea>
-          <div class="ai-row">
             {#if asking}
-              <button type="button" class="btn" onclick={stopAsk}>Stop</button>
-            {:else}
-              <button type="submit" class="btn btn-primary" disabled={!aiSettings.ready || !question.trim()}>Send</button>
-            {/if}
-            {#if turns.length}
-              <button type="button" class="link-button" onclick={clearConversation}>New conversation</button>
+              {#if streaming}
+                <Answer text={streaming} oncite={cite} />
+              {:else}
+                <p class="ai-hint ai-thinking">Thinking…</p>
+              {/if}
             {/if}
           </div>
-          <p class="ai-hint">
-            Each question sends the shared data ({formatTokens(tokens)}) to {provider.company}. Answers can be wrong, so check them against
-            the cited rows.
-          </p>
-        </form>
-      </section>
+
+          <form
+            class="ai-compose"
+            onsubmit={(e) => {
+              e.preventDefault();
+              ask(question);
+            }}
+          >
+            <textarea
+              rows="2"
+              bind:value={question}
+              placeholder="Ask a follow-up…"
+              disabled={!aiSettings.ready}
+              aria-label="Follow-up question"
+              onkeydown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  ask(question);
+                }
+              }}
+            ></textarea>
+            <div class="ai-row">
+              {#if asking}
+                <button type="button" class="btn" onclick={stopAsk}>Stop</button>
+              {:else}
+                <button type="submit" class="btn btn-primary" disabled={!aiSettings.ready || !question.trim()}>Send</button>
+              {/if}
+              <button type="button" class="link-button" onclick={clearConversation}>New conversation</button>
+            </div>
+            <p class="ai-hint">Each question sends the shared data again. Answers can be wrong, so check them against the cited rows.</p>
+          </form>
+        </section>
+      {/if}
     {:else}
       <section class="ai-section ai-code">
         <label class="ai-field">

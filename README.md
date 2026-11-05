@@ -187,22 +187,22 @@ The Save menu (11) offers:
   AI auto-coding
 
 ### Analyze with AI (optional)
-The **Analyze with AI** button (14) opens a panel with three tools. At the top, **Data to share** sets exactly what any of them
+The **Analyze with AI** button (14) opens a panel with two tools. At the top, **Data to share** sets exactly what either of them
 can see: all data items or only your current search matches, and which fields. Untick names or other personal details there.
 
 <img src="docs/screenshots/ai-panel.png" alt="Analyze with AI panel" title="The Analyze with AI panel">
 
-- **Copy prompt:** Pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme,
-  an executive summary, or your own question). Then copy the prompt, with your data, to paste into Claude, ChatGPT or any
-  assistant you already use, or download it as a file. **Nineteen sends nothing.**
-- **Ask:** Chat about your data using your own Anthropic (Claude) or OpenAI (ChatGPT) API key, entered under *External AI* in
-  Settings (the top of the Ask and Auto-code panes says which connection is in use). Answers cite data items by
-  their row in your file, like [Row 12]. Click a citation to highlight those items in the visualization and open their viewer
+- **Analyze:** Pick a ready-made analysis (key themes, comparing groups, representative quotes, a coding scheme, an executive
+  summary, or your own question), add anything you want, then choose where the prompt goes. **Copy prompt** and **Download as file**
+  send nothing: paste the prompt into Claude, ChatGPT or any assistant you already use. **Send to Claude** (or ChatGPT) uses your own
+  API key, entered under *External AI* in Settings (the top of the panel says which connection is in use). Answers cite data items by
+  their row in your file, like [Row 12]; click a citation to highlight those items in the visualization and open their viewer, and ask
+  follow-up questions below the answer
 - **Auto-code:** Have the AI assign every data item to one of your categories, or let it suggest categories first. The result
   is added as a new field (with an optional "reason" field), so you can group, color, split and search by it like any other.
   AI coding can be wrong, so spot-check it in the viewer
 
-Ask and Auto-code send the shared data directly from your browser to the provider you chose, with your key. Nothing goes
+Send and Auto-code send the shared data directly from your browser to the provider you chose, with your key. Nothing goes
 through a Nineteen server. The first time in each session, Nineteen asks you to confirm before sending anything. Your key
 stays in memory unless you choose to remember it on this device. Claude requests use `claude-opus-5-5` by default.
 You can pick any model your key can use.

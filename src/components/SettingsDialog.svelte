@@ -17,6 +17,20 @@
 
   let { viz, open, section = null, onclose }: Props = $props();
 
+  type Tab = 'display' | 'local' | 'services';
+  /** Display (how things look), Local AI (models that run in the browser), External AI (accounts and servers you connect) */
+  let tab = $state<Tab>('display');
+  const TABS: { id: Tab; label: string }[] = [
+    { id: 'display', label: 'Display' },
+    { id: 'local', label: 'Local AI' },
+    { id: 'services', label: 'External AI' },
+  ];
+  /** Classic Nineteen has no AI, so only the Display tab */
+  const tabs = $derived(appSettings.classic ? TABS.slice(0, 1) : TABS);
+  $effect(() => {
+    if (appSettings.classic && tab !== 'display') tab = 'display';
+  });
+
   /** Values when the dialog opened; restored when it is dismissed without saving */
   let saved = appSettings.snapshot();
   /**
@@ -47,10 +61,7 @@
     if (!open) return;
     removed = false;
     cachedDownloads().then((list) => (downloads = list));
-    if (section) {
-      const id = section;
-      setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }), 0);
-    }
+    tab = section === 'settings-ai' ? 'services' : 'display';
     untrack(() => {
       saved = appSettings.snapshot();
       savedView = {
@@ -97,73 +108,80 @@
     <button type="button" class="close" aria-label="Close without saving" onclick={cancel}>&times;</button>
   </header>
 
+  <nav class="settings-tabs" aria-label="Settings sections">
+    {#each tabs as t (t.id)}
+      <button type="button" class:active={tab === t.id} aria-pressed={tab === t.id} onclick={() => (tab = t.id)}>{t.label}</button>
+    {/each}
+  </nav>
+
   <div class="settings-body">
-    <fieldset>
-      <legend>Features</legend>
-      <label class="settings-check">
-        <input type="checkbox" bind:checked={appSettings.classic} />
-        <span>
-          <strong>Classic Nineteen</strong>
-          <small>
-            Rows, split by color and a legend, as in the original. Hides the Columns choice under “Grouped by”, tagging, finding by meaning
-            and the AI tools.
-          </small>
-        </span>
-      </label>
-    </fieldset>
+    {#if tab === 'display'}
+      <fieldset>
+        <legend>Features</legend>
+        <label class="settings-check">
+          <input type="checkbox" bind:checked={appSettings.classic} />
+          <span>
+            <strong>Classic Nineteen</strong>
+            <small>
+              Rows, split by color and a legend, as in the original. Hides the Columns choice under “Grouped by”, tagging, finding by
+              meaning and the AI tools.
+            </small>
+          </span>
+        </label>
+      </fieldset>
 
-    <fieldset>
-      <legend>Box size</legend>
+      <fieldset>
+        <legend>Box size</legend>
 
-      <label class="settings-check">
-        <input type="checkbox" checked={viz.fit === 'stretch'} onchange={(e) => viz.setStretch(e.currentTarget.checked)} />
-        <span>
-          <strong>Stretch to fit</strong>
-          <small>
-            Reshape boxes into rectangles so the visualization fills the window. Same as the Stretch to fit button (bottom right): turning
-            on one turns on the other.
-          </small>
-        </span>
-      </label>
+        <label class="settings-check">
+          <input type="checkbox" checked={viz.fit === 'stretch'} onchange={(e) => viz.setStretch(e.currentTarget.checked)} />
+          <span>
+            <strong>Stretch to fit</strong>
+            <small>
+              Reshape boxes into rectangles so the visualization fills the window. Same as the Stretch to fit button (bottom right): turning
+              on one turns on the other.
+            </small>
+          </span>
+        </label>
 
-      <table class="settings-limits">
-        <caption class="sr-only">Box size limits in pixels</caption>
-        <thead>
-          <tr>
-            <td></td>
-            <th scope="col">Smallest</th>
-            <th scope="col">Largest</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each [{ label: 'Width', min: 'minWidth', max: 'maxWidth' }, { label: 'Height', min: 'minHeight', max: 'maxHeight' }] as const as dim (dim.label)}
+        <table class="settings-limits">
+          <caption class="sr-only">Box size limits in pixels</caption>
+          <thead>
             <tr>
-              <th scope="row">{dim.label}</th>
-              {#each [dim.min, dim.max] as const as field (field)}
-                <td>
-                  <input
-                    type="number"
-                    min={BOX_LIMITS.min}
-                    max={BOX_LIMITS.max}
-                    step="1"
-                    aria-label="{field.startsWith('min') ? 'Smallest' : 'Largest'} box {dim.label.toLowerCase()}"
-                    bind:value={appSettings[field]}
-                    onchange={() => appSettings.normalize(field)}
-                  />
-                  <span class="unit">px</span>
-                </td>
-              {/each}
+              <td></td>
+              <th scope="col">Smallest</th>
+              <th scope="col">Largest</th>
             </tr>
-          {/each}
-        </tbody>
-      </table>
-      <p class="settings-hint">
-        Limits box sizes when fitting and zooming. Stretch to fit uses the width and height limits separately; square boxes stay within
-        both. Defaults: {DEFAULTS.minWidth}–{DEFAULTS.maxWidth} px (boxes are 18 px at actual size).
-      </p>
-    </fieldset>
-
-    {#if !appSettings.classic}
+          </thead>
+          <tbody>
+            {#each [{ label: 'Width', min: 'minWidth', max: 'maxWidth' }, { label: 'Height', min: 'minHeight', max: 'maxHeight' }] as const as dim (dim.label)}
+              <tr>
+                <th scope="row">{dim.label}</th>
+                {#each [dim.min, dim.max] as const as field (field)}
+                  <td>
+                    <input
+                      type="number"
+                      min={BOX_LIMITS.min}
+                      max={BOX_LIMITS.max}
+                      step="1"
+                      aria-label="{field.startsWith('min') ? 'Smallest' : 'Largest'} box {dim.label.toLowerCase()}"
+                      bind:value={appSettings[field]}
+                      onchange={() => appSettings.normalize(field)}
+                    />
+                    <span class="unit">px</span>
+                  </td>
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <p class="settings-hint">
+          Limits box sizes when fitting and zooming. Stretch to fit uses the width and height limits separately; square boxes stay within
+          both. Defaults: {DEFAULTS.minWidth}–{DEFAULTS.maxWidth} px (boxes are 18 px at actual size).
+        </p>
+      </fieldset>
+    {/if}
+    {#if tab === 'local' && !appSettings.classic}
       <fieldset>
         <legend>Find by meaning</legend>
         <p class="settings-hint">Which language model judges meaning:</p>
@@ -196,6 +214,8 @@
           {/if}
         </p>
       </fieldset>
+    {/if}
+    {#if tab === 'services' && !appSettings.classic}
       <fieldset id="settings-ai">
         <legend>AI connection</legend>
         <p class="settings-hint">For Ask and Auto-code in Analyze with AI. These take effect at once; Save and Cancel don't change them.</p>

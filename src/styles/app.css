@@ -2360,8 +2360,45 @@ footer li:first-child::before {
   line-height: 1;
   padding: 0;
 }
+/* Settings keeps its top edge put as the tabs change height: anchored near the top instead of centered, scrolling inside if need be */
+#settings[open] {
+  display: flex;
+  flex-direction: column;
+  margin-top: max(24px, 8vh);
+  margin-bottom: auto;
+  max-height: calc(92vh - 24px);
+}
+#settings .settings-tabs,
+#settings .title-bar,
+#settings .settings-footer {
+  flex: 0 0 auto;
+}
 .nineteen-dialog .settings-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   padding: 5px 15px;
+}
+/* The dialog's tabs: Display, Local AI, External AI (styled like the AI panel's) */
+.nineteen-dialog .settings-tabs {
+  border-bottom: 1px solid var(--lightgray);
+  display: flex;
+  gap: 20px;
+  padding: 0 15px;
+}
+.nineteen-dialog .settings-tabs button {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--gray);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 0 8px;
+}
+.nineteen-dialog .settings-tabs button.active {
+  border-bottom-color: var(--trout);
+  color: var(--trout);
 }
 .nineteen-dialog fieldset {
   border: none;
